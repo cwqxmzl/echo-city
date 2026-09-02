@@ -195,6 +195,7 @@ h1.title-name{
 .tcard .t-glow{position:absolute;top:-40%;right:-30%;width:130px;height:130px;border-radius:50%;opacity:.12;pointer-events:none;filter:blur(10px)}
 
 /* 属性面板 */
+.voice-card{border:1px solid var(--gold);border-left:3px solid var(--gold);border-radius:9px;padding:9px 11px;margin-top:14px;background:rgba(60,52,20,.18)}
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
 .stat-cell{
   border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:rgba(16,24,52,.5);
@@ -983,7 +984,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "风与归途",
+    "text": "你让风语者留下最后一座岛给云海中的流民，风把每一片羽毛都吹成灯塔。多年后有人问起浮空城的传说，只说——风会记住每一个路过的人。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "破空之翼",
+    "text": "你挟风之核心冲上九霄，一剑劈开封锁千年的云层。阳光倾泻而下，浮空城第一次看见天空真正的颜色。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "风之棋局",
+    "text": "你没有拿走核心，而是借它布下一盘百年棋局，让三座浮空城在风雷中重新握手。风语者叹道：你比风更会借力。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "与雷共舞",
+    "text": "你把风之核心吞了下去，雷光在体内炸开。从此你就是浮空城新的风暴眼——风雷听你的，也缠着你。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "wuxia": {
   "name": "快活林黑市",
@@ -1118,7 +1177,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "黑市灯火",
+    "text": "你没有交出总账，而是当众烧了它——江湖人欠的债，江湖人自己还。快活王敬你一杯酒：这条道，你走对了。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "一诺千金",
+    "text": "你带着总账杀出黑市，一路护着赌坊里那个可怜人。快活王追到巷口却停了手：江湖欠你的，我记下了。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "翻手为云",
+    "text": "你拿总账换了一个天大人情——快活王欠你一条命，整个黑市欠你一份忌惮。这江湖的水，从此你说了算一半。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "黑吃黑",
+    "text": "你抢了总账不算，还把快活王的地盘一并吞了。赌坊新挂的牌匾写着你的名字——江湖人谈起你，又敬又怕。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "xianxia": {
   "name": "青云剑宗遗迹",
@@ -1253,7 +1370,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "剑心归尘",
+    "text": "你没有带走传承，而是将万剑重新插回剑冢，让它们守着青云最后一口剑气。千年剑鸣，第一次安静下来。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "一剑开天",
+    "text": "你以传承之剑劈开云海，剑冢万剑齐鸣相送。青云剑宗的名字，重新刻上了这片天。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "以剑悟道",
+    "text": "你没有急着取传承，而是枯坐三日听懂了每一把剑的剑鸣。守剑魂感慨：你比当年宗主，更懂剑。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "剑噬我心",
+    "text": "你贪多嚼不烂，将万剑剑气尽数纳入己身。剑意在血脉里暴走——你成了剑，也快疯了。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "ocean": {
   "name": "深渊海沟",
@@ -1392,7 +1567,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "海骨归乡",
+    "text": "你没有取走海骨，而是把它放回祭坛，向深渊之眼深深一躬。那道注视，第一次温和下来。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "直面深渊",
+    "text": "你与深渊之眼对视到底，不闪不避——它缓缓闭合，让出一条通路。你带着海骨的祝福浮上水面，满身是伤，却赢了。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "读懂低语",
+    "text": "你闭上眼，任低语灌入脑海，终于听懂了——那不是诅咒，是深海文明最后的遗言。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "成为深渊",
+    "text": "你吞下海骨，让低语占领心智。从此海沟深处多了一只新的深渊之眼——它在等下一个闯入者。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "apoc": {
   "name": "辐射废墟",
@@ -1519,7 +1752,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "新纪元之光",
+    "text": "你把能量核心交给了幸存者营地，让他们重新点亮第一盏灯。废土之上，第一次有了「家」的形状。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "文明火种",
+    "text": "你带着核心杀穿感染者群，把旧纪元的全息记录护送到人族避难所——哪怕你倒下，火种还在。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "废墟棋局",
+    "text": "你没有急着取核心，先探清辐射井的构造，用机械残骸布下机关——核心到手，陷阱留给了后来者。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "窃火者",
+    "text": "你把核心按进胸口，让旧纪元的余烬在体内燃烧。你是废土上最亮的光，也是最危险的雷。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "fantasy": {
   "name": "巨龙巢穴",
@@ -1672,7 +1963,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "龙之守望",
+    "text": "你没有要财宝，而是替古龙守了一夜北方的风雪。古龙把龙鳞覆在你肩上：从今往后，北境的雪认识你。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "屠龙之姿",
+    "text": "你拔出武器直面古龙，龙息与剑气对撞——古龙却收了爪：你配做我的对手，也配做我的盟友。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "龙之契约",
+    "text": "你与古龙立下契约：不取财宝，只借龙威。从此凡龙族之地，你通行无阻。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "骑龙入云",
+    "text": "你趁古龙不备翻上龙背，一把抓住它的角——古龙怒吼着冲入云层，最终却认了你这个疯子骑手。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "sci": {
   "name": "深空站",
@@ -1817,7 +2166,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "带它回家",
+    "text": "你答应外星遗骸的请求，把星核芯片带出深空站，向它来的星域发射——一百年的等待，终于有了归途。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "深空之光",
+    "text": "你带着芯片杀穿失控异形群，把深空站的警报灯一盏盏点亮——人类在宇宙里，第一次这么亮。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "破译星语",
+    "text": "你没有急着拿芯片，先破译了那段电磁讯号——那是一个文明最后的求救，你记下了坐标。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "吞噬星核",
+    "text": "你把星核芯片接入身体，让另一个文明的意识在脑海苏醒——你成了深空站新的「它」。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "inf": {
   "name": "副本中枢",
@@ -1952,7 +2359,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "破环之人",
+    "text": "你没有夺令牌，而是用副本碎片补上中枢核心的裂口。中枢之声响起：循环不会停止，但因为你，它第一次有了缺口。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "闯穿万门",
+    "text": "你一枚枚夺下副本令牌，杀穿所有副本——中枢核心在你面前低头：你是第一个让洪流改道的人。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "看破规则",
+    "text": "你发现副本的规则漏洞，用令牌反制中枢——你成了唯一能在副本里「作弊」的轮回者。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "吞下中枢",
+    "text": "你把所有令牌融进身体，让副本的力量在体内暴走——你是新的中枢核心，也是新的循环本身。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "zelda": {
   "name": "旷野神域",
@@ -2087,7 +2552,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "英杰之愿",
+    "text": "你没有独占祝福，而是把英杰的意志带回复苏神庙，让后人也听见那声号角。旷野的瘴气，又散开了一角。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "神兽之怒",
+    "text": "你驾驭神兽冲垮瘴气源头，英杰残响在身后为你断后——百年前的账，你替他们清了。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "破译壁画",
+    "text": "你读懂壁画上被抹去的真相——百年前的勇者不是战败，是被背叛。你带着这份真相，走向王座。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "篡夺神兽",
+    "text": "你强行驾驭神兽，不顾它的意志，让瘴气与神力在体内对冲——你是新的勇者，也是新的威胁。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "hollow": {
   "name": "圣巢深渊",
@@ -2244,7 +2767,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "填平深渊",
+    "text": "你没有接管深渊，而是用骨钉在虚空边缘立下屏障——圣巢的回响，第一次没有吞噬任何人。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "深渊之主",
+    "text": "你握住骨钉跳下虚空，在回响的潮水中杀出一条路——深渊承认了你这个新主人。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "重订契约",
+    "text": "你读懂护符的低鸣，找到深渊与虫巢的契约根源——你没有毁掉它，而是重新签下了契约。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "成为回响",
+    "text": "你让深渊的回响灌满身体，放弃了自己的意识——圣巢多了一个徘徊的残响，而它的动作，和你一模一样。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "elden": {
   "name": "交界之地",
@@ -2379,7 +2960,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "修复法环",
+    "text": "你选择修复破碎的法环，让交界之地重归秩序——但你知道，黄金树的影子还会落下，只是你愿意担着。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "以王之名",
+    "text": "你举起大卢恩，向半神发起挑战，以王者的方式终结破碎战争——交界之地，第一次有了统一的王。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "改写律法",
+    "text": "你看穿黄金律法的谎言，没有修复也没有破坏，而是改写了一条律法——交界之地的法则，从此有了例外。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "燃烧律法",
+    "text": "你点燃黄金树，让交界之地的一切归于灰烬——重开一个没有律法的时代，哪怕代价是万物凋零。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "pet": {
   "name": "精灵大陆",
@@ -2528,7 +3167,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "放归传说",
+    "text": "你没有收服传说精灵，而是把它放回森林——它在你掌心留下共鸣之果的印记，承认你是心灵纯净的训练师。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "并肩一战",
+    "text": "你与精灵们并肩对抗森林的暴徒，直到最后一只倒下也不曾放弃——传说精灵终于愿意同行。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "读懂共鸣",
+    "text": "你参透共鸣之果的秘密，让学院与森林立下新的誓约——训练师与精灵，从此是同伴而不是工具。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "掠夺共鸣",
+    "text": "你强行夺走共鸣之果，让精灵们在痛苦中臣服——你成了最强的训练师，也成了最孤独的人。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "sekiro": {
   "name": "苇名国",
@@ -2755,7 +3452,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "少主归位",
+    "text": "你没有夺城，而是把少主护送到安全之地，让苇名免于一场屠城——残月之下，樱花开得格外安静。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "剑圣之路",
+    "text": "你在城头与剑圣决出胜负，用刀背点到为止——剑圣收刀：忍者时代的最后一课，你学到了。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "忍者之谋",
+    "text": "你没有硬闯，而是潜行、易容、借刀杀人，让苇名武士自己内斗——少主安全，你也全身而退。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "弑君夺城",
+    "text": "你杀穿武士与忍者的层层防线，亲手斩落城主——苇名的残月下，多了一个新的统治者。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "hades": {
   "name": "冥界试炼",
@@ -2946,7 +3701,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "渡魂之舟",
+    "text": "你没有逃出冥界，而是留在渡口帮卡戎渡魂——你成了冥河上最温柔的摆渡人，亡魂们称你为「引路人」。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "破门而出",
+    "text": "你硬生生推开冥界大门，杀出审判者追兵的包围——你带着冥界之证，第一次见到了阳光。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "赌赢死神",
+    "text": "你与塔纳托斯的赌局以平手收场，却赢得一份冥界的友谊——死神欠你一个人情，这比任何神恩都值钱。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "盗取神火",
+    "text": "你偷走奥林匹斯诸神的恩赐，把它打进自己的身体——你是凡人里第一个「窃神者」，众神都记住了你。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "guoyun": {
   "name": "国运战场",
@@ -3081,7 +3894,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "泽被苍生",
+    "text": "你没有独享气运，而是把它分给边境的百姓——人族的根基，比一时的胜利更厚。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "气运加身",
+    "text": "你连赢三局，让气运如龙冲天——城头插上人族旗帜的那一刻，亿万人为你欢呼。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "以运养运",
+    "text": "你看穿气运的规则，用一次故意示弱换来更大的反扑——人族的气运，被你经营成一条不竭的河。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "窃国气运",
+    "text": "你把国运全部引向自己，让人族的气运为你一人所驱——你是最强的气运之子，也是人族的隐忧。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "wanzu": {
   "name": "万族战场",
@@ -3216,7 +4087,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "止战之约",
+    "text": "你没有答应异族王子的交易，而是用一场谈判换来三族停战——城墙内外的血，第一次停流。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "以血换城",
+    "text": "你率人族硬抗异族大军，用血肉筑起新城墙——这座城，每一块砖都刻着牺牲者的名字。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "交换智慧",
+    "text": "你与异族王子完成交易，换来血肉之力，却没有出卖人族的根——你学会了两族的智慧，只忠于自己的族。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "吞噬万族",
+    "text": "你吞噬异族的血肉之力，又吸收人族的血脉——你成了第一个「万族混血」，也是所有种族忌惮的存在。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "guimi": {
   "name": "诡秘之都",
@@ -3355,7 +4284,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "合上牌面",
+    "text": "你最终没有翻开愚者牌，而是把名片还给神秘人——清醒地活着，也是一种非凡。神秘人微笑：你做了一个明智的选择。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "直面疯狂",
+    "text": "你翻开愚者牌，直面世界的真相，哪怕代价是理智的裂缝——你成了非凡者里最清醒的疯子。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "识破途径",
+    "text": "你参透 22 条神之途径的规律，没有盲从任何一条——你走出了自己的第三条路，连诡秘都为你侧目。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "饮下魔药",
+    "text": "你把所有魔药混在一起灌下，让非凡力量在体内失控——你成了雾都新的传说，也是新的禁忌。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "honghuang": {
   "name": "洪荒古界",
@@ -3508,7 +4495,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "泽被万物",
+    "text": "你没有证杀伐之道，而是选择守护之道——你以自身道行温养天地，洪荒生灵称你为「慈悲客」。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "以力证道",
+    "text": "你直面混沌凶兽，以力证道，杀出一条混元之路——紫霄宫前，你的名字被刻在了道碑上。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "参透因果",
+    "text": "你看破量劫因果的流转，没有硬抗而是顺势而为——你成了洪荒最会「避劫」的智者。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "吞噬量劫",
+    "text": "你试图吞噬量劫之力，让因果在体内炸开——你成了新的量劫本身，天地都为你震颤。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "zhutian": {
   "name": "诸天万界",
@@ -3657,7 +4702,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "万界灯火",
+    "text": "你救助了每一个在枢纽倒下的轮回者——万界的灯火里，有一盏是你点亮的人心。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "斩落天魔",
+    "text": "你独自迎战域外天魔，硬生生堵住那道裂缝——轮回者们都记住了你挡在前面的背影。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "布局万界",
+    "text": "你没有急着变强，而是在各世界埋下后手——当万界风暴来临时，你早已算到每一手。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "吞并诸天",
+    "text": "你开始吞噬各世界的气运本源，让自己无限变强——你是万界公敌，也是万界之主。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  },
  "genshin": {
   "name": "提瓦特大陆",
@@ -3814,7 +4917,65 @@ const WORLD_STORIES = {
      }
     ]
    }
-  ]
+  ],
+  "endings": {
+   "good": {
+    "t": "以心换心",
+    "text": "你没有与深渊使徒死战，而是试着听它说话——原来深渊教团也有一腔执念。你放下神之眼：有些战争，可以用理解化解。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      20
+     ]
+    ]
+   },
+   "brave": {
+    "t": "七国共鸣",
+    "text": "你以元素共鸣硬撼深渊使徒，让七国神之眼为你齐鸣——提瓦特记住了这个敢站出来的旅行者。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      30
+     ]
+    ]
+   },
+   "wise": {
+    "t": "看破棋局",
+    "text": "你发现深渊教团背后还有更大的执棋者——你没有贸然出手，而是先记下了棋局的走向。",
+    "fx": [
+     [
+      "fate",
+      1
+     ],
+     [
+      "gold",
+      30
+     ]
+    ]
+   },
+   "wild": {
+    "t": "窃取元素",
+    "text": "你强夺七国元素之力，让它们在体内暴走——你是提瓦特最强的不稳定因素，各国都在防着你。",
+    "fx": [
+     [
+      "echo",
+      1
+     ],
+     [
+      "gold",
+      25
+     ]
+    ]
+   }
+  }
  }
 }
 // —— 剧情结构：多结局（善/勇/谋/狂 四倾向）——
@@ -6344,6 +7505,24 @@ function weightedPick(weightArr){
 }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+/* ---------- 内心声音（Echo Voice · 借鉴《极乐迪斯科》思维内阁） ---------- */
+const ECHO_VOICES = [
+  {id:'logic', name:'冷面逻辑', attr:'int', vbonus:4, q:'冷面逻辑',
+   desc:'你脑内有个声音永远在拆解利弊：「别急着感动，先算清代价。」', line:'「冷静点——这一步，赢面在谁那边，一目了然。」'},
+  {id:'fury', name:'热血心火', attr:'str', vbonus:4, trait:'brave', q:'热血心火',
+   desc:'它总在你攥紧拳头时吼出来：「打！怕什么！」', line:'「怕什么，干就完了！」'},
+  {id:'mercy', name:'柔软低语', attr:'cha', vbonus:4, trait:'good', q:'柔软低语',
+   desc:'它见不得任何人受伤：「帮帮他吧，代价我们来担。」', line:'「他需要帮助——别假装没看见。」'},
+  {id:'scheme', name:'棋手低笑', attr:'int', vbonus:3, critN:2, q:'棋手低笑',
+   desc:'它总能看到三步之后：「这一局，还有更好的下法。」', line:'「急什么？棋子还没落完。」'},
+  {id:'instinct', name:'第六感', attr:'per', vbonus:4, critN:2, q:'第六感',
+   desc:'它从不解释，只是提醒：「往左。别问为什么。」', line:'「信我一次，往那边走。」'},
+  {id:'echo', name:'回响之忆', attr:'per', vbonus:2, echoFx:1, q:'回响之忆',
+   desc:'它是轮回留下的记忆碎片：「这些场景，我好像见过。」', line:'「这一幕……上辈子见过。」'}
+];
+function voiceById(id){ if(!id) return null; for(const v of ECHO_VOICES) if(v.id===id) return v; return null; }
+function rollVoice(){ return ECHO_VOICES[Math.floor(Math.random()*ECHO_VOICES.length)].id; }
+
 /* ---------- 全局状态 ---------- */
 const STORE_KEY = 'echo-city-save-v1';
 const S = {
@@ -6352,14 +7531,14 @@ const S = {
   level:1, xp:0, cls:null, skills:[], skillPool:[], equip:{weapon:null,armor:null,trinket:null},
   roster:[], party:[],
   shards:0, _locDone:{},
-  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
+  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null,
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[]})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -6615,6 +7794,7 @@ function applyClass(cid){
   S.equip.weapon = c.weapon; S.equip.armor = c.armor;
   S.gold += 20;
   S.hp = S.maxHp; S.mp = S.maxMp;  // 满状态入世，开局即巅峰
+  if(!S.voice) S.voice = rollVoice();  // 觉醒内心声音
 }
 function renderClassSelect(){
   S.nodeId='class';
@@ -7805,17 +8985,21 @@ function wsChoose(wid, i){
   const step = st.steps[Math.min(idx, st.steps.length-1)];
   const opt = step.opts[i]; if(!opt) return;
   let msg = opt.log || '你做出了选择。';
+  const _voice = voiceById(S.voice);
   // 倾向累积
   const tr = opt.trait || wsTraitOf(opt.tag);
   if(tr){
     if(!S.wsVars) S.wsVars={};
     if(!S.wsVars[wid]) S.wsVars[wid]={good:0,brave:0,wise:0,wild:0,last:''};
     S.wsVars[wid][tr]+=1; S.wsVars[wid].last=tr;
+    if(_voice && _voice.trait===tr){ S.wsVars[wid][tr]+=1; msg += '\n【'+_voice.q+'】推了你一把：'+({good:'善',brave:'勇',wise:'谋',wild:'狂'})[tr]+' 再 +1'; }
     msg += '（剧情倾向：'+({good:'善',brave:'勇',wise:'谋',wild:'狂'})[tr]+' +1）';
   }
   if(opt.check){
-    const s = S.stats[opt.check.stat]||0, dc = opt.check.dc;
+    let s = S.stats[opt.check.stat]||0; let dc = opt.check.dc;
     const roll = Math.floor(Math.random()*100)+1;
+    if(_voice && _voice.attr===opt.check.stat){ s += _voice.vbonus||0; msg += '\n【'+_voice.q+'】'+_voice.line+'（检定加成 +'+(_voice.vbonus||0)+'）'; }
+    if(_voice && _voice.critN) dc = Math.max(1, dc - _voice.critN);
     const pass = (s*2 + roll) >= dc;
     const branch = pass ? opt.check.ok : opt.check.bad;
     if(branch.fx) wsApplyFx(wid, branch.fx);
@@ -7848,6 +9032,8 @@ function finishWorldStory(wid, msg){
   const bonusGold = 15 + (w.diff||1)*10;
   const bonusXp = 15 + (w.diff||1)*8;
   S.gold += bonusGold; gainXp(bonusXp);
+  const _vFin = voiceById(S.voice);
+  if(_vFin && _vFin.echoFx){ S.echoes = (S.echoes||0) + _vFin.echoFx; }
   // 多结局结算：按倾向匹配
   const st = WORLD_STORIES[wid];
   const top = wsTopTrait(wid);
@@ -9064,6 +10250,7 @@ function renderChar(){
       <div class="cb-k">经验值（升级全属性+1，可习得新技能）</div>
       <div class="xp-bar"><div class="xp-fill" style="width:${Math.min(100,S.xp/xpNeed(S.level)*100)}%"></div></div>
     </div>
+    ${S.voice? (function(){const _v=voiceById(S.voice);return `<div class="voice-card"><div style="font-size:12px;color:var(--cyan);letter-spacing:.15em">内心声音 · ${esc(_v.name)}</div><div class="story" style="margin:6px 0 0">${esc(_v.line)}</div><div style="font-size:12px;color:#889;margin-top:4px">${esc(_v.desc)} ｜ 剧情判定与倾向会得到它的助力</div></div>`;})():''}
     <div class="stat-grid">
       ${stats.map(k=>`<div class="stat-cell">${statNames[k]}${eb[k]? ` <span style="color:var(--gold)">+${eb[k]}</span>`:''}<b>${statValue(k)}</b></div>`).join('')}
     </div>`;
