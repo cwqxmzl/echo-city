@@ -679,6 +679,55 @@ step('剧情结构逻辑无运行时错误', () => {
   ok('无运行时错误', errors.length === 0);
 });
 
+
+console.log('== 21. AI 剧情模式（自由输入 · 动态叙事） ==');
+step('AI 模式入口与初始化', () => {
+  G('boot(); newRun(); applyClass("sword"); S.stats.str=80; S.stats.agi=80; S.stats.int=80; S.stats.per=80; S.stats.cha=80; S.stats.con=80;');
+  ok('枢纽 AI 卡片存在', !!d.getElementById('hub-ai'));
+  G('renderHub()');
+  ok('枢纽 AI 卡片可点', !!d.getElementById('hub-ai'));
+  d.getElementById('hub-ai').click();
+  ok('renderAI 已切换视图', G('document.getElementById("view-ai").classList.contains("active")'));
+  ok('AI 日志容器存在', !!d.getElementById('ai-in'));
+});
+step('本地引擎 · 自由输入生成叙事', () => {
+  G('aiStart("sky")');
+  ok('AI 场景已初始化（sky）', G('S.ai.on===true && S.ai.world==="sky"'));
+  ok('开场叙事已生成', G('S.ai.log.length>=1'));
+  const before = G('S.ai.log.length');
+  G('aiSubmitStr("行动：向前探索")');
+  ok('行动输入后新增叙事', G('S.ai.log.length>'+before+''));
+  ok('本地引擎响应非空', G('S.ai.log[S.ai.log.length-1].text.length>5'));
+});
+step('本地引擎 · 多意图响应', () => {
+  const types = ['调查周围','攻击眼前的敌人','和遇到的NPC交谈','搜刮战利品','观察远处','对守卫说：放我进去'];
+  types.forEach(t => {
+    const before = G('S.ai.log.length');
+    G('aiSubmitStr('+JSON.stringify(t)+')');
+    ok('意图回应：'+t, G('S.ai.log.length>'+before+' && S.ai.log[S.ai.log.length-1].text.length>3'));
+  });
+});
+step('AI 记忆 · 偷窃被记住', () => {
+  G('S.ai.mem.stolen=false;');
+  G('aiSubmitStr("偷走商人的货物")');
+  ok('偷窃记忆已记录', G('S.ai.mem.stolen===true'));
+});
+step('AI 场景推进与通关', () => {
+  G('S.ai.stage=2;');
+  G('aiSubmitStr("向前探索")');
+  ok('到达末章后行动可通关', G('(S.aiCleared||[]).indexOf("sky")>=0'));
+  ok('通关获得命运点', G('S.fate>=2'));
+});
+step('AI 场景切换与退出', () => {
+  G('aiStart("genshin")');
+  ok('可切换到提瓦特场景', G('S.ai.world==="genshin"'));
+  G('aiReset()');
+  ok('返回枢纽', G('S.nodeId==="hub"'));
+});
+step('AI 剧情模式无运行时错误', () => {
+  ok('无运行时错误', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
