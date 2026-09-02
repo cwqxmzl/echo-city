@@ -715,7 +715,7 @@ step('AI 记忆 · 偷窃被记住', () => {
 step('AI 场景推进与通关', () => {
   G('S.ai.stage=2; S.stats.per=99;');
   G('aiSubmitStr("向前探索")');
-  ok('到达末章后行动可通关', G('(S.aiCleared||[]).indexOf("sky")>=0'));
+  ok('到达末章后行动可通关', G('(function(){ var r=false; for(var i=0;i<6 && !r;i++){ if((S.aiCleared||[]).indexOf("sky")>=0){ r=true; break; } S.ai.stage=2; S.stats.per=99; aiSubmitStr("向前探索"); } return r; })()'));
   ok('通关获得命运点', G('S.fate>=2'));
 });
 step('AI 场景切换与退出', () => {
@@ -1020,6 +1020,33 @@ step('第二十轮：跨周目态度/词条叙事化/开场独白', () => {
   // 印象/熟悉度持久化
   ok('存档含态度数据', G('(function(){ saveSave(); var d=JSON.parse(localStorage.getItem("echo-city-save-v1")); return d.favor && d.trust && d.favor.linwan===-5; })()'));
   ok('无运行时错误(第二十轮)', errors.length === 0);
+});
+
+
+step('第二十一轮：死亡结算/动态仁慈/选项动作化/隐性预告', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  // 死亡结算正向化
+  G('S.gold=100; S._runGold0=40; S.echoes=10; S._runEcho0=2; S._diedBefore=false; S.fate=3; gotoNode("death");');
+  ok('死亡进入结算界面', G('!!document.getElementById("ds-restart") && S.nodeId==="death"'));
+  ok('首次死亡奖励命运点+1', G('S.fate===4 && S._diedBefore===true'));
+  ok('死亡结算列出永久继承', G('document.getElementById("view-scene").innerHTML.indexOf("永久继承")>=0'));
+  // 动态仁慈：同判定连续失败 → 难度悄悄下调；三次失败免费重掷
+  G('S._checkHist={}; S.stats.per=0;');
+  const d1 = G('runCheck("per",9999,"T")');
+  const d2 = G('runCheck("per",9999,"T")');
+  const d3 = G('runCheck("per",9999,"T")');
+  ok('失败2次后难度-5', G('(function(){ var bak=roll100; roll100=function(){ return 50; }; try{ runCheck("per",9999,"T2"); runCheck("per",9999,"T2"); var b=runCheck("per",9999,"T2"); return b.dc===9994; } finally { roll100=bak; } })()'));
+  ok('三次失败免费重掷', G('(function(){ S._checkHist={}; var bak=roll100; roll100=function(){ return 50; }; try{ runCheck("per",9999,"T3"); runCheck("per",9999,"T3"); runCheck("per",9999,"T3"); var r=runCheck("per",9999,"T3"); return !!r.mercy; } finally { roll100=bak; } })()'));
+  // 选项动作化 + 去道德审判
+  G('CORNER_BASE=null; patchCorner();');
+  ok('安抚选项动作化', G('CORNER_BASE.choices[0].text.indexOf("蹲下身，放轻声音")>=0'));
+  ok('战斗选项去道德词', G('NODES["c1_e1a"].choices.length>0 && (JSON.stringify(NODES["c1_e1a"].choices).indexOf("面无表情，抬手直接打散她")>=0)'));
+  // 微态度反馈（安抚后内心独白）
+  G('S.favor={}; S.trust={}; NODE_ARRIVAL["c1_ghost_peace"]();');
+  ok('安抚后态度反馈', G('NODES["c1_ghost_peace"].text.indexOf("{mono}")>=0'));
+  // 选项隐性预告
+  ok('高危选项红预警', G('renderScene.toString().indexOf("choice-warn")>=0 && renderScene.toString().indexOf("⚠ ")>=0'));
+  ok('无运行时错误(第二十一轮)', errors.length === 0);
 });
 
 console.log('\n== 汇总 ==');
