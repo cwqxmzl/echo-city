@@ -902,6 +902,29 @@ step('体验优化包（新手引导/碎片烙印/轮回纪念·第十六轮）'
   ok('无运行时错误(第十六轮)', errors.length === 0);
 });
 
+
+step('UI交互优化（快捷键/按钮态/过渡/骰子动画/存档提示·第十七轮）', () => {
+  ok('CSS含视图过渡动画', html.indexOf('viewFade')>0);
+  ok('CSS含骰子动画', html.indexOf('dicePop')>0);
+  ok('CSS含存档提示样式', html.indexOf('save-toast')>0);
+  G('boot(); newRun(); applyClass("sword")');
+  ok('存档提示函数', G('typeof showSaveToast==="function"'));
+  G('S._lastSaveToast=0; autoSave();');
+  const st = d.getElementById('save-toast');
+  ok('自动存档提示出现', !!st && (st.textContent||'').indexOf('进度已保存')>=0);
+  // 键盘快捷键：剧情中数字键选中第 1 个选项
+  G('gotoNode("c1_intro")');
+  G('const _fc=document.querySelector("#scene-choices .choice"); window._clickedFlag=false; if(_fc){ _fc.onclick=()=>{window._clickedFlag=true;}; }');
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '1', bubbles: true }));
+  ok('数字键快速选选项', G('window._clickedFlag===true'));
+  // B 键：打开角色/背包面板
+  G('S.nodeId="map"; S.cls="sword"');
+  G('document.getElementById("view-char").classList.remove("active")');
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'b', bubbles: true }));
+  ok('B键打开角色面板', G('document.getElementById("view-char").classList.contains("active")'));
+  ok('无运行时错误(第十七轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
