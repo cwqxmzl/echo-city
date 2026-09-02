@@ -344,6 +344,33 @@ h1.title-name{
 .mate-card.m-lock .m-where{font-size:11px;color:var(--ink-dim);margin-top:6px;line-height:1.5}
 .ally{color:#a7e8df}
 
+/* ===== 箱庭地图 / 区域 ===== */
+.map-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px}
+.loc-card{cursor:pointer;user-select:none;position:relative;border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(255,255,255,.02);text-align:left}
+.loc-card:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.loc-card.locked{opacity:.45;cursor:not-allowed;filter:grayscale(.7)}
+.loc-card.locked:hover{transform:none}
+.loc-card .lc-icon{font-size:24px;margin-bottom:6px}
+.loc-card .lc-name{font-family:var(--serif);font-size:18px;font-weight:800;margin-bottom:4px}
+.loc-card .lc-desc{font-size:11.5px;color:var(--ink-dim);line-height:1.6}
+.loc-card .lc-lock{font-size:11.5px;color:var(--gold);margin-top:8px}
+.loc-card .lc-done{position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:11px;color:#7fe0d0}
+.loc-card .lc-spots{font-size:11px;color:var(--cyan);margin-top:8px}
+.shard-bar{display:flex;align-items:center;gap:8px;margin:10px 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(167,232,223,.05)}
+.shard-bar .sb-label{font-size:12px;color:var(--ink-dim)}
+.shard-bar .sb-dots{display:flex;gap:6px}
+.shard-bar .sb-dot{width:14px;height:14px;border-radius:50%;border:1px solid var(--line);background:#141c36}
+.shard-bar .sb-dot.on{background:linear-gradient(135deg,#b78df0,#ffd98a);border-color:var(--gold);box-shadow:0 0 8px rgba(255,217,138,.5)}
+.spot-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.spot-item{cursor:pointer;user-select:none;display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:rgba(255,255,255,.02);text-align:left}
+.spot-item:hover{border-color:var(--cyan);transform:translateX(3px)}
+.spot-item.done{opacity:.55;pointer-events:none;filter:grayscale(.6)}
+.spot-item .sp-ic{font-size:18px}
+.spot-item .sp-main{flex:1}
+.spot-item .sp-name{font-size:13.5px;font-weight:700;color:#e8f0ff}
+.spot-item .sp-desc{font-size:11px;color:var(--ink-dim);line-height:1.5}
+.spot-item .sp-tag{font-size:10px;color:var(--gold);letter-spacing:.08em;flex-shrink:0}
+
 @media (max-width:600px){
   h1.title-name{font-size:40px}
   .panel{padding:16px}
@@ -366,6 +393,7 @@ h1.title-name{
     <div class="hud-block"><span>轮回</span><b id="hud-run">1</b></div>
     <div class="hud-block"><span>章节</span><b id="hud-chap">--</b></div>
     <div class="hud-right">
+      <span class="chip" id="btn-map" style="cursor:pointer" title="开放地图 · 箱庭区域">🗺 地图</span>
       <span class="chip" id="btn-inv" style="cursor:pointer" title="角色 / 背包 / 技能">◫ 角色</span>
       <span class="chip" id="hud-fate" title="命运点：可重掷骰子">◆ 0</span>
       <span class="chip gold" id="hud-echo" title="回响碎片：轮回间保留的永久货币">◈ 0</span>
@@ -380,6 +408,8 @@ h1.title-name{
     <div class="view" id="view-combat"></div>
     <div class="view" id="view-operation"></div>
     <div class="view" id="view-worlds"></div>
+    <div class="view" id="view-map"></div>
+    <div class="view" id="view-loc"></div>
     <div class="view" id="view-char"></div>
     <div class="view" id="view-death"></div>
     <div class="view" id="view-ending"></div>
@@ -696,6 +726,49 @@ const TEAMMATES = [
    onStart:()=>{ CB.buff.rage=2; S.flag._allyMit=0.1; combatLog('无名缓缓睁眼——【终局注视】降临，你进入狂暴状态！','ally'); }}
 ];
 
+/* ---------- 箱庭区域（开放地图） ---------- */
+const LOCATIONS = [
+  {id:'street', icon:'🏘', name:'旧日街区',
+   desc:'锈红天空下的旧城区。三条死巷、废弃游戏厅、灰袍商人的摊子——每个角落都藏着回响与支线。',
+   unlock:0, lockTxt:'轮回之始 · 自动开放',
+   spots:[
+    {ic:'🌅', name:'街区入口 · 醒来', node:'c1_intro', desc:'这一周目的起点，先摸清形势'},
+    {ic:'👻', name:'街角的回响', node:'c1_e1a', desc:'半透明的身影，想递给你一枚钥匙'},
+    {ic:'🕹', name:'废弃游戏厅', node:'c1_e1b', desc:'老虎机的赌局，与一台知道轮回次数的机器'},
+    {ic:'🧙', name:'灰袍商人的摊子', node:'c1_e1c', desc:'收记忆，卖真相（线索 → 真相碎片）'},
+    {ic:'🌫', name:'雾中小巷', node:'c1_probe2', desc:'呼救声与暗处的杀机'},
+    {ic:'⚔️', name:'街区巡逻 · 腐化者', repeat:'fiend', desc:'游荡的数据腐化者，可反复挑战刷金币经验'},
+    {ic:'🎁', name:'街区补给箱', repeat:'loot', key:'loot_street', desc:'运气好能开出药剂或金币', once:true},
+    {ic:'🏰', name:'中城区高塔边界', node:'c1_route_tower', desc:'越过边界，解锁「中枢塔」'}
+   ]},
+  {id:'tower', icon:'🏢', name:'中枢塔',
+   desc:'被数据缆线缠绕的钢铁巨塔。阵营抉择、第七号档案室的真相、塔顶的老猫——都在这里。',
+   unlock:'tower', lockTxt:'需先探索旧日街区，越过中城区边界',
+   spots:[
+    {ic:'🏢', name:'塔内大厅', node:'c2_intro', desc:'两大阵营的橄榄枝'},
+    {ic:'🚪', name:'数据洪流闸门', node:'c2_gate', desc:'归档者·K 的关卡'},
+    {ic:'⚖️', name:'立场之选', node:'c2_faction', desc:'守望者 / 黑塔帮 / 独行'},
+    {ic:'🗄', name:'第七号档案室', node:'c2_file', desc:'真相与旧城钥匙（需旧城钥匙）', need:'old_key', needTxt:'需旧城钥匙'},
+    {ic:'🛡', name:'塔顶 · 老猫', node:'c2_top', desc:'系统维护员被锁在塔顶（GM钥匙 / 队友）'},
+    {ic:'⚔️', name:'塔内巡卫', repeat:'warder', desc:'守望者巡卫，可反复挑战'},
+    {ic:'🎁', name:'塔内补给箱', repeat:'loot', key:'loot_tower', desc:'物资补给', once:true}
+   ]},
+  {id:'abyss', icon:'🌀', name:'回响深渊',
+   desc:'城市的最深处，回响之核的所在。真相在此，结局在此。',
+   unlock:'shards', unlockN:3, lockTxt:'需集齐 3 个真相碎片',
+   spots:[
+    {ic:'🌀', name:'深渊入口', node:'c3_intro', desc:'最终的真相与决战（4 结局）'},
+    {ic:'🎁', name:'深渊祭坛', repeat:'loot', key:'loot_abyss', desc:'深渊边缘的遗物补给', once:true}
+   ]}
+];
+const locById = id => LOCATIONS.find(l=>l.id===id);
+function locUnlocked(l){
+  if(l.unlock===0) return true;
+  if(l.unlock==='tower') return !!S.flag.tower_visited;
+  if(l.unlock==='shards') return S.shards >= (l.unlockN||3);
+  return false;
+}
+
 /* ---------- 结局 ---------- */
 const ENDINGS = {
   wake:{title:'清醒者之梦',cls:'good',sub:'END A · 好结局',
@@ -898,7 +971,8 @@ choices:[
 N({id:'c1_route_tower',chap:'第一章 · 旧日街区',title:'中城区 · 高塔',tagline:'第一章 终',
 text:'旧日街区在你身后渐渐隐入雾中。\n\n前方，中城区的高塔直插天际——那是一座被无数“数据缆线”缠绕的巨塔，像一棵倒生的钢铁树。\n\n你踏过旧城与中城的边界线。\n\n系统提示音响起：\n\n“已进入【中枢塔】区域。\n注意：前方存在阵营势力。\n请谨慎选择你的立场。”\n\n你深吸一口气。第二章，开始了。',
 choices:[
-  {text:'进入中枢塔',tag:'前进',kind:'next',goto:'c2_intro'}
+  {text:'越过边界，进入中枢塔',tag:'前进',desc:'解锁「中枢塔」区域',kind:'effect',apply:(s)=>{s.flag.tower_visited=true;},goto:'c2_intro'},
+  {text:'先回地图，再作打算',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 
 /* ===== 第二章 · 中枢塔 ===== */
@@ -967,19 +1041,22 @@ choices:[
 N({id:'c2_faction_watcher',chap:'第二章 · 中枢塔',title:'守望者',tagline:'阵营 · 守望者联盟',
 text:'“欢迎加入守望者。”一位银发女官向你伸出手，“我是‘执律官·歌’。记住守则：稳定高于一切，异常必须清除。”\n\n她递给你一枚【守望者徽记】，压低声音：“如果你真想活着离开这座城，就好好表现——我总感觉，这次的轮回异常，比以往任何一次都要剧烈。”\n\n【获得：守望者徽记 · 金币+15】\n\n你抬头，看见高塔深处，那道贯穿全城的数据光柱，正缓缓变色。',
 choices:[
-  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'}
+  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 N({id:'c2_faction_black',chap:'第二章 · 中枢塔',title:'黑塔帮',tagline:'阵营 · 黑塔帮',
 text:'“哟，新面孔。”地库阴影里，一个叼着数据烟的男人懒洋洋地开口，“黑塔帮收人，不问来历，只问胆子。敢碰禁区数据吗？”\n\n他扔给你一袋金币和一枚【黑塔帮纹章】：“拿好。我们只认利益——但你若能搞到回响之核的底层数据，价钱好商量。”\n\n【获得：黑塔帮纹章 · 金币+20】\n\n他压低声音补充了一句：“干完这一票，我带你去看真正的‘后门’——不是我说的那个‘后门’。”\n\n“顺便——守望者那群疯子，正在满城追杀‘乱码’。你最好小心点。”',
 choices:[
   {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
-  {text:'打听黑塔帮的“外快”',tag:'支线',desc:'跨世界搜打撤任务，能赚装备和技能',kind:'next',goto:'c2_ops_offer'}
+  {text:'打听黑塔帮的“外快”',tag:'支线',desc:'跨世界搜打撤任务，能赚装备和技能',kind:'next',goto:'c2_ops_offer'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 N({id:'c2_faction_none',chap:'第二章 · 中枢塔',title:'独行者',tagline:'阵营 · 中立',
 text:'你没有加入任何一方。\n\n“聪明。”角落里传来一个苍老的声音——灰袍商人居然也在塔里，“中立者最自由，也最危险。两边都当你是变数，随时可能动手。”\n\n他抛给你一件东西：“【回响水晶】的姊妹篇——【真相透镜】。拿着，第三章会用得上。”\n\n【获得：真相透镜】\n\n他笑了笑：“独行的人，往往看得最清楚。祝你好运，变数先生。”',
 choices:[
   {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
-  {text:'找灰袍打听有没有“私活”',tag:'支线',desc:'灰袍能牵线跨世界搜打撤任务',kind:'next',goto:'c2_ops_offer'}
+  {text:'找灰袍打听有没有“私活”',tag:'支线',desc:'灰袍能牵线跨世界搜打撤任务',kind:'next',goto:'c2_ops_offer'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 
 N({id:'c2_ops_offer',chap:'第二章 · 中枢塔',title:'黑塔帮的委托',tagline:'支线 · 跨世界搜打撤',
@@ -1029,12 +1106,14 @@ choices:[
 N({id:'c2_save_gm',chap:'第二章 · 中枢塔',title:'老猫',tagline:'NPC · 老猫（GM）',
 text:'老猫揉了揉手腕，神色复杂地看向你：\n\n“轮回异常……其实是我设计的。”\n\n你瞳孔一缩。\n\n“别急着动手。”他抬手，“当时服务器事故，你的意识差点被数据洪流搅碎。我用最后的权限开了‘轮回保护’，让城市反复重置，给你争取清醒的时间。”\n\n“这段保护代码，我当年只写了三行注释：别改。别动。改了别找我。”他自嘲地笑了笑，“结果它自己进化成了这样。”\n\n“但我没想到——城市自己进化出了意识。它现在……不想让你走了。”\n\n他看向远处那道数据光柱：“回响之核，就是城市的‘心脏’。想结束这一切，要么关闭它，要么……取代它。”\n\n【NPC：老猫已结缘 · 持有GM权限钥匙】',
 choices:[
-  {text:'“告诉我，该怎么选择。”',tag:'对话',kind:'next',goto:'c2_final_hint'}
+  {text:'“告诉我，该怎么选择。”',tag:'对话',kind:'next',goto:'c2_final_hint'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 N({id:'c2_save_gm_force',chap:'第二章 · 中枢塔',title:'强行破锁',tagline:'NPC · 老猫（GM）',
 text:'锁链对你来说很难缠，但硬碰硬也并非不行。你以蛮力/手段强行解开了束缚。\n\n老猫揉了揉手腕，神情复杂：“你这人……挺能折腾的。也罢，命该如此。”\n\n他递给你一把钥匙：“【GM权限钥匙】。拿着，算我欠你的。”\n\n【获得：GM权限钥匙】\n\n“去回响深渊吧。”他指向深不见底的地底，“这座城的真相，和它的心脏，都在那里。”',
 choices:[
-  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 N({id:'c2_terminal_first',chap:'第二章 · 中枢塔',title:'逃生终端',tagline:'抉择 · 逃生',
 text:'你的手按上逃生终端。\n\n绿灯亮起，屏幕上弹出选项：\n\n“确认退出游戏？\n警告：退出后，此周目进度将清零，且轮回保护将失效。”\n\n你的手指悬在“确认”上方。\n\n身后，老猫的声音急切响起：“等等！你现在出去——你的意识还不稳定，可能会被撕碎！”\n\n你犹豫了。',
@@ -1046,17 +1125,20 @@ choices:[
 N({id:'c2_terminal_confirm',chap:'第二章 · 中枢塔',title:'退出失败',tagline:'抉择 · 逃生',
 text:'你按下了“确认”。\n\n终端机剧烈震动——\n\n然后，屏幕上跳出一行猩红大字：\n\n“错误：出口已被锁定。”\n\n“本服务器管理员【回响之核】已开启‘禁止离开’权限。”\n\n“你无法通过正常途径离开这座城市。”\n\n终端机屏幕暗下去，彻底失去响应。\n\n（屏幕熄灭前弹出一个小气泡：“温馨提示：想离开请找人工客服。人工客服在线时间：本城没有。”）\n\n老猫叹了口气：“果然……它已经锁死了所有出口。现在，你只能往下走了。”\n\n【真相：出口已被回响之核封锁】',
 choices:[
-  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 N({id:'c2_watch',chap:'第二章 · 中枢塔',title:'识破',tagline:'抉择 · 洞察',
 text:'你的冷静为你赢得了老猫的信任。\n\n他揉了揉手腕：“轮回异常是我设计的保护程序，但城市进化出了自我意识——它现在不想让你走了。”\n\n他看向那道数据光柱：“回响之核，是城市的‘心脏’。想结束这一切，要么关闭它，要么取代它。”\n\n【NPC：老猫已结缘 · 持有GM权限钥匙】\n\n“去回响深渊吧。”他说，“答案在那里。”',
 choices:[
-  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 N({id:'c2_final_hint',chap:'第二章 · 中枢塔',title:'老猫的忠告',tagline:'NPC · 老猫（GM）',
 text:'老猫想了想，认真地看着你：\n\n“回响之核，本质是一个被无数轮回记忆污染的核心程序。它已经分不清‘保护你’和‘囚禁你’的区别。”\n\n“到了最深处，它会问你一个问题。你回答的方式，决定了这座城的结局。”\n\n他顿了顿：“记住——它怕的，是‘真相’。是有人告诉它：你不需要再保护我了，我很好，放我走。”\n\n你默默记下。\n\n【关键情报：回响之核的弱点已获知】',
 choices:[
-  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'},
+  {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 
 /* ===== 第三章 · 回响深渊 ===== */
@@ -1180,6 +1262,7 @@ const S = {
   hp:0, maxHp:0, mp:0, maxMp:0, gold:0, fate:0, items:[], talents:[],
   level:1, xp:0, cls:null, skills:[], skillPool:[], equip:{weapon:null,armor:null,trinket:null},
   roster:[], party:[],
+  shards:0, _locDone:{},
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
   flag:{}, nodeId:null, worldsCleared:[]
 };
@@ -1313,6 +1396,7 @@ function newRun(){
   S.equip = {weapon:null,armor:null,trinket:null};
   S.worldsCleared = [];
   S.roster = []; S.party = [];
+  S.shards = 0; S._locDone = {};
   S.maxHp = 20 + S.stats.con*2;
   S.maxMp = 30 + S.stats.int*2;
   S.hp = S.maxHp; S.mp = S.maxMp;
@@ -1366,7 +1450,7 @@ function renderClassSelect(){
       setTimeout(()=>{
         applyClass(c.id);
         updateHUD();
-        gotoNode('c1_intro');
+        renderMap();
       }, 450);
     };
     box.appendChild(card);
@@ -1480,7 +1564,7 @@ function updateHUD(){
   $('hud-lv').textContent = S.level + (S.cls? ' · '+classById(S.cls).name : '');
   $('hud-run').textContent = S.run;
   const nn = S.nodeId && NODES[S.nodeId];
-  $('hud-chap').textContent = nn ? nn.chap : (S.nodeId==='combat'?'战斗':(S.nodeId==='operation'?'搜打撤':(S.nodeId==='worlds'?'任务板':(S.nodeId==='char'?'角色':(S.nodeId==='class'?'入世':'—')))));
+  $('hud-chap').textContent = nn ? nn.chap : (S.nodeId==='combat'?'战斗':(S.nodeId==='operation'?'搜打撤':(S.nodeId==='worlds'?'任务板':(S.nodeId==='char'?'角色':(S.nodeId==='map'?'箱庭地图':(S.nodeId==='loc'?(locById(S._location)||{}).name:'—'))))));
   $('hud-fate').textContent = '◆ '+S.fate;
   $('hud-echo').textContent = '◈ '+S.echoes;
   $('hud-gold').textContent = '◎ '+S.gold;
@@ -1488,6 +1572,11 @@ function updateHUD(){
   invBtn.onclick = ()=>{
     if(S.nodeId==='char'){ closeChar(); return; }
     if(S.nodeId && S.nodeId!=='title') renderChar();
+  };
+  const mapBtn=$('btn-map');
+  mapBtn.onclick = ()=>{
+    if(S.nodeId==='map'){ return; }
+    if(S.nodeId && S.nodeId!=='title') renderMap();
   };
 }
 
@@ -1522,6 +1611,8 @@ function diceLog(res){
 
 /* ---------- 节点渲染 ---------- */
 function gotoNode(id){
+  if(id==='__map__'){ renderMap(); return; }
+  if(id==='__loc__'){ const l=locById(S._locReturn||S._location); if(l){ renderLocation(l); return; } renderMap(); return; }
   const n = NODES[id];
   if(!n){ renderTitle(); return; }
   // 节点到达钩子
@@ -1537,7 +1628,10 @@ const NODE_ARRIVAL = {
   'c2_faction_none': ()=>{ S.flag.mystery_key=true; },
   'c2_save_gm': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
   'c2_save_gm_force': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
-  'c2_watch': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); }
+  'c2_watch': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
+  'c1_merchant_friend': ()=>{ if(S.shards<3) S.shards++; },
+  'c2_log_read': ()=>{ if(S.shards<3) S.shards++; },
+  'c2_final_hint': ()=>{ if(S.shards<3) S.shards++; }
 };
 
 function renderScene(n){
@@ -2128,7 +2222,140 @@ function opWithdraw(){
   }, 700);
 }
 
-/* ---------- 角色 / 背包 / 技能配置 ---------- */
+/* ---------- 箱庭地图 / 区域探索 ---------- */
+function spotDone(l, s){
+  if(!s.once || !s.key) return false;
+  return !!(S._locDone[l.id] && S._locDone[l.id].includes(s.key));
+}
+function spotLocked(l, s){
+  if(s.need==='old_key' && !S.flag.old_key) return true;
+  return false;
+}
+function renderMap(){
+  if(S.nodeId!=='loc' && S.nodeId!=='map' && S.nodeId!=='class') S._returnNode = S.nodeId;
+  S.nodeId='map';
+  updateHUD();
+  const v=$('view-map');
+  let html = `<div class="panel">
+    <div class="scene-chap">回响之城 · 箱庭地图 · 第 ${S.run} 周目</div>
+    <div class="scene-title">箱庭地图</div>
+    <div class="scene-tagline">这座城由几个「箱庭区域」拼成——想逛哪逛哪，支线、战斗、补给随意。真相碎片集齐，通往终局。</div>
+    <div class="shard-bar">
+      <span class="sb-label">真相碎片</span>
+      <div class="sb-dots">${[0,1,2].map(i=>`<div class="sb-dot ${i<S.shards?'on':''}"></div>`).join('')}</div>
+      <span class="sb-label" style="flex:1;text-align:right">${S.shards}/3 解锁「回响深渊」</span>
+    </div>
+    <div class="map-grid">`;
+  LOCATIONS.forEach(l=>{
+    const un = locUnlocked(l);
+    html += `<div class="loc-card ${un?'':'locked'}" data-loc="${l.id}">
+      <div class="lc-icon">${l.icon}</div>
+      <div class="lc-name">${esc(l.name)}</div>
+      <div class="lc-desc">${esc(l.desc)}</div>
+      ${un? `<div class="lc-spots">探索点 ×${l.spots.filter(s=>!spotLocked(l,s)).length} ｜ ${S._locDone[l.id]? Object.keys(S._locDone[l.id]).length:0} 已探索</div>` : `<div class="lc-lock">🔒 ${esc(l.lockTxt)}</div>`}
+    </div>`;
+  });
+  html += `</div>
+    <div class="choices">
+      <div class="choice" id="map-char"><span class="c-tag">【角色】</span>打开角色 / 背包 / 队伍 / 技能</div>
+      <div class="choice" id="map-ops"><span class="c-tag">【任务】</span>黑塔帮 · 跨世界搜打撤任务板</div>
+      <div class="choice" id="map-back"><span class="c-tag">【返回】</span>回到之前的地方</div>
+    </div></div>`;
+  v.innerHTML = html;
+  showView('map');
+  document.querySelectorAll('.loc-card').forEach(cd=>{
+    cd.onclick=()=>{
+      const l=locById(cd.dataset.loc);
+      if(!l || !locUnlocked(l)) return;
+      enterLocation(l.id);
+    };
+  });
+  $('map-char').onclick=()=>{ renderChar(); };
+  $('map-ops').onclick=()=>{ renderWorlds(); };
+  $('map-back').onclick=()=>{
+    const back = S._returnNode;
+    if(back==='loc'){ const l=locById(S._location); if(l){ renderLocation(l); return; } }
+    if(NODES[back]) gotoNode(back);
+    else renderTitle();
+  };
+  $('view').scrollTop=0; window.scrollTo({top:0});
+}
+function enterLocation(locId){
+  const l = locById(locId); if(!l) return;
+  S._location = locId;
+  renderLocation(l);
+}
+function renderLocation(l){
+  S._returnNode = S.nodeId;
+  S.nodeId='loc';
+  updateHUD();
+  const v=$('view-loc');
+  let html = `<div class="panel">
+    <div class="scene-chap">箱庭区域 · 第 ${S.run} 周目</div>
+    <div class="scene-title">${l.icon} ${esc(l.name)}</div>
+    <div class="scene-tagline">${esc(l.desc)}</div>
+    <div class="spot-list">`;
+  l.spots.forEach(s=>{
+    const done = spotDone(l,s);
+    const locked = spotLocked(l,s);
+    html += `<div class="spot-item ${done?'done':''}" data-spot="${s.key||s.node||s.repeat}">
+      <div class="sp-ic">${s.ic}</div>
+      <div class="sp-main">
+        <div class="sp-name">${esc(s.name)}</div>
+        <div class="sp-desc">${done? '· 已探索 ·' : esc(s.desc)}</div>
+      </div>
+      ${locked? `<span class="sp-tag">🔒 ${esc(s.needTxt||'')}</span>` : (done? '<span class="sp-tag">✓</span>' : (s.once? '<span class="sp-tag">一次性</span>' : (s.repeat? '<span class="sp-tag">可反复</span>' : '<span class="sp-tag">探索</span>')))}
+    </div>`;
+  });
+  html += `</div>
+    <div class="choices">
+      <div class="choice" id="loc-back"><span class="c-tag">【地图】</span>返回箱庭地图</div>
+    </div></div>`;
+  v.innerHTML = html;
+  showView('loc');
+  document.querySelectorAll('#view-loc .spot-item').forEach(el=>{
+    el.onclick=()=>{
+      const key = el.dataset.spot;
+      const s = l.spots.find(x=>(x.key||x.node||x.repeat)===key);
+      if(!s || spotDone(l,s) || spotLocked(l,s)) return;
+      activateSpot(l,s);
+    };
+  });
+  $('loc-back').onclick=()=>{ renderMap(); };
+  $('view').scrollTop=0; window.scrollTo({top:0});
+}
+function activateSpot(l, s){
+  if(s.node){ gotoNode(s.node); return; }
+  if(s.repeat==='loot'){ openLoot(l, s); return; }
+  if(s.repeat && ENEMIES[s.repeat]){
+    S._locReturn = l.id;
+    startCombat(s.repeat, '__loc__', 'death', {opMode:false});
+    return;
+  }
+}
+function openLoot(l, s){
+  const key = s.key || 'loot';
+  if(!S._locDone) S._locDone={};
+  if(!S._locDone[l.id]) S._locDone[l.id]=[];
+  S._locDone[l.id].push(key);
+  const roll = rand(100);
+  const got=[];
+  if(roll<35){ S.items.push('potion'); got.push('回响药剂'); }
+  else if(roll<55){ S.items.push('mpotion'); got.push('灵气药剂'); }
+  else if(roll<80){ S.gold += 15+rand(16); got.push('金币 ×'+(15+rand(16))); }
+  else { const p=['coin','memcard','coin'][rand(3)]; S.items.push(p); got.push({coin:'命运币',memcard:'记忆卡'}[p]); }
+  updateHUD();
+  const v=$('view-scene');
+  v.innerHTML = `<div class="panel">
+    <div class="scene-chap">箱庭 · ${esc(l.name)}</div>
+    <div class="scene-title">🎁 补给箱</div>
+    <div class="story">你撬开了这只补给箱——\n\n【获得】${got.join('、')}\n\n（箱底刻着一行小字：“已经没有更多好东西了。别贪心，去别处看看吧。”）</div>
+    <div class="choices"><div class="choice" id="loot-back"><span class="c-tag">【返回】</span>回到「${esc(l.name)}」</div></div></div>`;
+  showView('scene');
+  $('loot-back').onclick=()=>{ renderLocation(locById(l.id)); };
+}
+
+
 function renderChar(){
   S._returnNode = S.nodeId;
   S.nodeId='char';
@@ -2255,6 +2482,8 @@ function closeChar(){
   else if(back==='operation' && OP) renderOperation();
   else if(back==='worlds') renderWorlds();
   else if(back==='class') renderClassSelect();
+  else if(back==='map') renderMap();
+  else if(back==='loc') { const l=locById(S._location); if(l) renderLocation(l); else renderMap(); }
   else if(NODES[back]) gotoNode(back);
   else gotoNode('c1_intro');
 }
