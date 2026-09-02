@@ -608,7 +608,11 @@ const TALENTS = [
   {id:'iron',grade:'A',type:'防御型',name:'铁壁之躯',
    desc:'肉身如铁，不动如山。受到的所有伤害 -30%。',
    flavor:'刀枪剑戟，于我如挠痒。',
-   mod:{mit:0.30}}
+   mod:{mit:0.30}},
+  {id:'eternal',grade:'SSS',type:'防御型',name:'永恒防御',
+   desc:'自身所掌握的一切防御技能，品质自动晋升为金色——钢铁之躯（受击-50%）、反甲（受击反弹）、狂徒（每回合回复 8% 生命）、无敌（致命伤害 40% 免疫）。',
+   flavor:'“防御，就是最好的进攻。”',
+   mod:{mit:0.50}}
 ];
 
 /* ---------- 职业（角色系统） ---------- */
@@ -876,7 +880,7 @@ const WORLDS = [
    reward:{type:'skill',id:'pale',name:'苍白之爪'},
    base:36,
    intro:'你沿着地底灯柱一路向下，圣巢在黑暗中延展。一只白色面具的小骑士雕像，正对着虚空凝望。',
-   special:'特色玩法：暗影潜行（暗处无警觉累积）· 苍白之爪'},
+   special:'特色玩法：魂与回魂（深渊中死亡，四成金币化作魂坠落；成功撤离魂归原位）· 苍白之爪'},
   {id:'elden', name:'交界之地', style:'魂系史诗', diff:3, unlock:8,
    desc:'黄金树的光辉洒满尸骸遍野的大地。褪色者们的口号是：死了再试，试了再死。',
    enemy:'w_elden',
@@ -896,7 +900,7 @@ const WORLDS = [
    reward:{type:'skill',id:'catch',name:'收服之心'},
    base:34,
    intro:'草丛里蹦出一只圆滚滚的精灵，对你投来好奇的目光。对战场边传来欢呼：“就决定是你了！”',
-   special:'特色玩法：精灵收服（随机收服战斗帮手）· 收服之心'},
+   special:'特色玩法：御兽收服（探索中掷骰收服灵兽，战斗开场助战雷光爪）· 收服之心'},
   {id:'sekiro', name:'苇名国', style:'忍义之地', diff:2, unlock:8,
    desc:'樱花与残月下的战国乱世，忍者剑客的忠义传说。苇名流：只问剑，不问命。',
    enemy:'w_sekiro',
@@ -906,7 +910,7 @@ const WORLDS = [
    reward:{type:'equip',id:'kusanagi',name:'苇名村正'},
    base:38,
    intro:'残月下的苇名国，樱花飘落如雪。你在屋顶间飞掠，忍者的影子与你不相上下。',
-   special:'特色玩法：忍义潜行（偷袭先手）· 苇名村正'},
+   special:'特色玩法：忍义潜杀（35% 概率阴影割喉秒杀守卫，免战拿战利品）· 苇名村正'},
   {id:'hades', name:'冥界试炼', style:'冥界逃生', diff:3, unlock:10,
    desc:'冥王的地府迷宫，逃生者的传说代代流传。死亡不是终点——回响会把你送回去重来。',
    enemy:'w_hades',
@@ -949,7 +953,7 @@ const WORLDS = [
    reward:{type:'skill',id:'tarot',name:'塔罗占卜'},
    base:40,
    intro:'你沿着鹅卵石街道深入雾都，猫头鹰在路灯上盯视。那家占卜店的招牌，在雾气里若隐若现。',
-   special:'特色玩法：诡秘事件（理智与奖励的博弈）· 塔罗占卜'},
+   special:'特色玩法：理智·灵视（每搜一处掉 4 理智，理智跌破 70 灵视开启——宝物更近，疯狂更近）· 塔罗占卜'},
   {id:'honghuang', name:'洪荒古界', style:'洪荒史诗', diff:3, unlock:12,
    desc:'开天辟地之初，巫妖争霸、圣人大战、灵宝漫天。这里的土著，拿山岳当玩具。',
    enemy:'w_honghuang',
@@ -2784,6 +2788,12 @@ function startCombat(enemyId, winNode, loseNode, opts){
   S.nodeId = 'combat';
   updateHUD();
   applyAllyPassives();
+  if(CB.opMode && OP && OP.world && OP.world.id==='pet' && OP._pet){
+    const pd = 8 + OP.world.diff*4;
+    CB.hp = Math.max(1, CB.hp - pd);
+    CB.tough = Math.max(0, CB.tough - Math.round(pd/2));
+    combatLog(`🐾 灵兽·雷光幼犬抢先扑出，一记雷光爪撕在守卫身上——伤害 ${pd}，韧性 -${Math.round(pd/2)}。`);
+  }
   renderCombat();
   /* 机制：敌人 spd 参与先手判定——spd 越高越可能抢先进攻
      搜打撤模式走它自己的「被伏击先手」逻辑，不重复判定 */
@@ -3035,16 +3045,22 @@ function combatEnemyTurn(){
     if(hasTagFx('omni')) dmg = Math.round(dmg*0.95);
     if(S.talents.includes('iron')) dmg = Math.round(dmg*0.7);
     if(S.items.includes('artifacts')) dmg = Math.round(dmg*0.95);   // 「圣遗物」：神遗圣物庇护
+    if(S.talents.includes('eternal')) dmg = Math.round(dmg*0.5);     // 「永恒防御 · 钢铁之躯·金」：受击 -50%
     dmg = Math.max(1, dmg);
     S.hp -= dmg;
     gainEcho(8); gainBp(1); updateHUD();
     combatLog(`你受到 <b>${dmg}</b> 点伤害！（生命 ${Math.max(0,S.hp)}/${S.maxHp}）`, 'en');
+    if(S.talents.includes('eternal')){ const rb = Math.max(1, Math.round(e.atk*0.3)); CB.hp -= rb; combatLog(`【反甲·金】「永恒防御」把 ${e.name} 的攻击原样弹了回去——反弹 ${rb} 点伤害！`, 'crit'); if(CB.hp<=0){ combatVictory(); return; } }
     // 老爷爷护体
     if(S.hp<=0 && S.talents.includes('grandpa') && CB.fatalGuard){
       CB.fatalGuard=false;
       S.hp = 1;
       updateHUD();
       combatLog(`——关键时刻，一道苍老的声音在灵魂深处响起：「小子，把这条命，交给老夫！」\n老爷爷替你挡下了致命一击！（生命 1/${S.maxHp}）`, 'crit');
+    }
+    if(S.hp<=0 && S.talents.includes('eternal') && !CB._eternalInv && rand(100)<40){
+      CB._eternalInv=true; S.hp = 1; updateHUD();
+      combatLog(`——「永恒防御 · 无敌·金」：金色的光罩在你身上一闪，致命一击被 100% 挡下！（生命 1/${S.maxHp}）`, 'crit');
     }
     if(S.hp<=0){ renderDeath(); return; }
   } else {
@@ -3059,6 +3075,7 @@ function endEnemyTurn(){
   if(CB.buff.atkup>0) CB.buff.atkup--;
   if(CB.buff.rage>0) CB.buff.rage--;
   CB.buff.haste=false;
+  if(S.talents.includes('eternal')){ const h=Math.max(1,Math.round(S.maxHp*0.08)); S.hp=Math.min(S.maxHp,S.hp+h); updateHUD(); combatLog(`【狂徒·金】「永恒防御」自动修复战损，生命 +${h}。`,'ok'); }
   CB.team.forEach(t=>{ if(t.kind==='ally'&&!t.down) teamEn(t.id, 8); }); // 星铁式：每轮回能
   allyPerTurn();
   renderCombat();
@@ -3497,7 +3514,7 @@ function startOperation(worldId){
   log.push(w.search);
   OP = {
     phase:'explore', steps:0, hot:0, found:0, collected:[], tags:[], world:w,
-    limit: limit,
+    limit: limit, _san:100,
     log: log
   };
   if(hasBooster('word') && !OP.tags.includes('词条·丰收')) OP.tags.push('词条·丰收');
@@ -3582,16 +3599,38 @@ function opExplore(){
   const tagInsight = OP.tags.includes('词条·洞察');
   // 随机结果：随警觉度（搜索次数）调整，搜得越深，遭遇与损失概率越高；「词条·警觉」可压制风险
   const r = rand(100);
+  if(w.id==='guimi'){ OP._san = Math.max(0, OP._san - 4); if(OP._san<70 && !OP._loSanWarn){ OP._loSanWarn=true; OP.log.push('【诡秘之都】理智跌破 70——你开始“看见”雾里那些不该存在的东西。灵视开启：宝物更近，疯狂也更近。'); } }   // 「诡秘·灵视」
   const encRate = tagCalm ? Math.floor((24 + OP.hot*2)/2) : (24 + OP.hot*2);   // 遭遇战：24%→46%
   const trapRate = tagCalm ? Math.floor((6 + OP.hot)/2) : (6 + OP.hot);         // 损失陷阱：6%→16%
-  if(r < encRate){ opExploreFight(); return; }
+  const loSan = w.id==='guimi' && OP._san<70;
+  if(r < encRate + (loSan?15:0)){
+    if(w.id==='sekiro' && rand(100)<35){
+      // 【苇名国 · 忍义潜杀】：阴影中一击毙命，不触发战斗
+      const g = 10 + w.diff*4; S.gold += g; updateHUD();
+      OP.log.push(`【忍义潜杀】你自阴影中现身，割喉而回——「${w.name}」的守卫甚至没来得及反应。战利品 +${g} 金币。`);
+      renderOperation();
+    } else { opExploreFight(); }
+    return;
+  }
   if(r < encRate + trapRate){ opExploreTrap(); return; }
   opExploreLoot(tagInsight);
 }
 function opExploreLoot(tagInsight){
   const w = OP.world;
-  const r = tagInsight ? rand(70) : rand(100);  // 「词条·洞察」把收获区扩大
+  const loSan = w.id==='guimi' && OP._san!==undefined && OP._san<70;
+  const r = tagInsight ? rand(70) : (loSan ? rand(85) : rand(100));  // 「词条·洞察」/诡秘「灵视」把收获区扩大
   let line='';
+  if(w.id==='pet' && rand(100)<30){
+    // 【精灵大陆 · 御兽收服】：遭遇野生灵兽，掷骰收服
+    if(rand(100)<60){
+      OP._pet = true;
+      line = '一只雷光幼犬从草丛里探出脑袋，好奇地蹭了蹭你的裤脚——【御兽成功】它决定跟着你！本世界战斗开场，它会先助你一记雷光爪。';
+      OP.collected.push('灵兽·雷光幼犬');
+    } else {
+      OP.log.push('你惊动了草丛里酣睡的野生灵兽——它龇牙朝你扑了过来！');
+      updateHUD(); renderOperation(); opExploreFight(); return;
+    }
+  }
   if(r < (hasBooster('drop') ? 62 : 42)){
     // 特色世界产物（「无限掉落」外挂：收获概率从 42% 提到 62%）
     let t = drawTreasure(w);
@@ -3760,6 +3799,8 @@ function opWithdrawSuccess(forced){
   S.gold += goldGain;
   gainXp(Math.round(10 + w.base*0.4));                                  // 撤离获得世界经验（受「升级加速」外挂 +50%）
   const got=[];
+  if(w.id==='hollow' && S._hollowSoul){ const back=Math.floor(S._hollowSoul/2); S.gold+=back; S._hollowSoul=0; got.push('失落的魂 · 回魂 +'+back); }   // 【圣巢深渊 · 回魂】：魂归原位
+  if(w.id==='guimi' && OP._san!==undefined && OP._san<100){ const ins=Math.floor((100-OP._san)/8); goldGain+=ins; S.gold+=ins; got.push('灵视情报 +'+ins+' 金'); }   // 【诡秘之都 · 理智结算】：用掉的理智换来的灵视情报
   if(rw.got.length) got.push(rw.got[0]);
   if(!S.items.includes('memcard') && rand(100)<60){ S.items.push('memcard'); got.push('记忆卡'); }
   if(rand(100)<45){ S.items.push('coin'); got.push('命运币'); }
@@ -4151,6 +4192,7 @@ function closeChar(){
 function renderDeath(){
   combatAutoStop();
   if(hasBooster('cheat')){ S._keepGold = Math.floor(S.gold/2); }  // 「存档作弊」：死前偷偷备份一半金币
+  if(OP && OP.world && OP.world.id==='hollow'){ S._hollowSoul = (S._hollowSoul||0) + Math.floor(S.gold*0.4); }  // 【圣巢深渊 · 魂】：死亡时四成金币化作「魂」坠入深渊
   const v=$('view-death');
   v.innerHTML = `
     <div class="panel" style="text-align:center">
