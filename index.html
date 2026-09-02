@@ -247,6 +247,17 @@ h1.title-name{
 .op-result{border:1px solid var(--line-strong);border-radius:12px;padding:16px;margin-top:14px}
 .op-result.good{border-color:rgba(230,165,68,.5);background:rgba(60,46,20,.15)}
 .op-result.bad{border-color:rgba(213,86,74,.5);background:rgba(60,24,24,.15)}
+/* 箱庭探索 */
+.op-progress{margin:12px 0 6px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(16,24,52,.45)}
+.op-prog-row{display:flex;align-items:center;gap:10px;margin:4px 0}
+.opr-label{width:36px;font-size:12px;color:var(--ink-dim);letter-spacing:.08em}
+.opr-num{width:44px;text-align:right;font-size:12px;color:var(--gold);font-variant-numeric:tabular-nums}
+.prog-bar{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+.prog-bar .prog-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--cyan),#6fd7c8);transition:width .3s}
+.prog-bar.hot .prog-fill{background:linear-gradient(90deg,#e6a544,#d5564a)}
+.op-treasure{margin:8px 2px;font-size:13px;color:var(--ink-dim);line-height:1.8;padding:8px 12px;border-radius:8px;background:rgba(60,46,20,.12);border:1px dashed rgba(230,165,68,.3)}
+.op-warn{color:#ffd27a;border-color:rgba(230,165,68,.5);background:rgba(60,46,20,.25)}
+.op-danger{color:#ff9a8a;border-color:rgba(213,86,74,.6);background:rgba(60,24,24,.3);animation:glowpulse 1.6s ease-in-out infinite}
 
 /* 结局 */
 .ending-banner{text-align:center;padding:34px 10px 10px}
@@ -1311,19 +1322,19 @@ N({id:'c2_faction_black',chap:'第二章 · 中枢塔',title:'黑塔帮',tagline
 text:'“哟，新面孔。”地库阴影里，一个叼着数据烟的男人懒洋洋地开口，“黑塔帮收人，不问来历，只问胆子。敢碰禁区数据吗？”\n\n他扔给你一袋金币和一枚【黑塔帮纹章】：“拿好。我们只认利益——但你若能搞到回响之核的底层数据，价钱好商量。”\n\n【获得：黑塔帮纹章 · 金币+20】\n\n他压低声音补充了一句：“干完这一票，我带你去看真正的‘后门’——不是我说的那个‘后门’。”\n\n“顺便——守望者那群疯子，正在满城追杀‘乱码’。你最好小心点。”',
 choices:[
   {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
-  {text:'打听黑塔帮的“外快”',tag:'支线',desc:'跨世界搜打撤任务，能赚装备和技能',kind:'next',goto:'c2_ops_offer'},
+  {text:'打听黑塔帮的“外快”',tag:'支线',desc:'跨世界箱庭探索任务，能赚装备和技能',kind:'next',goto:'c2_ops_offer'},
   {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 N({id:'c2_faction_none',chap:'第二章 · 中枢塔',title:'独行者',tagline:'阵营 · 中立',
 text:'你没有加入任何一方。\n\n“聪明。”角落里传来一个苍老的声音——灰袍商人居然也在塔里，“中立者最自由，也最危险。两边都当你是变数，随时可能动手。”\n\n他抛给你一件东西：“【回响水晶】的姊妹篇——【真相透镜】。拿着，第三章会用得上。”\n\n【获得：真相透镜】\n\n他笑了笑：“独行的人，往往看得最清楚。祝你好运，变数先生。”',
 choices:[
   {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
-  {text:'找灰袍打听有没有“私活”',tag:'支线',desc:'灰袍能牵线跨世界搜打撤任务',kind:'next',goto:'c2_ops_offer'},
+  {text:'找灰袍打听有没有“私活”',tag:'支线',desc:'灰袍能牵线跨世界箱庭探索任务',kind:'next',goto:'c2_ops_offer'},
   {text:'返回箱庭地图',tag:'地图',kind:'next',goto:'__map__'}
 ]});
 
 N({id:'c2_ops_offer',chap:'第二章 · 中枢塔',title:'黑塔帮的委托',tagline:'支线 · 跨世界搜打撤',
-text:'你在地库入口被一个叼着数据烟的接头人叫住：\n\n“喂，新面孔。有个活儿，干不干？”\n\n他压低声音：“城里的‘回响’最近炸开了花——无数小说世界的碎片，正在一个接一个地‘长脚’跑出来。空岛、江湖、仙山、海沟、深空……全乱了套。”\n\n“黑塔帮挖通了通往这些世界碎片的通道。你去，把每个世界里的‘数据残响’搜出来、打干净、再带回来——咱们五五分成。”\n\n“规矩就三个字：{hl}搜、打、撤{/hl}。搜到了再打，打完了就撤，别贪。”\n\n（跨世界搜打撤：8 个小说世界 × 搜→打→撤，每个世界有专属技能/装备奖励）',
+text:'你在地库入口被一个叼着数据烟的接头人叫住：\n\n“喂，新面孔。有个活儿，干不干？”\n\n他压低声音：“城里的‘回响’最近炸开了花——无数小说世界的碎片，正在一个接一个地‘长脚’跑出来。空岛、江湖、仙山、海沟、深空……全乱了套。”\n\n“黑塔帮挖通了通往这些世界碎片的通道。你去，把每个世界里的‘数据残响’搜出来、再带回来——咱们五五分成。”\n\n“新规矩：每个世界都是敞开的箱庭。进去先补满状态，然后想搜几处搜几处——搜到特色产物、金币、药剂，或者惊动守卫打一架，全凭手气。\n\n但记住：{hl}搜得越深，世界越凶{/hl}。每个世界有探索上限，搜到极限还不撤，就会被它咬下一块肉。及时抽身，才能把收获稳稳带回来。”\n\n（跨世界箱庭探索：19 个小说/游戏世界 × 随机搜索，每世界 3+ 特色随机产物 + 首通专属技能/装备/队友）',
 choices:[
   {text:'接下委托，打开任务板',tag:'接取',desc:'选择要去的世界',kind:'effect',apply:(s)=>{renderWorlds();},goto:'__stay__'},
   {text:'婉拒，继续主线',tag:'婉拒',kind:'next',goto:'c2_file'}
@@ -2108,7 +2119,7 @@ function updateHUD(){
   $('hud-lv').textContent = S.level + (S.cls? ' · '+classById(S.cls).name : '');
   $('hud-run').textContent = S.run;
   const nn = S.nodeId && NODES[S.nodeId];
-  $('hud-chap').textContent = nn ? nn.chap : (S.nodeId==='combat'?'战斗':(S.nodeId==='operation'?'搜打撤':(S.nodeId==='worlds'?'任务板':(S.nodeId==='char'?'角色':(S.nodeId==='map'?'箱庭地图':(S.nodeId==='loc'?(locById(S._location)||{}).name:'—'))))));
+  $('hud-chap').textContent = nn ? nn.chap : (S.nodeId==='combat'?'战斗':(S.nodeId==='operation'?'箱庭探索':(S.nodeId==='worlds'?'任务板':(S.nodeId==='char'?'角色':(S.nodeId==='map'?'箱庭地图':(S.nodeId==='loc'?(locById(S._location)||{}).name:'—'))))));
   $('hud-fate').textContent = '◆ '+S.fate;
   $('hud-echo').textContent = '◈ '+S.echoes;
   $('hud-gold').textContent = '◎ '+S.gold;
@@ -2298,7 +2309,7 @@ function renderCombat(){
   if(CB.buff.taunt) buffTxt.push('嘲讽');
   v.innerHTML = `
     <div class="panel">
-      <div class="scene-chap">战斗 · 第 ${S.run} 周目${CB.opMode?' · 搜打撤':''}</div>
+      <div class="scene-chap">战斗 · 第 ${S.run} 周目${CB.opMode?' · 箱庭探索':''}</div>
       <div class="combat-enemy">
         <div class="e-name">${esc(e.name)}</div>
         <div class="e-desc">${esc(e.desc)}</div>
@@ -2569,19 +2580,26 @@ function combatVictory(){
   const e = ENEMIES[CB.id];
   combatLog(`你击败了 ${e.name}！`, 'crit');
   if(CB.opMode){
-    // 搜打撤行动：目标已清除，进入撤离阶段
+    // 箱庭探索遭遇战：胜利后返回探索界面，可继续搜或撤
     combatAutoStop();
     victoryRewards(false);
     gainXp(e.xp||0);
-    combatLog('目标已清除！四周的异常数据四散奔逃——正是撤离的时机。', 'ok');
     updateHUD();
     CB=null;
-    setTimeout(()=>{
-      OP.phase='withdraw';
-      OP.log.push('目标已清除。别贪战利品——现在，按规矩：撤！');
-      renderOperation();
-    }, 950);
-    return;
+    if(OP){
+      const w = OP.world;
+      // 遭遇战胜利额外掉落
+      const t = drawTreasure(w);
+      let bonusTxt = grantTreasure(t, w);
+      OP.collected.push(t.n);
+      setTimeout(()=>{
+        OP.phase='explore';
+        OP.log.push(`你击败了「${w.name}」的守卫，它掉落了战利品——${bonusTxt}`);
+        OP.log.push('战斗结束。你仍在这片箱庭里——继续搜索，或者带着收获撤离。');
+        renderOperation();
+      }, 900);
+      return;
+    }
   }
   combatAutoStop();
   victoryRewards(true);
@@ -2613,7 +2631,150 @@ function victoryRewards(withLoot){
   if(gifts.length){ combatLog(`战利品：${gifts.join('、')}`, 'ok'); updateHUD(); }
 }
 
-/* ---------- 跨世界搜打撤行动 ---------- */
+/* ---------- 世界特色产物池（箱庭探索 · 随机掉落） ---------- */
+/* kind: gold 金币 / item 道具 / skill 技能 / fate 命运点 / echo 回响碎片 */
+const WORLD_TREASURE = {
+  sky:[
+    {n:'风鸣石', kind:'gold', min:8, max:16},
+    {n:'风羽护符', kind:'item', id:'windfeather'},
+    {n:'风刃残篇', kind:'skill', id:'blade'},
+    {n:'云海回响', kind:'echo', min:1, max:2}
+  ],
+  wuxia:[
+    {n:'黑市银票', kind:'gold', min:10, max:20},
+    {n:'玄铁重剑', kind:'item', id:'darksteel'},
+    {n:'秘制金疮药', kind:'item', id:'potion'},
+    {n:'武林人脉', kind:'fate', min:1, max:1}
+  ],
+  xianxia:[
+    {n:'下品灵石', kind:'gold', min:10, max:20},
+    {n:'千年灵根', kind:'item', id:'spiritroot'},
+    {n:'御剑残卷', kind:'skill', id:'swordarts'},
+    {n:'剑意共鸣', kind:'echo', min:1, max:2}
+  ],
+  ocean:[
+    {n:'沉船金币', kind:'gold', min:12, max:22},
+    {n:'珊瑚鳞甲', kind:'item', id:'coral_armor'},
+    {n:'潮汐斩谱', kind:'skill', id:'tide'},
+    {n:'深海明珠', kind:'fate', min:1, max:1}
+  ],
+  apoc:[
+    {n:'军用罐头', kind:'gold', min:12, max:20},
+    {n:'能量核心', kind:'item', id:'mpotion'},
+    {n:'能量爆发', kind:'skill', id:'energy'},
+    {n:'幸存者标记', kind:'echo', min:1, max:2}
+  ],
+  fantasy:[
+    {n:'龙巢财宝', kind:'gold', min:14, max:24},
+    {n:'龙鳞甲', kind:'item', id:'dragon_scale'},
+    {n:'龙血药剂', kind:'item', id:'potion'},
+    {n:'龙威祝福', kind:'fate', min:1, max:1}
+  ],
+  sci:[
+    {n:'星尘合金', kind:'gold', min:14, max:22},
+    {n:'外骨骼装甲', kind:'item', id:'exo'},
+    {n:'黑客协议', kind:'skill', id:'hack'},
+    {n:'深空回响', kind:'echo', min:1, max:2}
+  ],
+  inf:[
+    {n:'副本结算币', kind:'gold', min:16, max:26},
+    {n:'核心残片', kind:'item', id:'core_shard'},
+    {n:'副本秘钥', kind:'fate', min:1, max:2},
+    {n:'多元回响', kind:'echo', min:1, max:3}
+  ],
+  zelda:[
+    {n:'卢比', kind:'gold', min:12, max:24},
+    {n:'驱魔之剑', kind:'item', id:'mastersword'},
+    {n:'勇者之心', kind:'fate', min:1, max:1},
+    {n:'神庙回响', kind:'echo', min:1, max:2}
+  ],
+  hollow:[
+    {n:'圣巢古币', kind:'gold', min:12, max:22},
+    {n:'虚空碎片', kind:'item', id:'mpotion'},
+    {n:'苍白之爪', kind:'skill', id:'pale'},
+    {n:'虫巢回响', kind:'echo', min:1, max:2}
+  ],
+  elden:[
+    {n:'卢恩', kind:'gold', min:16, max:28},
+    {n:'黄金律法印', kind:'item', id:'golden_seal'},
+    {n:'赐福回响', kind:'echo', min:1, max:2},
+    {n:'玛丽卡祝福', kind:'fate', min:1, max:1}
+  ],
+  pet:[
+    {n:'精灵金币', kind:'gold', min:10, max:20},
+    {n:'精灵晶球', kind:'item', id:'mpotion'},
+    {n:'收服之心', kind:'skill', id:'catch'},
+    {n:'精灵祝福', kind:'fate', min:1, max:1}
+  ],
+  sekiro:[
+    {n:'苇名金', kind:'gold', min:12, max:24},
+    {n:'苇名村正', kind:'item', id:'kusanagi'},
+    {n:'忍具暗器', kind:'item', id:'potion'},
+    {n:'不死残响', kind:'echo', min:1, max:2}
+  ],
+  hades:[
+    {n:'冥币', kind:'gold', min:14, max:26},
+    {n:'冥河冲刺', kind:'skill', id:'blitz'},
+    {n:'冥界药剂', kind:'item', id:'potion'},
+    {n:'亡者回响', kind:'echo', min:1, max:2}
+  ],
+  guoyun:[
+    {n:'国运国库', kind:'gold', min:16, max:28},
+    {n:'国运加护', kind:'skill', id:'guoyun'},
+    {n:'国运玉玺', kind:'fate', min:1, max:2},
+    {n:'龙脉回响', kind:'echo', min:1, max:2}
+  ],
+  wanzu:[
+    {n:'万族战利品', kind:'gold', min:18, max:30},
+    {n:'人族气运印', kind:'item', id:'wanzu_seal'},
+    {n:'先烈愿力', kind:'echo', min:1, max:3},
+    {n:'万族荣光', kind:'fate', min:1, max:1}
+  ],
+  guimi:[
+    {n:'旧城银币', kind:'gold', min:12, max:22},
+    {n:'塔罗占卜', kind:'skill', id:'tarot'},
+    {n:'神秘药剂', kind:'item', id:'potion'},
+    {n:'占卜灵感', kind:'fate', min:1, max:1}
+  ],
+  honghuang:[
+    {n:'洪荒灵石', kind:'gold', min:18, max:30},
+    {n:'混沌灵宝', kind:'item', id:'honghuang_ling'},
+    {n:'开天遗韵', kind:'echo', min:1, max:3},
+    {n:'圣人讲道', kind:'fate', min:1, max:2}
+  ],
+  zhutian:[
+    {n:'万界碎金', kind:'gold', min:14, max:26},
+    {n:'诸天穿梭', kind:'skill', id:'zhutian'},
+    {n:'界门秘钥', kind:'echo', min:1, max:2},
+    {n:'穿梭灵感', kind:'fate', min:1, max:1}
+  ]
+};
+function worldTreasure(w){ return WORLD_TREASURE[w.id] || []; }
+function drawTreasure(w){
+  const pool = worldTreasure(w);
+  if(!pool.length) return {n:'一枚残响', kind:'gold', min:5, max:12};
+  return pool[rand(pool.length)];
+}
+function grantTreasure(t, w){
+  /* 按特色产物类型发奖，已拥有则折算金币 */
+  const wName = w? '（'+w.name+'）' : '';
+  if(t.kind==='gold'){ const g = t.min + rand(t.max-t.min+1); S.gold += g; return `获得 ${t.n}${wName} —— 金币 +${g}`; }
+  if(t.kind==='fate'){ const f = t.min + rand((t.max||t.min)-(t.min)+1); S.fate += f; return `获得 ${t.n}${wName} —— 命运点 +${f}`; }
+  if(t.kind==='echo'){ const e = t.min + rand((t.max||t.min)-(t.min)+1); S.echoes += e; return `获得 ${t.n}${wName} —— 回响碎片 +${e}`; }
+  if(t.kind==='item'){
+    const it = itemById(t.id);
+    if(S.items.includes(t.id)){ const g = 12 + rand(8); S.gold += g; return `「${it? it.name : t.n}」已拥有，折换金币 +${g}`; }
+    S.items.push(t.id); return `获得 ${t.n}${wName} —— 「${it? it.name : t.n}」已收入背包`;
+  }
+  if(t.kind==='skill'){
+    const sk = skillById(t.id);
+    if(S.skillPool.includes(t.id) || S.skills.includes(t.id)){ const g = 14 + rand(10); S.gold += g; return `「${sk? sk.name : t.n}」已习得，折换金币 +${g}`; }
+    S.skillPool.push(t.id); return `获得 ${t.n}${wName} —— 习得技能「${sk? sk.name : t.n}」（可在角色面板更换携带）`;
+  }
+  const g = t.min + rand((t.max||t.min)-t.min+1); S.gold += g; return `获得 ${t.n} —— 金币 +${g}`;
+}
+
+/* ---------- 跨世界搜打撤行动 · 箱庭探索 ---------- */
 let OP = null;
 function renderWorlds(){
   S.nodeId='worlds';
@@ -2622,21 +2783,23 @@ function renderWorlds(){
   const done = S.worldsCleared.length;
   let html = `<div class="panel">
     <div class="scene-chap">黑塔帮任务板 · 第 ${S.run} 周目</div>
-    <div class="scene-title">跨世界搜打撤 · 任务板</div>
-    <div class="scene-tagline">黑塔帮挖通了通往「故事残响」世界的通道——搜 → 打 → 撤，把残响带回来</div>
-    <div class="story">接头人弹了弹烟灰：“这些世界，都是从‘回响’里撕下来的故事碎片——小说、游戏、传说，什么都有。空岛、江湖、仙山、海沟、深空、旷野、圣巢……里面的好东西，只要你敢搜、敢打、敢撤，都是你的。”\n\n“规矩不变：搜、打、撤。完成的越多，解锁的世界越离谱。”</div>
+    <div class="scene-title">跨世界箱庭探索 · 任务板</div>
+    <div class="scene-tagline">黑塔帮挖通了通往「故事残响」世界的通道——每个世界都是一座敞开的箱庭，想搜几处搜几处</div>
+    <div class="story">接头人弹了弹烟灰：“这些世界，都是从‘回响’里撕下来的故事碎片——小说、游戏、传说，什么都有。空岛、江湖、仙山、海沟、深空、旷野、圣巢……里面的好东西，只要你敢搜、敢搜、敢撤，都是你的。”\n\n“新规矩：每个世界都是敞开的。进去先补给满状态，然后想搜哪搜哪——搜到特色产物、金币、药剂，或者惊动守卫打一架，全凭你的手气。\n\n但记住：搜得越深，世界越凶。每个世界有探索上限（低危 8 次、中危 10 次、高危 12 次），搜到极限还不撤离，就会被它咬下一块肉。及时抽身，才能把收获稳稳带回来。”</div>
     <div class="world-grid">`;
   WORLDS.forEach(w=>{
     const locked = done < w.unlock;
     const cleared = S.worldsCleared.includes(w.id);
     const diffTxt = ['','低危','中危','高危'][w.diff];
     const diffCls = 'diff-'+w.diff;
+    const tPool = worldTreasure(w);
+    const tNames = tPool.filter(t=>t.kind==='item'||t.kind==='skill').map(t=>{ const x = t.kind==='item'? itemById(t.id) : skillById(t.id); return (x&&x.name)||t.n; }).slice(0,3).join('、');
     html += `<div class="wcard ${locked?'locked':''}" data-id="${w.id}">
       ${cleared?'<div class="w-done">✓ 已完成</div>':'<div class="w-diff '+diffCls+'">'+diffTxt+'</div>'}
       <div class="w-style">${esc(w.style)}</div>
       <div class="w-name">${esc(w.name)}</div>
       <div class="w-desc">${esc(w.desc)}</div>
-      <div class="w-reward">${locked? '🔒 需先完成 '+w.unlock+' 个世界':'首次奖励：'+esc(w.reward.name)+(w.mate? ' + 强力队友「'+esc((teammateById(w.mate)||{}).name||w.mate)+'」':'')+' ｜ 金币 ≈'+w.base}</div>
+      <div class="w-reward">${locked? '🔒 需先完成 '+w.unlock+' 个世界':'首次奖励：'+esc(w.reward.name)+(w.mate? ' + 强力队友「'+esc((teammateById(w.mate)||{}).name||w.mate)+'」':'')+'<br>探索上限 '+ (6+w.diff*2) +' 次 · 特色产物：'+(tNames||'特色残响')}</div>
     </div>`;
   });
   html += `</div>
@@ -2657,12 +2820,18 @@ function renderWorlds(){
 }
 function startOperation(worldId){
   const w = worldById(worldId) || WORLDS[0];
+  // 出征补给：状态全满
+  S.hp = S.maxHp; S.mp = S.maxMp; updateHUD();
+  const limit = 6 + w.diff*2;
   OP = {
-    phase:'search', bonus:0, surprised:false, world:w,
+    phase:'explore', steps:0, hot:0, found:0, collected:[], tags:[], world:w,
+    limit: limit,
     log:[
-      `—— 搜打撤行动 · ${w.name} ——`,
+      `—— 箱庭探索 · ${w.name} ——`,
       `目标世界：${w.style}「${w.name}」`,
-      '规矩：搜到了再打，打完了就撤，别贪。',
+      '黑塔帮替你备好了出征补给：生命、法力全满。',
+      '规矩：这个世界是敞开的箱庭——想搜几处搜几处，想搜多久搜多久。但搜得越深，世界越凶。',
+      `探索上限 ${limit} 次：搜到极限还不撤离，就会被它咬下一块肉。`,
       w.search
     ]
   };
@@ -2671,25 +2840,38 @@ function startOperation(worldId){
   renderOperation();
 }
 function opPhaseIndex(){
-  if(OP.phase==='search'||OP.phase==='searching') return 0;
-  if(OP.phase==='combat') return 1;
-  if(OP.phase==='withdraw'||OP.phase==='withdrawing') return 2;
-  return 3;
+  if(OP.phase==='explore'||OP.phase==='combat') return 0;
+  if(OP.phase==='withdraw'||OP.phase==='withdrawing') return 1;
+  return 2;
 }
 function renderOperation(){
   const v = $('view-operation');
-  const phases = ['搜索','打击','撤离'];
-  const cur = opPhaseIndex();
   const w = OP.world;
   let body='';
-  if(OP.phase==='search'){
-    body = `<div class="choices" id="op-choices"><div class="choice" id="op-search"><span class="c-tag">【搜索】</span>在「${esc(w.name)}」中搜索目标<span class="c-desc">感知判定 · 定位残响，寻找弱点</span></div></div>`;
-  } else if(OP.phase==='searching'){
-    body = `<div class="notice">正在搜索目标……</div>`;
-  } else if(OP.phase==='combat'){
-    body = `<div class="notice">目标已锁定——进入战斗！</div>`;
-  } else if(OP.phase==='withdraw'){
-    body = `<div class="choices" id="op-choices"><div class="choice" id="op-withdraw"><span class="c-tag">【撤离】</span>带着残响撤离<span class="c-desc">敏捷判定 · 安全离开这个世界</span></div></div>`;
+  if(OP.phase==='combat'){
+    body = `<div class="notice op-danger">⚠ 遭遇战！「${esc(w.name)}」的守卫朝你扑了过来——</div>`;
+  } else if(OP.phase==='explore'){
+    const danger = OP.steps >= OP.limit;
+    const warn = OP.steps >= Math.ceil(OP.limit*0.6);
+    const pct = Math.min(100, Math.round(OP.steps/OP.limit*100));
+    const hotPct = Math.min(100, OP.hot*12);
+    body = `
+      <div class="op-progress">
+        <div class="op-prog-row"><span class="opr-label">探索</span>
+          <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+          <span class="opr-num">${OP.steps}/${OP.limit}</span></div>
+        <div class="op-prog-row"><span class="opr-label">警觉</span>
+          <div class="prog-bar hot"><div class="prog-fill" style="width:${hotPct}%"></div></div>
+          <span class="opr-num">${OP.hot*10}%</span></div>
+      </div>
+      ${warn? `<div class="notice ${danger?'op-danger':'op-warn'}">${danger? '⚠ 已达探索极限——世界残响正在锁定你！':'⚠ 世界已对你起了杀意——再搜下去，撤离会更凶险！'}</div>`:''}
+      <div class="op-treasure">${OP.collected.length? '🎒 已收获：'+OP.collected.join('、') : '🎒 暂无收获——搜遍各处，看看能捞到什么。'}</div>
+      ${OP.found>0? `<div class="op-treasure" style="color:var(--cyan)">🔍 已锁定残响线索 ×${OP.found}（撤离奖励加成）</div>`:''}
+      ${OP.tags.length? `<div class="op-treasure" style="color:#d7a7ff;border-color:rgba(215,167,255,.35);background:rgba(90,50,140,.15)">🧬 临时词条：${OP.tags.join('、')}（本次探索内生效）</div>`:''}
+      <div class="choices" id="op-choices">
+        <div class="choice" id="op-search"><span class="c-tag">${danger?'【强制撤离】':'【搜索】'}</span>${danger? '立刻离开这个愤怒的世界' : '探索一处区域<span class="c-desc">随机：收获 / 遭遇 / 风险 · 剩 '+(OP.limit-OP.steps)+' 次</span>'}</div>
+        ${!danger? `<div class="choice" id="op-withdraw"><span class="c-tag">【撤离】</span>带着收获离开<span class="c-desc">敏捷判定 · 结算本次收获</span></div>`:''}
+      </div>`;
   } else if(OP.phase==='withdrawing'){
     body = `<div class="notice">正在撤离……</div>`;
   } else {
@@ -2702,12 +2884,9 @@ function renderOperation(){
   }
   v.innerHTML = `
     <div class="panel">
-      <div class="scene-chap">搜打撤 · ${esc(w.style)} · 第 ${S.run} 周目</div>
-      <div class="scene-title">搜打撤 · ${esc(w.name)}</div>
-      <div class="scene-tagline">搜 → 打 → 撤</div>
-      <div class="op-steps">
-        ${phases.map((p,i)=>`<div class="op-step ${i<cur?'done':''} ${i===cur?'on':''}">${['①','②','③'][i]} ${p}</div>`).join('')}
-      </div>
+      <div class="scene-chap">箱庭探索 · ${esc(w.style)} · 第 ${S.run} 周目</div>
+      <div class="scene-title">箱庭 · ${esc(w.name)}</div>
+      <div class="scene-tagline">这个世界的碎片散落在各处——搜索，收获，或者被它咬一口。搜到极限还不撤？后果自负。</div>
       <div class="dice-log" id="dice-log"></div>
       <div class="op-log">${OP.log.map(l=>esc(l)).join('\n')}</div>
       ${body}
@@ -2715,29 +2894,103 @@ function renderOperation(){
   showView('operation');
   const btn = $('op-search')||$('op-withdraw')||$('op-done');
   if(btn) btn.onclick = ()=>{
-    if(btn.id==='op-search') opSearch();
+    if(btn.id==='op-search'){ if(OP.steps>=OP.limit) opForceWithdraw(); else opExplore(); }
     else if(btn.id==='op-withdraw') opWithdraw();
     else { OP=null; renderWorlds(); }
   };
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
-function opSearch(){
-  const res = runCheck('per', 55, '搜索 · 定位目标');
-  OP.log.push(`【骰】搜索：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 55 ${res.success?'　判定成功':'　判定失败'}`);
-  if(res.success){
-    OP.bonus += 10;
-    OP.log.push('你摸清了该世界的残响守卫分布，找到了它的数据弱点（打击阶段命中需求 -10）。');
-  } else {
-    OP.surprised = true;
-    OP.log.push('你不慎踩响了一处世界裂缝的警报——守卫已先手，且任务奖励将减半。');
-  }
-  OP.phase = 'combat';
-  renderOperation();
-  setTimeout(opCombat, 900);
+function opExplore(){
+  OP.steps++;
+  OP.hot++;
+  const w = OP.world;
+  OP.log.push(`—— 探索 第 ${OP.steps}/${OP.limit} 处 ——`);
+  // 词条流玩法：持有的临时词条会改写探索规则（词条即力量）
+  const tagCalm = OP.tags.includes('词条·警觉');
+  const tagInsight = OP.tags.includes('词条·洞察');
+  // 随机结果：随警觉度（搜索次数）调整，搜得越深，遭遇与损失概率越高；「词条·警觉」可压制风险
+  const r = rand(100);
+  const encRate = tagCalm ? Math.floor((24 + OP.hot*2)/2) : (24 + OP.hot*2);   // 遭遇战：24%→46%
+  const trapRate = tagCalm ? Math.floor((6 + OP.hot)/2) : (6 + OP.hot);         // 损失陷阱：6%→16%
+  if(r < encRate){ opExploreFight(); return; }
+  if(r < encRate + trapRate){ opExploreTrap(); return; }
+  opExploreLoot(tagInsight);
 }
-function opCombat(){
-  startCombat(OP.world.enemy, null, 'death', {opMode:true, opBonus:OP.bonus});
-  if(OP.surprised) setTimeout(()=>combatEnemyTurn(), 700);
+function opExploreLoot(tagInsight){
+  const w = OP.world;
+  const r = tagInsight ? rand(70) : rand(100);  // 「词条·洞察」把收获区扩大
+  let line='';
+  if(r < 42){
+    // 特色世界产物
+    const t = drawTreasure(w);
+    line = grantTreasure(t, w);
+    OP.collected.push(t.n);
+  } else if(r < 64){
+    let g = 6 + rand(10) + w.diff*3;
+    if(OP.tags.includes('词条·丰收')){ g = Math.floor(g*1.5); line = '【词条·丰收】发动：'; }
+    S.gold += g; updateHUD();
+    line = (line||'') + `你在一处废墟里翻出一些值钱的东西——金币 +${g}。`;
+  } else if(r < 78){
+    const it = rand(100)<50? 'potion' : 'mpotion';
+    const itName = it==='potion'? '回响药剂' : '灵气药剂';
+    if(S.items.includes(it)){ const g=8+rand(6); S.gold+=g; line = `你找到一瓶${itName}，但背包里已有——折换成金币 +${g}。`; }
+    else { S.items.push(it); line = `你在一处隐蔽角落找到一瓶${itName}。`; }
+  } else if(r < 90){
+    if(rand(100)<60){ S.fate++; updateHUD(); line = `你在残骸中拾到一枚命运币——命运点 +1。`; }
+    else { const g=10+rand(10); S.gold+=g; updateHUD(); line = `你摸到一个装满金币的旧钱袋——金币 +${g}。`; }
+  } else if(r < 96){
+    // 词条流：随机获得一枚临时「词条」，本次探索内改写规则
+    const tagPool = [
+      {n:'词条·丰收', desc:'探索收获的金币 +50%'},
+      {n:'词条·警觉', desc:'遭遇战与陷阱概率减半'},
+      {n:'词条·洞察', desc:'搜索更大概率进入收获区'}
+    ];
+    const pick = tagPool[rand(tagPool.length)];
+    if(!OP.tags.includes(pick.n)){
+      OP.tags.push(pick.n);
+      line = `你触碰到一处规则裂缝，获得临时词条「${pick.n}」——${pick.desc}！（本次探索内生效）`;
+    } else {
+      const g=10+rand(8); S.gold+=g; updateHUD();
+      line = `规则裂缝化作金币洒落——金币 +${g}。`;
+    }
+  } else {
+    // 残响线索：积累可提升撤离奖励（联动）
+    OP.found++;
+    line = `你在这片区域的深处，锁定了一道「残响线索」——这是「${w.name}」独有的秘密，记下了。`;
+  }
+  OP.log.push(line);
+  updateHUD();
+  renderOperation();
+}
+function opExploreFight(){
+  const w = OP.world;
+  OP.phase = 'combat';
+  OP.log.push(`惊动了「${w.name}」的守卫——它朝你扑了过来！`);
+  OP.log.push('（战斗胜利后，可继续探索或随时撤离）');
+  renderOperation();
+  setTimeout(()=>opCombat(true), 800);
+}
+function opExploreTrap(){
+  const w = OP.world;
+  const r = rand(100);
+  let line='';
+  if(r < 45 && OP.collected.length){
+    // 丢失一件收集物
+    const lost = OP.collected.splice(rand(OP.collected.length), 1)[0];
+    line = `你踩中了一处世界裂缝的陷阱——手忙脚乱中，弄丢了「${lost}」。`;
+  } else if(r < 75){
+    const l = 8 + rand(8) + w.diff*3;
+    S.gold = Math.max(0, S.gold - l); updateHUD();
+    line = `你被一群游荡的世界残响洗劫了——金币 -${l}。`;
+  } else {
+    S.hp = Math.max(1, S.hp - (8 + w.diff*3)); updateHUD();
+    line = `一处崩塌的残响崩了你一脸——生命 -${8 + w.diff*3}。`;
+  }
+  OP.log.push(line);
+  renderOperation();
+}
+function opCombat(isExplore){
+  startCombat(OP.world.enemy, null, 'death', {opMode:true, opBonus:0, opExplore:!!isExplore});
 }
 function opWorldReward(){
   const w = OP.world;
@@ -2769,73 +3022,95 @@ function guoyunDraw(){
 }
 function opWithdrawFromCombat(){
   if(!CB) return;
-  combatLog('你且战且退，尝试从这个世界突围……', 'pl');
+  combatAutoStop();
+  combatLog('你且战且退，尝试摆脱这个世界的守卫……', 'pl');
   const res = runCheck('agi', 55, '撤离 · 突围');
   if(res.success){
     OP.log.push(`【骰】撤离：1d100 = ${res.roll} = ${res.total} ／ 难度 55　判定成功`);
-    if(OP.bonus>0){ S.gold += 8; updateHUD(); }
-    OP.log.push('你甩开追兵，带着搜集到的情报全身而退。');
-    OP.result = {
-      title:'行动中止', good:true,
-      text:`任务未能完成——但至少，你保住了性命与情报。\n${OP.bonus>0?'【情报费】金币 +8':'没有完成目标，也没有额外收获。'}\n黑塔帮接头人撇撇嘴：“啧，至少没白跑一趟。”`
-    };
+    OP.log.push('你甩开守卫，重新潜入这片箱庭的阴影中。');
   } else {
     S.hp = Math.max(1, S.hp-10); updateHUD();
     OP.log.push(`【骰】撤离：1d100 = ${res.roll} = ${res.total} ／ 难度 55　判定失败`);
-    OP.log.push('撤退失败——你挨了一记重击，狼狈逃回。');
-    OP.result = {
-      title:'负伤突围', good:false,
-      text:'撤退失败，你被世界残响咬了一口，狼狈逃回大本营。\n【损失】生命 -10\n“活着回来就好。”接头人难得说了一句人话。'
-    };
+    OP.log.push('突围失败——你挨了一记重击才脱身，狼狈地退回阴影里。');
   }
   CB = null;
-  OP.phase = 'done';
+  OP.phase = 'explore';
   renderOperation();
 }
 function opWithdraw(){
   OP.phase = 'withdrawing';
   renderOperation();
   const w = OP.world;
-  const res = runCheck('agi', 55, '撤离 · 离开战区');
-  const base = 25 + (OP.bonus>0 ? 10 : 0);
+  const dc = 42 + Math.min(OP.steps*2, 20);
+  const res = runCheck('agi', dc, '撤离 · 离开战区');
   setTimeout(()=>{
-    OP.log.push(`【骰】撤离：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 55 ${res.success?'　判定成功':'　判定失败'}`);
-    if(res.success){
-      const rw = opWorldReward();
-      let goldGain = base + (rw.first? w.base : 0);
-      S.gold += goldGain;
-      const got=[];
-      if(rw.got.length) got.push(rw.got[0]);
-      if(!S.items.includes('memcard') && rand(100)<60){ S.items.push('memcard'); got.push('记忆卡'); }
-      if(rand(100)<45){ S.items.push('coin'); got.push('命运币'); }
-      updateHUD();
-      OP.log.push(w.loot);
-      if(rw.first && rw.got.length) OP.log.push(`【首次完成「${w.name}」】获得 ${rw.got.join('、')}！`);
-      let guoyunTxt='';
-      if(w.guoyun){
-        const gy = guoyunDraw();
-        guoyunTxt = '\n'+gy;
-        OP.log.push(gy);
-      }
-      OP.log.push('你带着战利品扬长而去，身后传来世界残响的低鸣。');
-      OP.result = {
-        title:'行动圆满 · '+w.name, good:true,
-        text:`【奖励】金币 +${goldGain}${got.length?' · 获得 '+got.join('、'):''}\n${rw.first&&rw.got.length?'【世界奖励】'+rw.got.join('、')+' 已入库（可在「角色」面板查看/装备/更换携带）。\n':''}${guoyunTxt}\n黑塔帮接头人满意地点头：“干净利落，连撤退都这么帅。下次还找你。”`
-      };
-    } else {
-      const lost = Math.floor(S.gold/2);
-      S.gold -= lost;
-      S.hp = Math.max(1, S.hp-8);
-      updateHUD();
-      OP.log.push('撤离途中遭遇世界残响截击——你丢下部分战利品，负伤冲出重围。');
-      OP.result = {
-        title:'惊险撤离', good:false,
-        text:`【损失】金币 -${lost} · 生命 -8\n“东西丢了可以再抢，人没了可就真没了。”接头人难得严肃起来。`
-      };
-    }
+    OP.log.push(`【骰】撤离：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 ${dc} ${res.success?'　判定成功':'　判定失败'}`);
+    if(res.success){ opWithdrawSuccess(false); }
+    else { opWithdrawFail(false); }
     OP.phase = 'done';
     renderOperation();
   }, 700);
+}
+function opForceWithdraw(){
+  OP.phase = 'withdrawing';
+  renderOperation();
+  const w = OP.world;
+  const dc = 58 + Math.min(OP.steps, 12);
+  const res = runCheck('agi', dc, '强制撤离 · 强行突围');
+  setTimeout(()=>{
+    OP.log.push(`【骰】强制撤离：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 ${dc} ${res.success?'　判定成功':'　判定失败'}`);
+    if(res.success){ opWithdrawSuccess(true); }
+    else { opWithdrawFail(true); }
+    OP.phase = 'done';
+    renderOperation();
+  }, 700);
+}
+/* 撤离结算：主动 / 强制 */
+function opWithdrawSuccess(forced){
+  const w = OP.world;
+  const rw = opWorldReward();
+  let goldGain = 25 + (rw.first? w.base : 0);
+  // 联动：搜得越深、残响线索越多，奖励越厚
+  goldGain += OP.found * 4;
+  // 副本流评分：探索深度 × 残响线索 → 副本评级，及时撤离吃满加成；强制撤离评级降档
+  const rateMap = {S:15, A:10, B:5, C:0};
+  const rating = OP.found>=3 ? 'S' : OP.steps>=Math.ceil(OP.limit*0.7) ? 'A' : OP.steps>=Math.ceil(OP.limit*0.4) ? 'B' : 'C';
+  const finalRating = forced ? (rating==='S'?'A': rating==='A'?'B': rating==='B'?'C':'C') : rating;
+  const rateBonus = rateMap[finalRating];
+  goldGain += rateBonus;
+  if(forced) goldGain = Math.floor(goldGain*0.7);
+  S.gold += goldGain;
+  const got=[];
+  if(rw.got.length) got.push(rw.got[0]);
+  if(!S.items.includes('memcard') && rand(100)<60){ S.items.push('memcard'); got.push('记忆卡'); }
+  if(rand(100)<45){ S.items.push('coin'); got.push('命运币'); }
+  updateHUD();
+  OP.log.push(w.loot);
+  if(rw.first && rw.got.length) OP.log.push(`【首次完成「${w.name}」】获得 ${rw.got.join('、')}！`);
+  let guoyunTxt='';
+  if(w.guoyun){ const gy=guoyunDraw(); guoyunTxt='\n'+gy; OP.log.push(gy); }
+  if(OP.found>0) OP.log.push(`残响线索 ${OP.found} 条，撤离奖励加成 ${OP.found*4} 金币。`);
+  OP.log.push(`【副本评分】${finalRating} 级 —— 探索 ${OP.steps}/${OP.limit} 处，评级奖金 +${rateBonus} 金币。`);
+  OP.log.push('你带着战利品扬长而去，身后传来世界残响的低鸣。');
+  const collectedTxt = OP.collected.length? '\n【特色收获】'+OP.collected.join('、') : '';
+  const clueTxt = OP.found? '\n【残响线索】'+OP.found+' 条 → 撤离奖励加成' : '';
+  OP.result = {
+    title:(forced? '仓皇突围 · ':'行动圆满 · ')+w.name, good:true,
+    text:`【奖励】金币 +${goldGain}${got.length?' · 获得 '+got.join('、'):''}${collectedTxt}${clueTxt}\n${rw.first&&rw.got.length?'【世界奖励】'+rw.got.join('、')+' 已入库（可在「角色」面板查看/装备/更换携带）。\n':''}${forced?'（强制撤离——来不及整顿，收益折损三成，金币与部分收获被世界吞掉）\n':''}${guoyunTxt}\n黑塔帮接头人满意地点头：“干净利落。下次还找你。”`
+  };
+}
+function opWithdrawFail(forced){
+  const w = OP.world;
+  const lost = Math.floor(S.gold/2);
+  S.gold -= lost;
+  S.hp = Math.max(1, S.hp-8);
+  updateHUD();
+  OP.log.push('撤离途中遭遇世界残响截击——你丢下部分战利品，负伤冲出重围。');
+  const lostTxt = OP.collected.length? ' · 你慌乱间丢下了「'+OP.collected.splice(0, Math.max(1, Math.ceil(OP.collected.length*0.5))).join('、')+'」' : '';
+  OP.result = {
+    title: forced? '仓皇逃出' : '惊险撤离', good:false,
+    text:`【损失】金币 -${lost} · 生命 -8${lostTxt}\n${forced? '你几乎是被这个世界扔出来的——没能带走的东西，都化作了残响。':'“东西丢了可以再抢，人没了可就真没了。”接头人难得严肃起来。'}`
+  };
 }
 
 /* ---------- 箱庭地图 / 区域探索 ---------- */
@@ -2875,7 +3150,7 @@ function renderMap(){
   html += `</div>
     <div class="choices">
       <div class="choice" id="map-char"><span class="c-tag">【角色】</span>打开角色 / 背包 / 队伍 / 技能</div>
-      <div class="choice" id="map-ops"><span class="c-tag">【任务】</span>黑塔帮 · 跨世界搜打撤任务板</div>
+      <div class="choice" id="map-ops"><span class="c-tag">【任务】</span>黑塔帮 · 跨世界箱庭探索任务板</div>
       <div class="choice" id="map-save"><span class="c-tag">【存档】</span>存档 / 读档</div>
       <div class="choice" id="map-back"><span class="c-tag">【返回】</span>回到之前的地方</div>
     </div></div>`;
@@ -3118,7 +3393,7 @@ function renderChar(){
     });
     html += `</div>`;
   });
-  if(!hasItem) html += `<div class="notice">背包空空如也——去搜打撤世界或打赢战斗，带点好东西回来。</div>`;
+  if(!hasItem) html += `<div class="notice">背包空空如也——去箱庭探索世界或打赢战斗，带点好东西回来。</div>`;
   html += `<div class="choices"><div class="choice" id="char-close"><span class="c-tag">【返回】</span>返回游戏</div></div></div>`;
   v.innerHTML = html;
   showView('char');
@@ -3231,7 +3506,7 @@ function renderTitle(){
   updateHUD();
   const v=$('view-title');
   v.innerHTML = `
-    <div class="title-mark">文字肉鸽 · 安科骰子 · 天赋构筑 · 跨万界搜打撤</div>
+    <div class="title-mark">文字肉鸽 · 安科骰子 · 天赋构筑 · 跨万界箱庭探索</div>
     <h1 class="title-name">回响之城</h1>
     <div class="title-sub">万 界 骰 局</div>
     <div class="title-dice">⚄</div>
@@ -3261,7 +3536,7 @@ function renderTitle(){
       ▸ <b>安科骰子</b>：关键抉择由 1d100 判定——大成功（1-5）必成，大失败（96-100）必败。失败时可用<b>命运点</b>重掷。<br>
       ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。金币/装备/等级不保留，但<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
       ▸ <b>箱庭开放世界</b>：三片街区自由探索——巡逻战斗、随机际遇、真相碎片支线，主线不再是单行道。<br>
-      ▸ <b>跨世界搜打撤</b>：加入阵营后接黑塔帮任务——在 <b>19 个</b>小说/游戏世界（空岛/仙山/国运/万族/旷野/圣巢……）里执行「搜→打→撤」。国运战场撤离时还能<b>抽国运卡</b>，吉凶一念。每个世界有专属技能/装备或强力队友，完成越多解锁越多。<br>
+      ▸ <b>跨世界箱庭探索</b>：加入阵营后接黑塔帮任务——在 <b>19 个</b>小说/游戏世界（空岛/仙山/国运/万族/旷野/圣巢……）里自由搜索，每次随机收获<b>世界特色产物</b>，也可能惊动守卫或踩中陷阱。搜得越深世界越凶，到<b>探索上限</b>会被强制撤离——及时抽身才能把收获带回家。国运战场撤离时还能<b>抽国运卡</b>，吉凶一念。每个世界有专属技能/装备/特色产物或强力队友，完成越多解锁越多。<br>
       ▸ <b>自定义剧本</b>：点「✍ 自定义剧本」，用简单 JSON 写一段你自己的多分支剧情，导入即玩——像 MarkdownGame 那样，人人都能当编剧。<br>
       ▸ <b>多剧情多结局</b>：箱庭主线 × 阵营抉择 × NPC 支线，通向 4 个结局（含隐藏结局）。你的每一个选择，都会留下“回响”。<br><br>
       <b>隐藏要素</b>：获得【回响水晶】或【真相透镜】后，第三章会解锁隐藏选项「？？？？」。
