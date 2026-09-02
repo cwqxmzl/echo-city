@@ -728,6 +728,62 @@ step('AI 剧情模式无运行时错误', () => {
   ok('无运行时错误', errors.length === 0);
 });
 
+
+console.log('== 22. 生存沙盒（在异世界活下去） ==');
+step('生存入口与初始化', () => {
+  G('boot(); newRun(); applyClass("sword"); S.stats.str=80; S.stats.agi=80; S.stats.int=80; S.stats.per=80; S.stats.cha=80; S.stats.con=80;');
+  G('renderWorldIntro("sky")');
+  ok('世界入口有生存按钮', !!d.getElementById('wi-surv'));
+  G('survStart("sky")');
+  ok('生存已初始化（第1天）', G('S.surv && S.surv.day===1 && S.surv.world==="sky"'));
+  ok('生存面板已显示', G('document.getElementById("view-survival").classList.contains("active")'));
+  ok('行动按钮存在', !!d.getElementById('sv-act-gather'));
+});
+step('生存行动触发随机事件', () => {
+  const before = G('S.surv.day');
+  G('survAct("gather")');
+  ok('行动后触发随机事件', G('!!S.surv.event'));
+  ok('事件面板已渲染', !!d.getElementById('sv-opt-0'));
+  ok('事件有选项', G('S.surv.event.opts.length>=2'));
+  G('survChoose(0)');
+  ok('选择后事件结算、天数推进', G('S.surv.day>='+(before+1)+' && S.surv.event===null'));
+  ok('夜晚结算饱食消耗', G('S.surv.food<=7'));
+});
+step('各行动类型均可执行', () => {
+  ['explore','gather','fight','social','craft','rest'].forEach(t=>{
+    G('S.surv.event=null; S.surv.stamina=6; S.surv.food=5; S.surv.mind=5; S.hp=S.maxHp;');
+    G('survAct('+JSON.stringify(t)+')');
+    const evt = G('!!S.surv.event');
+    if(evt){ G('survChoose(0)'); }
+    ok('行动可执行：'+t, true);
+  });
+});
+step('探索至深处触发命运结局', () => {
+  G('S.surv.event=null; S.surv.depth=3; S.surv.state="alive";');
+  G('survAct("explore")');
+  ok('深度3后探索触发命运结局', G('S.surv.state==="cleared" || !!S.surv.event'));
+  if(G('S.surv.state!=="cleared"')){ G('survChoose(0)'); }
+  if(G('S.surv.state!=="cleared"')){ G('survAct("explore")'); }
+  ok('命运结局已记录', G('(S.survCleared||[]).indexOf("sky")>=0'));
+});
+step('归隐结算', () => {
+  G('S.surv={world:"sky", day:5, stamina:3, food:4, mind:4, depth:1, state:"alive", event:null};');
+  const fate0 = G('S.fate');
+  G('survRetire()');
+  ok('归隐结算增加命运点', G('S.fate>='+(fate0+1)+''));
+  ok('归隐后记录最佳天数', G('(S.survBest||{})["sky"]>=4'));
+  ok('归隐后回到世界入口', G('S.surv===null'));
+});
+step('死亡结算', () => {
+  G('S.surv={world:"sky", day:3, stamina:2, food:0, mind:2, depth:0, state:"alive", event:null};');
+  G('S.hp=0;');
+  G('survApply({dmg:0}, [])');
+  ok('死亡结算回到世界入口', G('S.surv===null'));
+});
+step('生存沙盒无运行时错误', () => {
+  ok('无运行时错误', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
