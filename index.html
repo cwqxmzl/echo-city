@@ -599,6 +599,10 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
   .choice,.cact,.btn,.ctab{padding-top:12px;padding-bottom:12px;}
   .hub-grid,.ach-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
 }
+
+/* ===== 第二十轮：词条叙事化 / 内心独白 ===== */
+.tag-lore{font-size:11px;color:#9fb7c4;font-style:italic;line-height:1.5;margin-top:4px;opacity:.85;letter-spacing:.02em;}
+.story .mono, .story mono, [class*="mono"]{color:#b9c6d0;font-style:italic;}
 </style>
 </head>
 <body>
@@ -6607,16 +6611,16 @@ const TAG_BAG_MAX = 12;
 const TAG_SLOT_BASE = 3;
 const TAG_GRADES = {D:'普通', B:'稀有', A:'史诗', S:'传说'};
 const TAG_POOL = [
-  {id:'harvest', n:'词条·丰收', g:'D', desc:'探索收获的金币 +100%（翻倍）', fx:'gold'},
-  {id:'alert',   n:'词条·警觉', g:'D', desc:'遭遇战与陷阱概率减半，且陷阱只损失 1 成', fx:'calm'},
-  {id:'insight', n:'词条·洞察', g:'D', desc:'搜索更大概率进入收获区；每次搜索额外 +1 命运点', fx:'insight'},
-  {id:'tough',   n:'词条·坚韧', g:'B', desc:'战斗受到伤害 -20%', fx:'mit'},
-  {id:'rage',    n:'词条·狂暴', g:'B', desc:'暴击率 +25%', fx:'crit'},
-  {id:'echo',    n:'词条·回响', g:'B', desc:'战斗胜利额外 +2 回响碎片', fx:'echo'},
-  {id:'luck',    n:'词条·天运', g:'A', desc:'大成功区间 +6（更容易大成功）', fx:'luck'},
-  {id:'vamp',    n:'词条·噬魂', g:'A', desc:'攻击恢复 20% 造成伤害的生命', fx:'vamp'},
-  {id:'loot',    n:'词条·聚宝', g:'A', desc:'撤离奖励 +50%', fx:'loot'},
-  {id:'omni',    n:'词条·万般', g:'S', desc:'全能：金币+15%、减伤10%、暴击+10%、大成功+2、撤离奖励+15%', fx:'omni'}
+  {id:'harvest', n:'词条·丰收', g:'D', desc:'探索收获的金币 +100%（翻倍）', fx:'gold',lore:'无数座粮仓最后的囤积，凝成一句执念——别让谁饿着。'},
+  {id:'alert',   n:'词条·警觉', g:'D', desc:'遭遇战与陷阱概率减半，且陷阱只损失 1 成', fx:'calm',lore:'第一声警报被反复回放，直到它自己变成了力量。'},
+  {id:'insight', n:'词条·洞察', g:'D', desc:'搜索更大概率进入收获区；每次搜索额外 +1 命运点', fx:'insight',lore:'一个观测者临死前的执念：再看清一点，再……看清一点。'},
+  {id:'tough',   n:'词条·坚韧', g:'B', desc:'战斗受到伤害 -20%', fx:'mit',lore:'曾被人守护过的人，死后把守护刻进了这枚词条。'},
+  {id:'rage',    n:'词条·狂暴', g:'B', desc:'暴击率 +25%', fx:'crit',lore:'最后一次爆发没能吼出口，怒火便在这里安了家。'},
+  {id:'echo',    n:'词条·回响', g:'B', desc:'战斗胜利额外 +2 回响碎片', fx:'echo',lore:'这座城市最深处的声音——你好像在哪里听过。'},
+  {id:'luck',    n:'词条·天运', g:'A', desc:'大成功区间 +6（更容易大成功）', fx:'luck',lore:'有人把一辈子的好运都押在了最后一掷上。'},
+  {id:'vamp',    n:'词条·噬魂', g:'A', desc:'攻击恢复 20% 造成伤害的生命', fx:'vamp',lore:'吞噬是为了不消散。它只是，太怕消失了。'},
+  {id:'loot',    n:'词条·聚宝', g:'A', desc:'撤离奖励 +50%', fx:'loot',lore:'守财奴的执念：带不走，也要攥在手里。'},
+  {id:'omni',    n:'词条·万般', g:'S', desc:'全能：金币+15%、减伤10%、暴击+10%、大成功+2、撤离奖励+15%', fx:'omni',lore:'万般皆空，唯执念不空。它什么都记得。'}
 ];
 const TAG_ORDER = ['D','B','A','S'];
 function tagById(id){ return TAG_POOL.find(t=>t.id===id); }
@@ -6671,7 +6675,7 @@ function renderTagWorkshop(){
     </div>
     <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">词条背包 ${bag.length}/${TAG_BAG_MAX}（死亡不掉落）</div>
     <div class="tag-bag">
-      ${bag.length? bag.map(t=>`<div class="tag-card" data-equip="${t.id}" style="border-color:${tagGradeColor(t.g)}"><div class="tag-n">${esc(t.n)}</div><div class="tag-g">${TAG_GRADES[t.g]}级</div><div class="tag-d">${esc(t.desc)}</div><div class="tag-act">点击装备</div></div>`).join('') : '<div class="tag-empty">背包空空如也——去万界冒险或世界模拟器里搜刮词条吧。</div>'}
+      ${bag.length? bag.map(t=>`<div class="tag-card" data-equip="${t.id}" style="border-color:${tagGradeColor(t.g)}"><div class="tag-n">${esc(t.n)}</div><div class="tag-g">${TAG_GRADES[t.g]}级</div><div class="tag-d">${esc(t.desc)}</div><div class="tag-lore">“${esc(t.lore||'一段被撕碎的记忆')}”</div><div class="tag-act">点击装备</div></div>`).join('') : '<div class="tag-empty">背包空空如也——去万界冒险或世界模拟器里搜刮词条吧。</div>'}
     </div>
     <div class="choices">
       <div class="choice ${synthReady?'tag-synth-ready':''}" id="tw-synth"><span class="c-tag">【合成】</span>3 个同品级词条 + 30 经验 → 合成更高品级${synthReady?' 🔥 可合成！':''}</div>
@@ -7678,16 +7682,17 @@ const S = {
   run:1, echoes:0, totalRuns:0, bestProgress:0, finishedEndings:[],
   hp:0, maxHp:0, mp:0, maxMp:0, gold:0, fate:0, items:[], talents:[],
   level:1, xp:0, cls:null, skills:[], skillPool:[], equip:{weapon:null,armor:null,trinket:null},
+  favor:{}, trust:{},
   roster:[], party:[],
   shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null,
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S.favor=d.favor||{}; S.trust=d.trust||{}; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -8374,15 +8379,85 @@ function gotoNode(id){
   updateHUD();
   renderScene(n);
 }
+
+/* ===== 第二十轮：跨周目态度系统（执念生成回响·轮回承载未竟） ===== */
+function npcTouch(key, fav, tr){ S.favor[key]=(S.favor[key]||0)+(fav||0); S.trust[key]=(S.trust[key]||0)+(tr||0); }
+function npcTier(key){
+  const t=S.trust[key]||0, run=S.run||1;
+  if(t>=25 || run>=10) return 4;  // 宿命
+  if(t>=12 || run>=5) return 3;   // 熟稔
+  if(t>=4  || run>=2) return 2;   // 既视感
+  return 1;                        // 陌生试探
+}
+function npcName(key, tier){
+  const nm={linwan:['那团回响','那个女孩','林晚','那个傻姑娘'], merchant:['灰袍人','那个商人','老灰','老家伙'], cat:['那只猫','那只老猫','老猫','城主猫']}[key]||['它','它','它','它'];
+  return nm[tier-1]||nm[0];
+}
+let CORNER_BASE=null;
+function patchCorner(){
+  const n=NODES['c1_e1a']; if(!n) return;
+  if(!CORNER_BASE){ CORNER_BASE={text:n.text, choices:JSON.parse(JSON.stringify(n.choices))}; }
+  const b=CORNER_BASE;
+  const tier=npcTier('linwan'), fav=S.favor['linwan']||0, nm=npcName('linwan',tier);
+  let lead='';
+  if(fav<-10){ lead='你离得还远，她就开始剧烈扭曲，发出尖锐的嘶鸣。她认得你的手段——或者说，她的执念记得。\n\n'; }
+  else if(fav>0 && tier>=3){ lead='雨下得真大。她站在那里，像被全世界忘了，却还在等人。你认得这把钥匙，认得她弯腰的弧度。\n\n'; }
+  else if(tier>=2){ lead='你下意识放轻了脚步。好像上一次，你走得太重，惊到她了。\n\n'; }
+  n.text=(lead||'')+(b.text||'');
+  const ch=[], base=b.choices;
+  const soothe=JSON.parse(JSON.stringify(base[0]));
+  let dc=52;
+  if(tier>=2) dc-=5;
+  if(tier>=3) dc-=5;
+  if(fav>0) dc-=10;
+  if(fav<-10) dc+=15;
+  dc=Math.max(15, Math.min(90, dc));
+  if(tier>=3){ soothe.desc='你见过太多次了——蹲下，放轻呼吸，把手伸向她的执念（难度 · 熟门熟路）'; }
+  else { soothe.desc='她的执念很深，想安抚她并不容易（难度 '+(dc>=65?'· 极难':dc>=50?'· 相当困难':dc>=35?'· 有点棘手':'· 已有松动')+'）'; }
+  soothe.dc=dc;
+  ch.push(soothe);
+  if(tier>=2){
+    ch.push({text:'叫她的名字……',tag:'既视感',desc:'你好像记得，她叫什么来着？（隐藏判定）',kind:'check',stat:'per',dc:tier>=3?38:45,
+      succ:'c1_ghost_peace_crit',fail:'c1_ghost_aggro',succCrit:'c1_ghost_peace_crit',failFumb:'c1_ghost_aggro_fumb',
+      succText:'（隐藏判定·既视感）“……'+nm+'。”名字脱口而出。\n\n她猛地抬头——这一次，她没有害怕。\n\n【印象：她记得你了】\n\n她缓缓把钥匙放进你手心，身形安定下来。'});
+  }
+  if(tier>=3){
+    ch.push({text:'“别等了，他不会来了。”',tag:'真相',desc:'告诉她真相，直接消解执念（高难度）',kind:'check',stat:'cha',dc:68,
+      succ:'c1_ghost_peace',fail:'c1_ghost_aggro',succCrit:'c1_ghost_peace_crit',failFumb:'c1_ghost_aggro_fumb',
+      succText:'（1d100+魅力 判定成功）你直视她：“别等了，他不会来了。”\n\n她愣住，然后……流下一滴数据泪。\n\n“谢谢。”她说。钥匙落在你手心，她终于消散。\n\n【获得：旧城钥匙】'});
+  }
+  if(tier>=4){
+    ch.push({text:'替她等',tag:'宿命',desc:'站到她的位置：“我替你等。”（隐藏支线）',kind:'check',stat:'per',dc:60,
+      succ:'c1_ghost_give',fail:'c1_ghost_aggro',succCrit:'c1_ghost_give_crit',failFumb:'c1_ghost_aggro_fumb',
+      succText:'你站到她的位置，接过钥匙：“我替你等。”\n\n她怔怔看着你，终于露出一丝极淡的笑。\n\n钥匙在你手中发烫——你感到，一种前所未有的“锚定”。\n\n【获得：旧城钥匙 · 轮回锚点+1】'});
+  }
+  ch.push(JSON.parse(JSON.stringify(base[1])));
+  if(tier>=2) ch.push(JSON.parse(JSON.stringify(base[2])));
+  n.choices=ch;
+}
 const NODE_ARRIVAL = {
-  'c1_ghost_peace': ()=>S.flag.old_key=true,
-  'c1_ghost_give': ()=>S.flag.old_key=true,
+  'c1_ghost_peace': ()=>{ S.flag.old_key=true; npcTouch('linwan',10,5); },
+  'c1_ghost_give': ()=>{ S.flag.old_key=true; npcTouch('linwan',20,10); },
+  'c1_e1a': ()=>patchCorner(),
+  'c1_ghost_peace_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',15,8); },
+  'c1_ghost_give_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',25,12); },
+  'c1_ghost_aggro': ()=>npcTouch('linwan',2,3),
+  'c1_ghost_aggro_fumb': ()=>npcTouch('linwan',-8,4),
+  'c1_ghost_kill': ()=>npcTouch('linwan',-15,5),
   'c1_merchant_crystal': ()=>{ S.flag.mystery_key=true; },
   'c2_faction_none': ()=>{ S.flag.mystery_key=true; },
   'c2_save_gm': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
   'c2_save_gm_force': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
   'c2_watch': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
   'c1_merchant_friend': ()=>{ if(S.shards<3) S.shards++; },
+  'c1_intro': ()=>{ const r=S.run||1; const n=NODES['c1_intro']; if(!n) return;
+    if(!n._introBase){ n._introBase=n.text; }
+    let mono='';
+    if(r>=10) mono='\n\n{mono}又是锈红色的天。第'+r+'次醒来，连霓虹闪烁的频率你都背得下来。这一次，要不要改个结局？{/mono}\n\n';
+    else if(r>=5) mono='\n\n{mono}你认得这条街。不是这一世的记忆——是更久、更远的地方，沉淀下来的本能。{/mono}\n\n';
+    else if(r>=2) mono='\n\n{mono}我……是不是来过这里？{/mono}\n\n';
+    n.text=mono+(n._introBase||'');
+  },
   'c2_log_read': ()=>{ if(S.shards<3) S.shards++; },
   'c2_final_hint': ()=>{ if(S.shards<3) S.shards++; }
 };
