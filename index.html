@@ -491,6 +491,30 @@ h1.title-name{
 .cust-choice.cond-off{opacity:.45;pointer-events:none}
 .story { white-space: pre-wrap; }
 .hint { font-size: 12px; }
+.ai-topbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.ai-topbar button,.ai-inputrow button,.ai-quick button,.ai-set button{background:var(--btn2, rgba(84,210,192,.15));border:1px solid var(--line);color:#cdeee8;border-radius:8px;padding:6px 12px;cursor:pointer}
+.ai-topbar button:hover,.ai-inputrow button:hover,.ai-quick button:hover{background:rgba(84,210,192,.3)}
+.ai-log{max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.25);margin:10px 0}
+.ai-line{font-size:14px;line-height:1.65;white-space:pre-wrap}
+.ai-line .ai-who{display:inline-block;font-weight:700;margin-right:8px}
+.ai-line.me{color:#a7e8df}
+.ai-line.me .ai-who{color:#54d2c0}
+.ai-line.ai{color:#e8e3d6}
+.ai-line.ai .ai-who{color:#f0b45a}
+.ai-inputrow{display:flex;gap:8px;margin:10px 0}
+.ai-in{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:8px;color:#eee;padding:9px 12px;font-size:14px}
+.ai-in::placeholder{color:#889}
+.ai-quick{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.ai-set{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+.ai-set h3{margin:0 0 8px;color:#54d2c0;font-size:15px}
+.ai-set label{display:block;margin:8px 0 3px;font-size:12px;color:#a7e8df}
+.ai-set input{width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:8px;color:#eee;padding:7px 10px;font-size:13px;margin-bottom:4px}
+.ai-wlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.ai-witem{border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer;background:rgba(84,210,192,.06)}
+.ai-witem:hover{background:rgba(84,210,192,.16)}
+.ai-witem b{display:block;color:#cdeee8;font-size:13px}
+.ai-witem span{font-size:11px;color:#889;display:block;margin-top:2px}
+.ai-prog{margin:8px 0;font-size:12px;color:#f0b45a}
 </style>
 </head>
 <body>
@@ -526,6 +550,7 @@ h1.title-name{
     <div class="view" id="view-ending"></div>
     <div class="view" id="view-custom"></div>
     <div class="view" id="view-customplay"></div>
+    <div class="view" id="view-ai"></div>
     <div class="view" id="view-booster"></div>
   </main>
 </div>
@@ -6308,13 +6333,13 @@ const S = {
   roster:[], party:[],
   shards:0, _locDone:{},
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
-  flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}
+  flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{}})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[]})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -7828,6 +7853,331 @@ function finishWorldStory(wid, msg){
 function wsCanReplay(wid){ return (S.storyDone||[]).indexOf(wid)>=0; }
 
 /* ---------- 世界模拟器（搜打撤 · 刷资源 / 练手的沙盒） ---------- */
+
+/* ============================================================
+   AI 剧情模式 —— 自由输入 · 动态叙事（本地引擎 + 可选远程 LLM）
+   ============================================================ */
+const AI_META = {"sky": {"name": "浮空群岛", "style": "空岛仙侠", "stages": ["风之回廊", "雷池之底", "风语者王座"], "mood": ["风鸣如潮", "雷光炸裂", "云海翻涌"]}, "wuxia": {"name": "快活林黑市", "style": "武侠江湖", "stages": ["黑市门口", "赌坊深巷", "快活王密室"], "mood": ["刀光剑影", "骰声暗涌", "杀机四伏"]}, "xianxia": {"name": "青云剑宗遗迹", "style": "修仙仙侠", "stages": ["剑冢", "问剑碑", "守剑魂"], "mood": ["剑气如虹", "剑鸣低回", "灵雾弥漫"]}, "ocean": {"name": "深渊海沟", "style": "海洋克苏鲁", "stages": ["深海裂隙", "沉船祭坛", "深渊之眼"], "mood": ["洋流低语", "水压如狱", "幽蓝微光"]}, "apoc": {"name": "辐射废墟", "style": "末世废土", "stages": ["废土边缘", "辐射井底", "旧纪元核心"], "mood": ["焦土生烟", "辐射嗡鸣", "风沙扑面"]}, "fantasy": {"name": "巨龙巢穴", "style": "西幻龙族", "stages": ["龙穴入口", "龙之巢心", "龙之契约"], "mood": ["龙息灼热", "鳞片生辉", "财宝生光"]}, "sci": {"name": "深空站", "style": "科幻星域", "stages": ["失重闸门", "外星信号源", "深空站之心"], "mood": ["星光凝滞", "电流噼啪", "AI低语"]}, "inf": {"name": "副本中枢", "style": "无限流", "stages": ["副本之门", "副本核心区", "中枢之眼"], "mood": ["空间扭曲", "能量乱流", "血光隐现"]}, "zelda": {"name": "旷野神域", "style": "致敬塞尔达", "stages": ["复苏神庙", "英杰残响", "神兽核心"], "mood": ["瘴气弥漫", "神庙幽光", "神兽轰鸣"]}, "hollow": {"name": "圣巢深渊", "style": "致敬空洞骑士", "stages": ["地底虫巢", "白后残响", "深渊回响"], "mood": ["虫鸣低语", "骨钉寒光", "虚空无声"]}, "elden": {"name": "交界之地", "style": "致敬艾尔登法环", "stages": ["黄金树影", "赐福指引", "交界之王座"], "mood": ["黄金辉光", "重力压迫", "律法低鸣"]}, "pet": {"name": "精灵大陆", "style": "致敬宝可梦", "stages": ["精灵学院", "传说精灵森林", "精灵王座"], "mood": ["精灵嬉闹", "藤蔓低垂", "掌声雷动"]}, "sekiro": {"name": "苇名国", "style": "致敬只狼", "stages": ["苇名城下", "少主之托", "剑圣试炼"], "mood": ["樱落如血", "刀锋映月", "战鼓沉沉"]}, "hades": {"name": "冥界试炼", "style": "致敬哈迪斯", "stages": ["冥河渡口", "诸神恩赐", "死神赌约"], "mood": ["冥河滔滔", "神光垂落", "镰影森然"]}, "guoyun": {"name": "国运战场", "style": "国运流", "stages": ["国运祭坛", "气运抽卡", "国运之终"], "mood": ["山河变色", "气运翻涌", "战旗猎猎"]}, "wanzu": {"name": "万族战场", "style": "万族流", "stages": ["万族烽火", "异族使节", "万族之劫"], "mood": ["号角连天", "血染荒原", "烽烟四起"]}, "guimi": {"name": "诡秘之都", "style": "致敬诡秘之主", "stages": ["雾都旧城", "非凡序列", "愚者低语"], "mood": ["煤气灯影", "魔药微光", "低语回响"]}, "honghuang": {"name": "洪荒古界", "style": "洪荒流", "stages": ["混沌初开", "量劫因果", "问道圣人"], "mood": ["紫气东来", "量劫翻涌", "大道苍茫"]}, "zhutian": {"name": "诸天万界", "style": "诸天流", "stages": ["万界枢纽", "域外天魔", "诸天之主"], "mood": ["光流交汇", "世界碎片", "星辰低语"]}, "genshin": {"name": "提瓦特大陆", "style": "致敬原神", "stages": ["蒙德风起地", "深渊教团", "元素共鸣"], "mood": ["蒲公英飞", "元素流转", "七国回声"]}, "free": {"name": "自由梦境", "style": "无限叙事", "stages": ["空白之地", "光门之后", "命运岔路"], "mood": ["虚无缥缈", "光晕流转", "命运低语"]}};
+
+function aiStart(wid){
+  if(!AI_META[wid]) wid='free';
+  S.ai={on:true, world:wid, stage:0, log:[], mem:{}, turns:0};
+  const meta=AI_META[wid];
+  const intro=(wid!=='free' && WORLD_STORIES[wid] && WORLD_STORIES[wid].intro)
+    ? WORLD_STORIES[wid].intro
+    : '你在一片空白中醒来，只有远方的光。输入「行动：……」开始你的故事。';
+  S.ai.log.push({role:'ai', text:intro+'\n\n（场景：'+meta.name+' · 阶段一：'+meta.stages[0]+'）'});
+  renderAI();
+}
+function renderAI(){
+  if(!S.ai) S.ai={on:false,world:'free',stage:0,log:[],mem:{},turns:0};
+  S.nodeId='ai'; S._returnNode=null;
+  autoSave(); updateHUD();
+  const v=$('view-ai');
+  const meta=AI_META[S.ai.world]||AI_META.free;
+  const api=S.aiApi||{};
+  const onLLM = !!(api.key && api.endpoint);
+  const rows=(S.ai.log||[]).map(l=>{
+    if(l.role==='me') return '<div class="ai-line me"><span class="ai-who">你</span>'+esc(l.text)+'</div>';
+    return '<div class="ai-line ai"><span class="ai-who">AI · 叙事</span>'+esc(l.text).replace(/\n/g,'<br>')+'</div>';
+  }).join('');
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">AI 剧情模式 · ${esc(meta.name)}（${esc(meta.style)}）</div>
+      <div class="scene-title">自由叙事 · 你的故事由你书写</div>
+      <div class="scene-tagline">没有固定选项。输入你想做的任何事——「行动：……」「说：……」「剧情：……」「看：……」，叙事实时回应。你偷过的东西会被记住，你救下的人会回来报恩。</div>
+      <div class="ai-topbar">
+        <button onclick="aiWorldPick()">🌏 更换场景</button>
+        <button onclick="aiToggleSet()">${onLLM?'⚡ 已接远程 AI':'🤖 本地引擎'}</button>
+        <button onclick="aiReset()">◀ 返回枢纽</button>
+      </div>
+      <div id="ai-set" class="ai-set" style="display:none"></div>
+      <div id="ai-scenepick" class="ai-set" style="display:none"></div>
+      <div class="ai-prog">场景阶段：${esc(meta.stages[Math.min(S.ai.stage||0,2)])} ${S.ai.stage>=2?'（已到末章，继续行动可通关）':''} ｜ 本局记忆：${(S.ai.mem&&Object.keys(S.ai.mem).length||0)} 条 ｜ 回合 ${S.ai.turns||0}</div>
+      <div class="ai-log">${rows||'<div class="ai-line ai"><span class="ai-who">AI · 叙事</span>选择一个场景，开始你的自由冒险。</div>'}</div>
+      <div class="ai-inputrow">
+        <input id="ai-in" class="ai-in" placeholder="输入行动 / 说 / 剧情 / 看…… 例：调查那座雕像 / 对守卫说：放我进去" onkeydown="if(event.key==='Enter')aiSubmit()">
+        <button onclick="aiSubmit()">行动</button>
+      </div>
+      <div class="ai-quick">
+        <button onclick="aiQuick('调查周围')">🔍 调查</button>
+        <button onclick="aiQuick('向前探索')">➡ 前进</button>
+        <button onclick="aiQuick('攻击眼前的敌人')">⚔ 战斗</button>
+        <button onclick="aiQuick('和遇到的NPC交谈')">💬 交谈</button>
+        <button onclick="aiQuick('搜刮战利品')">💰 搜刮</button>
+        <button onclick="aiQuick('观察远处')">👁 看</button>
+      </div>
+      <div class="hint">提示：输入越具体，叙事越精彩。每次行动都会结算收益与风险，探索到底可通关本场景（首通 +2 命运点）。没接远程 AI 时由本地引擎驱动，完全离线可用。</div>
+    </div>`;
+  showView('ai');
+}
+function aiToggleSet(){
+  const box=$('ai-set'); if(box.style.display==='none'){ box.style.display='block'; }
+  const api=S.aiApi||{};
+  box.innerHTML = `
+    <h3>AI 引擎设置</h3>
+    <p style="margin:0 0 6px;font-size:13px;color:#bbb">本地引擎无需配置，开箱即玩。想接入真实 AI 获得真正的无限剧情？填写任一 OpenAI 兼容接口（endpoint + key + 模型）：</p>
+    <label>接口地址 endpoint</label>
+    <input id="ai-ep" value="${esc(api.endpoint||'')}" placeholder="https://api.openai.com/v1">
+    <label>API Key</label>
+    <input id="ai-key" type="password" value="${esc(api.key||'')}" placeholder="sk-...">
+    <label>模型</label>
+    <input id="ai-model" value="${esc(api.model||'gpt-4o-mini')}" placeholder="gpt-4o-mini">
+    <button onclick="aiSaveSet()">保存设置</button>
+    <button onclick="aiToggleSet()">收起</button>
+    <p class="hint">Key 只保存在你本机浏览器 localStorage，请求直接发往你填写的接口，不上传任何服务器。请求失败会自动切回本地引擎。</p>`;
+}
+function aiSaveSet(){
+  const ep=$('ai-ep').value.trim(), key=$('ai-key').value.trim(), model=$('ai-model').value.trim();
+  if(ep||key){ S.aiApi={endpoint:ep,key:key,model:model||'gpt-4o-mini'}; }
+  else { S.aiApi=null; }
+  saveSave(); renderAI();
+}
+function aiWorldPick(){
+  const box=$('ai-scenepick');
+  const list=Object.keys(AI_META).map(k=>{
+    const m=AI_META[k];
+    return '<div class="ai-witem" onclick="aiStart('+JSON.stringify(k)+')"><b>'+esc(m.name)+'</b><span>'+esc(m.style)+' · '+(S.aiCleared&&S.aiCleared.indexOf(k)>=0?'已通关':'未通关')+'</span></div>';
+  }).join('');
+  box.innerHTML='<h3>选择叙事场景（21 个）</h3><div class="ai-wlist">'+list+'</div><button onclick="aiWorldPickHide()">收起</button>';
+  box.style.display = box.style.display==='none'?'block':'none';
+}
+function aiWorldPickHide(){ $('ai-scenepick').style.display='none'; }
+function aiReset(){
+  S.ai.on=false; S._returnNode='hub'; renderHub();
+}
+function aiQuick(cmd){ aiSubmitStr(cmd); }
+async function aiSubmit(){ const el=$('ai-in'); aiSubmitStr(el.value); }
+async function aiSubmitStr(raw){
+  if(!S.ai.on) return;
+  const text=String(raw||'').trim(); if(!text) return;
+  S.ai.turns=(S.ai.turns||0)+1;
+  S.ai.log.push({role:'me', text:text});
+  const api=S.aiApi;
+  const useLLM = !!(api && api.key && api.endpoint);
+  if(useLLM){
+    S.ai.log.push({role:'ai', text:'（AI 叙事思考中……）'});
+    renderAI();
+    try{
+      const t=await aiLLM(text);
+      S.ai.log[S.ai.log.length-1]={role:'ai', text:t};
+    }catch(e){
+      S.ai.log[S.ai.log.length-1]={role:'ai', text:'（远程 AI 连接失败，已切换本地引擎）'};
+      const r=aiLocal(text);
+      if(r&&r.text) S.ai.log.push({role:'ai', text:r.text});
+      aiApply(r);
+    }
+  }else{
+    const r=aiLocal(text);
+    if(r&&r.text) S.ai.log.push({role:'ai', text:r.text});
+    aiApply(r);
+  }
+  autoSave(); updateHUD(); renderAI();
+  if(S.hp<=0){ S.hp=0; renderDeath(); }
+}
+function aiLLMPrompt(){
+  const meta=AI_META[S.ai.world]||AI_META.free;
+  const w = S.ai.world==='free'?null:worldById(S.ai.world);
+  let sp='你是《回响之城·万界骰局》的 AI 叙事主持（DM），用简体中文、第二人称（你）写 3-5 句沉浸式叙事推进剧情，结尾给 1-3 个建议动作（用【】括起来）。';
+  sp+='当前场景：'+meta.name+'（'+meta.style+'），叙事阶段：'+meta.stages[Math.min(S.ai.stage||0,2)]+'。';
+  if(w){ sp+='场景特色：'+w.special+'；可能遭遇的敌人：'+w.enemy+'；当地特产：'+w.loot+'；剧情背景：'+(WORLD_STORIES[w.id]?WORLD_STORIES[w.id].intro:'')+'。'; }
+  sp+='玩家状态：生命 '+S.hp+'/'+S.maxHp+'、法力 '+S.mp+'/'+S.maxMp+'、金币 '+S.gold+'、命运点 '+S.fate+'、属性 '+JSON.stringify(S.stats)+'。';
+  sp+='规则：接受玩家任何合理指令（行动/说话/剧情/观察），有起承转合；不要替玩家做决定；危险与收益并存；三阶段推进后给本场景一个结局。';
+  return sp;
+}
+async function aiLLM(raw){
+  const api=S.aiApi;
+  const url=(api.endpoint||'').replace(/\/+$/,'')+'/chat/completions';
+  const hist=(S.ai.log||[]).slice(-24).map(l=>({role:l.role==='me'?'user':'assistant', content:l.text}));
+  const res=await fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+(api.key||'')},
+    body:JSON.stringify({model:api.model||'gpt-4o-mini', messages:[{role:'system',content:aiLLMPrompt()}].concat(hist)})
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const j=await res.json();
+  const c=j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+  return c||'（AI 没有回应，试试换个说法。）';
+}
+function aiApply(r){
+  if(!r) return;
+  if(r.gold) S.gold=Math.max(0,S.gold+r.gold);
+  if(r.xp) gainXp(r.xp);
+  if(r.fate) S.fate=(S.fate||0)+r.fate;
+  if(r.hp) S.hp=Math.min(S.maxHp,S.hp+r.hp);
+  if(r.mp) S.mp=Math.min(S.maxMp,S.mp+r.mp);
+  if(r.dmg) S.hp=Math.max(0,S.hp-r.dmg);
+  if(r.progress) S.ai.stage=Math.min(2,(S.ai.stage||0)+r.progress);
+  if(r.stolen) S.ai.mem.stolen=true;
+  if(r.saved) S.ai.mem.saved=true;
+  if(r.item) S.ai.mem.items=(S.ai.mem.items||0)+r.item;
+  if(r.fight) S.ai.mem.fights=(S.ai.mem.fights||0)+1;
+  if(r.win) S.ai.mem.wins=(S.ai.mem.wins||0)+1;
+  if(r.clear && S.aiCleared.indexOf(S.ai.world)<0){ S.aiCleared.push(S.ai.world); S.fate=(S.fate||0)+r.fate||0; }
+}
+function aiIntent(raw){
+  const m=String(raw||'').match(/^(行动|do|说|say|剧情|story|看|see)\s*[:：]?\s*(.*)$/i);
+  if(m){ const pre=m[1].toLowerCase(), t=m[2];
+    if(pre==='行动'||pre==='do') return {type:'do',t};
+    if(pre==='说'||pre==='say') return {type:'say',t};
+    if(pre==='剧情'||pre==='story') return {type:'story',t};
+    if(pre==='看'||pre==='see') return {type:'see',t};
+  }
+  const t=String(raw||'');
+  if(/(逃|跑|撤|躲|溜|离开|撤离|撤退)/.test(t)) return {type:'flee',t};
+  if(/(偷|潜|偷袭|暗杀|窃|摸走)/.test(t)) return {type:'steal',t};
+  if(/(攻击|打|杀|砍|战|战斗|揍|猎杀|放技能|释放)/.test(t)) return {type:'attack',t};
+  if(/(去|走向|进入|探索|前进|搜索|前往|闯|推门|开门|迈步|深入)/.test(t)) return {type:'move',t};
+  if(/(看|观察|检查|查看|调查|环顾|望|审视|打量|搜索|侦测)/.test(t)) return {type:'look',t};
+  if(/(问|交谈|询问|对话|和|跟|找|打听|聊聊|求|拜见|喊)/.test(t) && !/(杀|打|抢|偷)/.test(t)) return {type:'talk',t};
+  if(/(捡|拿|搜刮|拾取|取走|摸尸|搜身|收刮|搬)/.test(t)) return {type:'take',t};
+  if(/(喝|吃|用|使用|装备|施展|念咒|喝药|服药|拿药)/.test(t)) return {type:'use',t};
+  return {type:'do',t};
+}
+function aiRoll(stat,dc){
+  const st=S.stats[stat]||0;
+  const d=Math.floor(Math.random()*100)+1;
+  const total=st*2+d;
+  const grade=total>=dc+30?'great':(total>=dc?'pass':(total>=dc-20?'fail':'fumble'));
+  return {total:d, grade};
+}
+function aiLocal(raw){
+  const meta=AI_META[S.ai.world]||AI_META.free;
+  const w=S.ai.world==='free'?null:worldById(S.ai.world);
+  const stage=Math.min(S.ai.stage||0,2);
+  const stageName=meta.stages[stage];
+  const enemy=w?w.enemy:'未知存在';
+  const loot=w?w.loot:'未知宝物';
+  const special=w?w.special:'无限可能';
+  const mem=S.ai.mem||{};
+  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  const it=aiIntent(raw);
+  if(mem.stolen && Math.random()<0.15 && (it.type==='move'||it.type==='look'||it.type==='do'||it.type==='take')){
+    return {text:'你刚动手，一声唿哨炸开'+rnd(['寂静','喧闹','暮色'])+'——「站住！就是那个偷了货的小子！」守卫竟一眼认出了你。偷过的东西，迟早是要还的。',dmg:6,xp:4};
+  }
+  if(mem.saved && Math.random()<0.12 && (it.type==='move'||it.type==='do'||it.type==='look')){
+    return {text:'一个身影从暗处闪出，把一包东西塞进你手里：「那天你救了我一命，这个你拿着。」——善缘结善果。',gold:8,xp:3,hp:10,saved:false};
+  }
+  switch(it.type){
+    case 'move': return aiL_move(meta,w,stage,stageName,enemy,special,rnd,it.t);
+    case 'look': return aiL_look(meta,w,stage,stageName,loot,enemy,rnd,it.t);
+    case 'talk': return aiL_talk(meta,w,stage,stageName,special,rnd,it.t);
+    case 'attack': return aiL_attack(meta,w,stage,stageName,enemy,rnd,it.t);
+    case 'steal': return aiL_steal(meta,w,stage,stageName,rnd,it.t);
+    case 'take': return aiL_take(meta,w,stage,stageName,loot,rnd,it.t);
+    case 'use': return aiL_use(meta,w,stage,stageName,rnd,it.t);
+    case 'flee': return aiL_flee(meta,w,stage,stageName,rnd,it.t);
+    case 'say': return aiL_say(meta,w,stage,stageName,special,rnd,it.t);
+    case 'story': case 'see': case 'do':
+    default: return aiL_do(meta,w,stage,stageName,enemy,loot,special,rnd,it.t);
+  }
+}
+function aiL_move(meta,w,stage,stageName,enemy,special,rnd,t){
+  const r=aiRoll('per',60);
+  if(stage>=2 && r.grade!=='fumble'){
+    return aiFinish(meta,w);
+  }
+  if(r.grade==='great'||r.grade==='pass'){
+    if(Math.random()<0.6){
+      const next=Math.min(2,stage+1);
+      const txt=r.grade==='great'
+        ? rnd(['你循着'+meta.mood[stage]+'一路向前，拨开迷雾，前方豁然开朗——已踏入「'+meta.stages[next]+'」。','脚下'+meta.mood[stage]+'，你走得极稳，一条前人留下的路标把你引向「'+meta.stages[next]+'」。'])
+        : rnd(['你谨慎前行，穿过重重障碍，抵达了「'+meta.stages[next]+'」。','绕过了几处险地，你终于摸到了「'+meta.stages[next]+'」的入口。']);
+      return {text:txt, progress:1, xp:6, gold:4};
+    }
+    return {text:rnd(['你稳步前行，'+meta.mood[stage]+'中一切如常。','你向前推进了一段路，'+rnd(['发现了新的线索','听见了远处'+enemy+'的动静','脚印通向更深处'])+'。']), xp:3};
+  }
+  return {text:rnd(['你冒进了一步，脚下'+rnd(['一滑','一软','一陷'])+'，'+meta.mood[stage]+'中传来危险的声响，你只得退回。','前路被'+rnd(['落石','荆棘','机关'])+'挡住，你撞了个灰头土脸。']), dmg:4, xp:1};
+}
+function aiL_look(meta,w,stage,stageName,loot,enemy,rnd,t){
+  const r=aiRoll('per',55);
+  if(r.grade==='great'||r.grade==='pass'){
+    const finds=rnd([
+      '你凑近细看，在'+rnd(['墙缝','石板下','残骸中'])+'发现一包'+loot+'！',
+      '你的目光扫过'+stageName+'，捕捉到'+enemy+'留下的'+rnd(['爪痕','足迹','标记'])+'，循迹必有所获。',
+      '你敏锐地察觉到'+rnd(['一处暗门','一道机关','一个隐秘夹层'])+'——这正是'+special+'的线索。'
+    ]);
+    return {text:finds+'（感知检定成功）', gold:6, xp:5, hp:6};
+  }
+  return {text:rnd(['你看了半天，'+meta.mood[stage]+'里什么异常都没有。','视线被'+rnd(['雾气','阴影','乱石'])+'挡住，你看不真切。']), xp:1};
+}
+function aiL_talk(meta,w,stage,stageName,special,rnd,t){
+  const r=aiRoll('cha',55);
+  if(r.grade==='great'||r.grade==='pass'){
+    const info=r.grade==='great'
+      ? rnd(['对方被你的人格魅力折服，压低声音说了个惊天秘密：'+special+'就藏在「'+stageName+'」深处。','你三言两语套出了关键情报，还收获一份厚礼。'])
+      : rnd(['对方半信半疑，但还是透露了些有用的消息。','聊了几句，你知道了这里最近不太平——有'+rnd(['陌生人','怪事','宝贝'])+'出没。']);
+    return {text:info, gold:5, xp:4};
+  }
+  return {text:rnd(['对方警惕地打量你，什么也不肯说。','话不投机，对方甩手就走，你只碰了一鼻子灰。']), dmg:1};
+}
+function aiL_attack(meta,w,stage,stageName,enemy,rnd,t){
+  const r=aiRoll('str',65);
+  if(r.grade==='great'||r.grade==='pass'){
+    const txt=r.grade==='great'
+      ? rnd(['你一击制敌，'+enemy+'轰然倒地，爆出'+(stage>=2?'大把财宝':'一堆战利品')+'！','你的出手快若惊雷，'+enemy+'连惨嚎都没来得及发出。'])
+      : rnd(['你与'+enemy+'缠斗数合，最终将它击退，捡到了战利品。','一番苦战，'+enemy+'倒下了，你也微微喘着气。']);
+    return {text:txt, gold:9, xp:9, win:true, fight:true, hp:stage>=2? -4:0};
+  }
+  if(r.grade==='fail'){
+    return {text:rnd([''+enemy+'反手一击，你躲闪不及，被狠狠撂倒。','你贸然出手，'+enemy+'早有防备，你吃了大亏。']), dmg:8, fight:true};
+  }
+  return {text:rnd(['你刚举起手，'+enemy+'先发制人，把你按在地上——附近还有人虎视眈眈，此地不宜久留。','对手太强，你被打得连连后退，差点栽进'+meta.mood[stage]+'里。']), dmg:14, fight:true};
+}
+function aiL_steal(meta,w,stage,stageName,rnd,t){
+  const r=aiRoll('agi',70);
+  if(r.grade==='great'){
+    return {text:'你的手快得几乎留下残影，东西到手，四周竟无一人察觉——这手绝活，值了。',gold:12,xp:8,stolen:true,item:1};
+  }
+  if(r.grade==='pass'){
+    return {text:'你趁乱摸走一包东西，刚转身，身后传来一声「咦？」——你头也不回地溜了。',gold:7,xp:5,stolen:true,item:1};
+  }
+  return {text:rnd(['你的手刚伸出去，就被当场抓住！「好你个贼！」你被臭骂一顿，赔了点钱。','偷鸡不成蚀把米——你被抓了个现行，狼狈逃窜。']), gold:-6, dmg:5, stolen:true};
+}
+function aiL_take(meta,w,stage,stageName,loot,rnd,t){
+  const r=aiRoll('per',50);
+  if(r.grade==='great'||r.grade==='pass'){
+    return {text:rnd(['你搜刮一番，翻出'+loot+'——正是好东西！','你在地上捡到一份意外之财。']), gold:6, xp:3, item:1, hp:4};
+  }
+  return {text:'你翻了半天，'+rnd(['一无所获','只找到些破烂','脚下一空，摔了一跤'])+'。', dmg:2};
+}
+function aiL_use(meta,w,stage,stageName,rnd,t){
+  const r=aiRoll('int',55);
+  if(r.grade==='great'||r.grade==='pass'){
+    return {text:rnd(['你掏出'+rnd(['药剂','法宝','符箓'])+'，'+meta.mood[stage]+'中泛起一阵暖光，你的状态恢复了不少。','你施展'+rnd(['灵术','咒诀','机关术'])+'，意外地触发了'+stageName+'的一处机关，宝光一闪。']), hp:18, mp:12, xp:4};
+  }
+  return {text:rnd(['你摆弄了半天，'+rnd(['没起作用','还弄出了一阵怪响','差点把自己点着'])+'。']), dmg:3, xp:1};
+}
+function aiL_flee(meta,w,stage,stageName,rnd,t){
+  const r=aiRoll('agi',60);
+  if(r.grade==='great'||r.grade==='pass'){
+    return {text:rnd(['你脚底抹油，身影一晃就没入'+meta.mood[stage]+'中，把追兵远远甩开。','你溜得干净利落，没人发现你刚才来过。']), xp:4, hp:6};
+  }
+  return {text:rnd(['你刚转身就被绊倒，'+(stage>=1?'摔进陷阱里，':'灰头土脸，')+'狼狈不堪。','逃跑路线被堵死，你只得硬着头皮折返。']), dmg:6};
+}
+function aiL_say(meta,w,stage,stageName,special,rnd,t){
+  const r=aiRoll('cha',55);
+  if(r.grade==='great'||r.grade==='pass'){
+    return {text:rnd(['你一番话掷地有声，在场之人都对你刮目相看——声望这种东西，攒下来总有用。','你开口即见功力，对方连连点头，把'+special+'的情报告诉了你。']), fate:1, xp:5};
+  }
+  return {text:rnd(['你说的话没人当真，场面一度有些尴尬。','话一出口你就后悔了——这话说得，还不如不说。']), xp:1};
+}
+function aiL_do(meta,w,stage,stageName,enemy,loot,special,rnd,t){
+  const r=aiRoll('agi',60);
+  if(r.grade==='great'||r.grade==='pass'){
+    return {text:rnd(['你做了个出人意料的举动，'+meta.mood[stage]+'都为之凝固——居然真的'+rnd(['成了','有门道','恰到好处'])+'！','你的大胆尝试收到奇效，'+stageName+'里'+rnd(['宝光一闪','一阵骚动','传来一声惊呼'])+'。']), gold:5, xp:5, hp:5};
+  }
+  return {text:rnd(['你贸然行动，'+meta.mood[stage]+'里'+rnd(['响起警报','一阵骚乱','暗处有人冷笑'])+'，你只得收手。','你的举动引来'+enemy+'的注意，只得赶紧躲开。']), dmg:5, xp:1};
+}
+function aiFinish(meta,w){
+  const first=(S.aiCleared||[]).indexOf(S.ai.world)<0;
+  let text='你一路走到了「'+meta.stages[2]+'」的尽头。';
+  if(w){ text+=' '+w.special+'在这一刻彻底属于你——'+w.name+'的传说里，刻下了你的名字。'; }
+  else { text+=' 梦境归于平静，但你知道，故事才刚刚开始。'; }
+  text+= first?' 你已走完本场景的主线叙事，命运点 +2。':'（本场景你早已通关，仍可自由探索。）';
+  return {text:text, clear:true, fate:2, xp:20, gold:15};
+}
+
 function renderSimulator(){
   S.nodeId='simulator';
   updateHUD();
@@ -8239,6 +8589,7 @@ function renderHub(){
         <div class="hub-card" id="hub-save"><div class="hc-icon">💾</div><div class="hc-name">存档 / 读档</div><div class="hc-desc">1 个自动存档 + 3 个手动槽位，冒险随时可存。</div><div class="hc-meta">随时保存进度</div></div>
         <div class="hub-card" id="hub-tagws"><div class="hc-icon">🔖</div><div class="hc-name">词条工作台</div><div class="hc-desc">红色神器：词条背包（死亡不掉落）/ 词条合成 / 词条分解 / 插槽解除。把搜刮到的词条，铸成你的力量。</div><div class="hc-meta">词条 ${(S.tagBag||[]).length} 个 · 生效 ${(S.equippedTags||[]).length} 个</div></div>
         <div class="hub-card" id="hub-custom"><div class="hc-icon">✍</div><div class="hc-name">自定义剧本</div><div class="hc-desc">用简单 JSON 写一段你自己的多分支剧情，导入即玩。</div><div class="hc-meta">人人都能当编剧</div></div>
+        <div class="hub-card" id="hub-ai"><div class="hc-icon">🧠</div><div class="hc-name">AI 剧情模式</div><div class="hc-desc">自由输入行动 / 说 / 剧情 / 看，叙事实时回应——你偷过的东西会被记住，你救下的人会回来报恩。可选接真实 AI，无限剧情。</div><div class="hc-meta">本地引擎开箱即玩 · '${(S.aiCleared||[]).length}/21 场景已探索'</div></div>
       </div>
       <div class="notice" style="margin-top:16px">提示：主线（回响之城）与万界冒险互不冲突——想打主线打主线，想闯异界闯异界，自由得很。</div>
     </div>`;
@@ -8250,6 +8601,7 @@ function renderHub(){
   $('hub-save').onclick=()=>renderSave();
   $('hub-tagws').onclick=()=>renderTagWorkshop();
   $('hub-custom').onclick=()=>renderCustomEditor();
+  $('hub-ai').onclick=()=>renderAI();
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
 
