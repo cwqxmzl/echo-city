@@ -547,6 +547,25 @@ h1.title-name{
 #guide-pop .guide-h{color:#cfe8e8;font-size:13px;line-height:1.7;margin-bottom:12px;}
 #guide-pop .guide-btn{background:#7fe0d0;color:#08262e;border:none;border-radius:8px;padding:7px 22px;font-weight:700;cursor:pointer;}
 .tag-synth-ready{border-color:#ffd700 !important;color:#ffd700 !important;}
+
+/* ===== UI 交互优化 · 第十七轮 ===== */
+/* 按钮状态反馈：悬停提亮 / 按下缩放 / 禁用 */
+.choice,.chip,.cact,.skill-card,.hub-card,.tag-card,.tag-chip{transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease, filter .12s ease !important;}
+.choice:active,.cact:active,.skill-card:active,.hub-card:active,.tag-card:active,.tag-chip:active,.chip:active{transform:scale(.96) !important;}
+.choice:hover,.chip:hover,.cact:hover,.skill-card:hover,.hub-card:hover,.tag-card:hover,.tag-chip:hover{filter:brightness(1.14);}
+.skill-card.locked,.cact.disabled,.choice.disabled{cursor:not-allowed;opacity:.42;pointer-events:none;}
+/* 页面切换软过渡（200-300ms 淡入） */
+@keyframes viewFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.view.active{animation:viewFade .28s ease-out;}
+/* 骰子滚动定格动画 */
+@keyframes dicePop{0%{transform:scale(.4);opacity:0;filter:brightness(2.3)}55%{transform:scale(1.12);opacity:1}72%{transform:scale(.96)}100%{transform:scale(1);opacity:1;filter:none}}
+.dice-log.show{animation:dicePop .62s ease-out;}
+/* 自动存档提示 */
+#save-toast{position:fixed;top:14px;right:14px;z-index:9998;opacity:0;pointer-events:none;transition:opacity .3s;}
+#save-toast.show{opacity:1;}
+#save-toast .st{background:rgba(16,42,58,.94);border:1px solid rgba(127,224,208,.5);border-radius:10px;padding:8px 14px;font-size:12px;color:#7fe0d0;display:flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(0,0,0,.45);}
+#save-toast .st-ico{width:9px;height:9px;border-radius:50%;background:#7fe0d0;box-shadow:0 0 10px #7fe0d0;animation:stBlink 1s ease-in-out infinite;}
+@keyframes stBlink{0%,100%{opacity:1}50%{opacity:.2}}
 </style>
 </head>
 <body>
@@ -7664,7 +7683,7 @@ function locLabel(nid){
 function hasSlot(slot){ return !!localStorage.getItem(SAVE_PREFIX+slot); }
 function slotInfo(slot){ try{ return JSON.parse(localStorage.getItem(SAVE_PREFIX+slot)); }catch(e){ return null; } }
 function deleteSlot(slot){ try{ localStorage.removeItem(SAVE_PREFIX+slot); }catch(e){} }
-function autoSave(){ saveSlot('auto'); }
+function autoSave(){ saveSlot('auto'); showSaveToast(); }
 function loadSlot(slot){
   const info = slotInfo(slot); if(!info || !info.data) return false;
   try{
@@ -8084,6 +8103,58 @@ function runCheck(stat, dc, label){
   const success = crit ? true : (total>=dc);
   return {stat,dc,label,roll,mod,total,crit,fumb,success,rerolled};
 }
+
+/* ===== 键盘快捷键（第十七轮 · 不打断沉浸的高效操作） =====
+   剧情：空格/回车继续 · 1-9 快速选选项
+   战斗：Q 普攻 · E 终结技 · 1/2/3 技能
+   全局：B 角色/背包 · M 枢纽地图 · Esc 关闭引导 */
+document.addEventListener('keydown', function(e){
+  const t = e.target;
+  if(t && (t.tagName==='INPUT' || t.tagName==='TEXTAREA' || t.isContentEditable)) return;
+  const cv = document.getElementById('view-combat');
+  const inCombat = cv && cv.classList.contains('active');
+  const k = e.key;
+  if(inCombat){
+    if(k==='q'||k==='Q'){ const a=document.querySelector('#combat-actions .cact'); if(a){e.preventDefault(); a.click();} return; }
+    if(k==='e'||k==='E'){ const a=[...document.querySelectorAll('#combat-actions .cact')].find(x=>(x.textContent||'').includes('终结技')); if(a){e.preventDefault(); a.click();} return; }
+    if(/^[1-3]$/.test(k)){ const sk=document.querySelectorAll('#skill-grid .skill-card'); const i=parseInt(k)-1; if(sk[i] && !sk[i].classList.contains('locked')){e.preventDefault(); sk[i].click();} return; }
+    return;
+  }
+  if(/^[1-9]$/.test(k)){
+    const box=document.getElementById('scene-choices') || document.querySelector('.view.active .choices');
+    if(box){ const opts=box.querySelectorAll('.choice'); const i=parseInt(k)-1; if(opts[i]){e.preventDefault(); opts[i].click();} }
+    return;
+  }
+  if(k===' '||k==='Enter'){
+    const btns=document.querySelectorAll('.view.active .choice');
+    let done=false;
+    for(const b of btns){
+      const txt=b.textContent||''; const id=b.id||'';
+      if(id.indexOf('continue')>=0 || id.indexOf('next')>=0 || id.indexOf('accept')>=0 || txt.indexOf('继续')>=0){ e.preventDefault(); b.click(); done=true; break; }
+    }
+    if(!done && btns.length===1){ e.preventDefault(); btns[0].click(); }
+    return;
+  }
+  if(k==='Escape'){ closeGuide(); return; }
+  const nid = (typeof S!=='undefined' && S && S.nodeId) ? S.nodeId : '';
+  const busy = ['title','talent','class','ending'].indexOf(nid)>=0;
+  if(busy) return;
+  if(k==='b'||k==='B'){ e.preventDefault(); renderChar(); return; }
+  if(k==='m'||k==='M'){ e.preventDefault(); renderHub(); return; }
+});
+
+/* 自动存档提示：进度已保存（节流 3 秒，避免连续闪烁） */
+function showSaveToast(){
+  const now=Date.now();
+  if(S._lastSaveToast && now-S._lastSaveToast<3000) return;
+  S._lastSaveToast=now;
+  let el=document.getElementById('save-toast');
+  if(!el){ el=document.createElement('div'); el.id='save-toast'; el.innerHTML='<div class="st"><span class="st-ico"></span>进度已保存</div>'; document.body.appendChild(el); }
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){ el.classList.remove('show'); }, 1100);
+}
+
 function diceLog(res){
   const e=$('dice-log');
   let line = `【骰】${res.label}｜1d100 = ${res.roll}`;
