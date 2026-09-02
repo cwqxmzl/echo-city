@@ -572,7 +572,10 @@ const SKILLS = {
   hack:{name:'黑客协议',type:'atk',mp:16,power:1.5,arm:true,int:true,desc:'无视防御的 1.5 倍伤害（科幻）'},
   pale:{name:'苍白之爪',type:'atk',mp:16,power:1.8,desc:'虚空残响凝成的利爪，1.8 倍伤害（圣巢）'},
   catch:{name:'收服之心',type:'buff',mp:10,aim:true,desc:'下一次攻击必定命中（精灵大陆）'},
-  blitz:{name:'冥河冲刺',type:'atk',mp:15,power:1.5,hits:2,desc:'连刺两次，每次 1.5 倍伤害（冥界）'}
+  blitz:{name:'冥河冲刺',type:'atk',mp:15,power:1.5,hits:2,desc:'连刺两次，每次 1.5 倍伤害（冥界）'},
+  guoyun:{name:'国运加护',type:'buff',mp:12,rage:true,desc:'举国气运入体，暴击率 +50%，持续 2 回合（国运）'},
+  tarot:{name:'塔罗占卜',type:'heal',mp:14,heal:.3,int:true,desc:'窥探命运回响，回复 30% 生命（诡秘）'},
+  zhutian:{name:'诸天穿梭',type:'buff',mp:12,haste:true,desc:'穿梭诸天，本回合先手且闪避 +30（诸天）'}
 };
 
 /* ---------- 道具 ---------- */
@@ -602,7 +605,9 @@ const ITEMS = [
   {id:'core_shard',name:'核心残片',type:'trinket',desc:'全属性 +1（无限流世界掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1}},
   {id:'mastersword',name:'驱魔之剑',type:'weapon',desc:'力量 +5，攻击判定 +10（旷野神域掉落）',equip:{str:5},atk:10},
   {id:'kusanagi',name:'苇名村正',type:'weapon',desc:'敏捷 +4，攻击判定 +6（苇名国掉落）',equip:{agi:4},atk:6},
-  {id:'golden_seal',name:'黄金律法印',type:'trinket',desc:'全属性 +1，受伤 -8%（交界之地掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1},mit:.08}
+  {id:'golden_seal',name:'黄金律法印',type:'trinket',desc:'全属性 +1，受伤 -8%（交界之地掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1},mit:.08},
+  {id:'wanzu_seal',name:'人族气运印',type:'trinket',desc:'全属性 +1，受伤 -10%（万族战场掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1},mit:.10},
+  {id:'honghuang_ling',name:'混沌灵宝',type:'trinket',desc:'智力 +3，攻击判定 +8（洪荒古界掉落）',equip:{int:3},atk:8}
 ];
 
 /* ---------- 敌人 ---------- */
@@ -653,7 +658,18 @@ const ENEMIES = {
   w_sekiro:{name:'苇名影武者',hp:58,atk:14,dc:61,spd:15,gold:32,xp:78,
     desc:'苇名国最后的影武者，剑术快如残影。他侍奉的主人已死，唯有忠义不灭。'},
   w_hades:{name:'冥河三首犬',hp:66,atk:16,dc:65,spd:13,gold:40,xp:92,
-    desc:'冥界的看门犬，三个头分别代表过去、现在与未来。想逃离冥界？先过它这一关。'}
+    desc:'冥界的看门犬，三个头分别代表过去、现在与未来。想逃离冥界？先过它这一关。'},
+  /* —— 跨世界搜打撤 · 小说世界（国运 / 万族 / 诡秘 / 洪荒 / 诸天） —— */
+  w_guoyun:{name:'敌国天骄',hp:64,atk:15,dc:64,spd:14,gold:38,xp:88,
+    desc:'国运战场上的敌国顶尖选手，背负一国之运。他输了，整个国家都要遭殃。'},
+  w_wanzu:{name:'万族战神',hp:68,atk:16,dc:66,spd:13,gold:42,xp:94,
+    desc:'万族战场上的异族战神，踏着无数人族的骸骨登上王座。它视人族为蝼蚁。'},
+  w_guimi:{name:'深渊注视者',hp:56,atk:14,dc:60,spd:12,gold:32,xp:78,
+    desc:'诡秘之都里不可名状的存在。被它注视久了，你会开始怀疑自己是不是真的。'},
+  w_honghuang:{name:'巫族战将',hp:70,atk:16,dc:67,spd:12,gold:44,xp:96,
+    desc:'洪荒古界的巫族勇士，肉身成圣，拳裂山河。它不屑于用兵器。'},
+  w_zhutian:{name:'万界守卫',hp:60,atk:15,dc:62,spd:14,gold:34,xp:82,
+    desc:'诸天万界的看门人，守着一扇扇通往不同故事的门。它不允许任何“外来者”乱窜。'}
 };
 
 /* ---------- 跨世界搜打撤 · 小说世界 ---------- */
@@ -775,7 +791,51 @@ const WORLDS = [
    combat:'冥河三首犬挣脱锁链，三个头同时嘶吼：“回去！回去！这里没有你要的路！”',
    loot:'你从冥河祭坛里拾起一张刻着“再试一次”的冲刺铭文——它像在嘲笑，又像在鼓励。',
    reward:{type:'skill',id:'blitz',name:'冥河冲刺'},
-   base:42}
+   base:42},
+  /* —— 小说世界（国运 / 万族 / 诡秘 / 洪荒 / 诸天） —— */
+  {id:'guoyun', name:'国运战场', style:'国运流', diff:3, unlock:10, guoyun:true,
+   desc:'两国气运对撞的竞技场。每个玩家都代表一国之运——赢了，国运加身；输了，举国遭殃。',
+   enemy:'w_guoyun',
+   search:'你踏上国运战台，全场山呼海啸。对面的敌国天骄冷笑：“你的国家，气数已尽。”你背上的国运龙旗猎猎作响。',
+   combat:'敌国天骄踏出一步，气运凝成龙形朝他身后汇聚：“胜负已定——你的国运，归我了！”',
+   loot:'你撕下对手的国运龙旗一角，其上缠绕的金色气运，化作一道纹路印入你的眉心。',
+   reward:{type:'skill',id:'guoyun',name:'国运加护'},
+   mate:'ningguang',
+   base:42},
+  {id:'wanzu', name:'万族战场', style:'万族争锋', diff:3, unlock:12,
+   desc:'诸天万族林立的宏大战场，人族在万族之巅摇摇欲坠。你的每一次战斗，都为人族气运添一分变数。',
+   enemy:'w_wanzu',
+   search:'万族战场上硝烟弥漫，人族的战旗在风中残破。远处，万族战神正踏着尸山而来。',
+   combat:'万族战神挥拳砸碎山岳：“人族？不过是万族的口粮！”碎石如雨，向你倾泻。',
+   loot:'你从战神破碎的甲胄中，抠出一枚染血的人族气运印——它承载着无数先烈的愿力。',
+   reward:{type:'equip',id:'wanzu_seal',name:'人族气运印'},
+   mate:'huangdi',
+   base:46},
+  {id:'guimi', name:'诡秘之都', style:'诡秘悬疑', diff:2, unlock:10,
+   desc:'雾气弥漫的旧日之都，占卜师、邪神与隐秘组织在阴影中交锋。在这里待久了，理性会被一点点啃噬。',
+   enemy:'w_guimi',
+   search:'你沿着鹅卵石街道深入雾都，猫头鹰在路灯上盯视。那家占卜店的招牌，在雾气里若隐若现。',
+   combat:'深渊注视者从雾中缓缓显现——它没有五官，只有一只布满整个头颅的、静静睁开的眼睛。',
+   loot:'你在占卜店残骸里拾起一张塔罗牌，牌面是「命运之轮」。背面写着：“别相信任何你看到的东西。”',
+   reward:{type:'skill',id:'tarot',name:'塔罗占卜'},
+   base:40},
+  {id:'honghuang', name:'洪荒古界', style:'洪荒史诗', diff:3, unlock:12,
+   desc:'开天辟地之初的洪荒，巫妖争霸、圣人大战、灵宝漫天。一缕洪荒遗泽，足以改天换命。',
+   enemy:'w_honghuang',
+   search:'你踏入洪荒，天地间灵气浓稠得化不开。远处，巫族战将正在搬运一座山岳——拿山岳当玩具的种族。',
+   combat:'巫族战将一拳轰碎山巅：“外来者，也配染指洪荒的灵宝？”拳风所过，空间都在震颤。',
+   loot:'你从巫族祭坛的裂缝中，捞起一件蒙尘的混沌灵宝，其上流转着开天之初的法则。',
+   reward:{type:'equip',id:'honghuang_ling',name:'混沌灵宝'},
+   base:46},
+  {id:'zhutian', name:'诸天万界', style:'诸天穿越', diff:2, unlock:10,
+   desc:'无数世界的万界之门。每推开一扇，就是一段全新的故事，也意味着未知的凶险。穿梭者，从不回头。',
+   enemy:'w_zhutian',
+   search:'你站在万界之门前，无数光门通往无数故事。万界守卫冷声开口：“外来者，选一扇门，或者死。”',
+   combat:'万界守卫化作残影向你扑来：“每扇门都藏着不同的死法——你选好了吗？”',
+   loot:'你从守卫的腰牌上，拓下一段「穿梭诸天」的秘纹，那是打开下一扇世界的钥匙。',
+   reward:{type:'skill',id:'zhutian',name:'诸天穿梭'},
+   mate:'venti',
+   base:40}
 ];
 
 /* ---------- 强力队友 ---------- */
@@ -811,7 +871,24 @@ const TEAMMATES = [
    desc:'副本中枢的迷之强者。没人知道他的来历，他只说：“你已经集齐了所有世界的故事，我来见证你的终章。”',
    pass:'战斗开始进入狂暴（暴击率+50%，持续2回合）；受击伤害 -10%',
    where:'首通「副本中枢」后加入',
-   onStart:()=>{ CB.buff.rage=2; S.flag._allyMit=0.1; combatLog('无名缓缓睁眼——【终局注视】降临，你进入狂暴状态！','ally'); }}
+   onStart:()=>{ CB.buff.rage=2; S.flag._allyMit=0.1; combatLog('无名缓缓睁眼——【终局注视】降临，你进入狂暴状态！','ally'); }},
+  {id:'ningguang', name:'凝光', title:'璃月天权',
+   desc:'璃月七星中的天权星，一手建起悬浮于云端的琼玑阁。她说：“和气生财，不过，先让我看看你的诚意。”',
+   pass:'战斗开始谈成好价：本场胜利金币 +10；每回合 20% 概率升起一层岩晶护盾',
+   where:'首通「国运战场」后加入',
+   onStart:()=>{ S.flag._allyGold=10; combatLog('凝光轻摇团扇，为你的战利品谈了个好价——本场金币收益 +10。','ally'); },
+   perTurn:()=>{ if(CB && CB.buff.guard<2 && rand(100)<20){ CB.buff.guard++; combatLog('凝光的岩晶浮起，为你挡下一击——护盾 +1 层。','ally'); } }},
+  {id:'venti', name:'温蒂', title:'风之诗人',
+   desc:'蒙德的吟游诗人，抱着竖琴唱风与自由的故事。他说：“风会把你带到该去的地方——前提是你别被卷走。”',
+   pass:'战斗开始回复 20% 法力；开场刮起烈风，敌方速度减半',
+   where:'首通「诸天万界」后加入',
+   onStart:()=>{ const mv=Math.round(S.maxMp*0.2); S.mp=Math.min(S.maxMp,S.mp+mv); combatLog(`温蒂拨动琴弦，风之回响环绕——法力 +${mv}。`,'ally'); if(CB){ CB.spd=Math.max(1,Math.floor(CB.spd/2)); combatLog('温蒂掀起千风，敌方的速度被削去一半！','ally'); } }},
+  {id:'huangdi', name:'荒', title:'人族帝君',
+   desc:'万族战场的人族天骄，从微末一路杀到万族之巅。他说：“人族，永不低头。”',
+   pass:'战斗开始获得 2 层护盾；每回合回复 4 点生命',
+   where:'首通「万族战场」后加入',
+   onStart:()=>{ CB.buff.guard=Math.max(CB.buff.guard,2); combatLog('荒提刀而立，人族气运加身——护盾 ×2。','ally'); },
+   perTurn:()=>{ if(S.hp<S.maxHp){ S.hp=Math.min(S.maxHp,S.hp+4); updateHUD(); combatLog('荒的命源流转，为你续上一缕生机，生命 +4。','ally'); } }}
 ];
 
 /* ---------- 箱庭区域（开放地图） ---------- */
@@ -1557,7 +1634,7 @@ function toggleParty(id){
 }
 /* 队友战斗效果：开场被动（startCombat 调用） */
 function applyAllyPassives(){
-  S.flag._allyDoubleMp=false; S.flag._allyMit=0;
+  S.flag._allyDoubleMp=false; S.flag._allyMit=0; S.flag._allyGold=0;
   if(!S.party.length) return;
   S.party.forEach(id=>{
     const m = teammateById(id); if(!m || !m.onStart) return;
@@ -2257,6 +2334,7 @@ function combatVictory(){
 function victoryRewards(withLoot){
   const e = ENEMIES[CB.id];
   S.gold += e.gold||0;
+  if(S.flag._allyGold){ S.gold += S.flag._allyGold; combatLog('凝光的琼玑阁为你拉来一笔赏金：金币 +'+S.flag._allyGold+'。','ally'); }
   if(e.reward){ combatLog(e.reward,'ok'); S.gold+=5; }
   // 天赋成长/回复
   if(S.talents.includes('growth')){
@@ -2417,6 +2495,18 @@ function opWorldReward(){
   }
   return {got, first};
 }
+/* 国运世界：撤离成功结算时额外一次「国运抽卡」（国运流特色玩法：举国气运，吉凶一念） */
+function guoyunDraw(){
+  const pool = [
+    {n:'上上签 · 国运加身', good:true,  f:()=>{ S.gold+=20; updateHUD(); return '举国气运加身，战利品翻倍入库——金币 +20。'; }},
+    {n:'中吉 · 祥瑞临门',  good:true,  f:()=>{ S.items.push('potion'); updateHUD(); return '国运护佑，你捡到一瓶回响药剂。'; }},
+    {n:'小吉 · 顺遂平安',  good:true,  f:()=>{ const h=Math.min(S.maxHp-S.hp,10); S.hp+=h; updateHUD(); return '气运流转，暗伤愈合——生命 +'+h+'。'; }},
+    {n:'凶 · 国运反噬',    good:false, f:()=>{ S.hp=Math.max(1,S.hp-10); updateHUD(); return '国运反噬，你遭了一记暗伤——生命 -10。'; }},
+    {n:'大凶 · 天罚降世',  good:false, f:()=>{ const l=Math.min(S.gold,20); S.gold-=l; updateHUD(); return '天罚降世，气运溃散——金币 -'+l+'。'; }}
+  ];
+  const c = pool[rand(pool.length)];
+  return '【国运抽卡】'+c.n+'：'+c.f();
+}
 function opWithdrawFromCombat(){
   if(!CB) return;
   combatLog('你且战且退，尝试从这个世界突围……', 'pl');
@@ -2461,10 +2551,16 @@ function opWithdraw(){
       updateHUD();
       OP.log.push(w.loot);
       if(rw.first && rw.got.length) OP.log.push(`【首次完成「${w.name}」】获得 ${rw.got.join('、')}！`);
+      let guoyunTxt='';
+      if(w.guoyun){
+        const gy = guoyunDraw();
+        guoyunTxt = '\n'+gy;
+        OP.log.push(gy);
+      }
       OP.log.push('你带着战利品扬长而去，身后传来世界残响的低鸣。');
       OP.result = {
         title:'行动圆满 · '+w.name, good:true,
-        text:`【奖励】金币 +${goldGain}${got.length?' · 获得 '+got.join('、'):''}\n${rw.first&&rw.got.length?'【世界奖励】'+rw.got.join('、')+' 已入库（可在「角色」面板查看/装备/更换携带）。\n':''}黑塔帮接头人满意地点头：“干净利落，连撤退都这么帅。下次还找你。”`
+        text:`【奖励】金币 +${goldGain}${got.length?' · 获得 '+got.join('、'):''}\n${rw.first&&rw.got.length?'【世界奖励】'+rw.got.join('、')+' 已入库（可在「角色」面板查看/装备/更换携带）。\n':''}${guoyunTxt}\n黑塔帮接头人满意地点头：“干净利落，连撤退都这么帅。下次还找你。”`
       };
     } else {
       const lost = Math.floor(S.gold/2);
