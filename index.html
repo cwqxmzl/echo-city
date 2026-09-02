@@ -580,7 +580,7 @@ const CLASSES = [
 
 /* ---------- 技能库（三技能槽构筑） ---------- */
 const SKILLS = {
-  slash:{name:'横斩',type:'atk',mp:8,power:1.6,desc:'强力斩击，造成 1.6 倍力量伤害'},
+  slash:{name:'横斩',type:'atk',mp:8,power:1.4,desc:'基础斩击，造成 1.4 倍力量伤害——新手之友，胜在便宜'},
   pierce:{name:'破甲击',type:'atk',mp:12,power:1.3,arm:true,desc:'无视防御的重击，伤害 1.3 倍'},
   cleave:{name:'连斩',type:'atk',mp:14,power:0.8,hits:2,desc:'连续斩击两次，每次 0.8 倍伤害'},
   bloodslash:{name:'吸血斩',type:'atk',mp:16,power:1.4,steal:.5,desc:'1.4 倍伤害，并回复伤害的一半'},
@@ -684,7 +684,7 @@ const ENEMIES = {
     desc:'圣巢深渊的虚空造物，模仿闯入者的动作。它的复眼里，倒映着你自己的影子。'},
   w_elden:{name:'褪色骑士',hp:62,atk:15,dc:63,spd:13,gold:36,xp:86,
     desc:'交界之地被黄金律法抛弃的骑士，为收集卢恩而战。他的长枪，从不落空。'},
-  w_pet:{name:'传说精灵',hp:50,atk:13,dc:57,spd:12,gold:26,xp:68,
+  w_pet:{name:'传说精灵',hp:54,atk:13,dc:58,spd:12,gold:26,xp:68,
     desc:'精灵大陆传说中的守护精灵，平时温顺，一旦被激怒，能掀起沙暴与雷雨。'},
   w_sekiro:{name:'苇名影武者',hp:58,atk:14,dc:61,spd:15,gold:32,xp:78,
     desc:'苇名国最后的影武者，剑术快如残影。他侍奉的主人已死，唯有忠义不灭。'},
@@ -695,11 +695,11 @@ const ENEMIES = {
     desc:'国运战场上的敌国顶尖选手，背负一国之运。他输了，整个国家都要遭殃。'},
   w_wanzu:{name:'万族战神',hp:68,atk:16,dc:66,spd:13,gold:42,xp:94,
     desc:'万族战场上的异族战神，踏着无数人族的骸骨登上王座。它视人族为蝼蚁。'},
-  w_guimi:{name:'深渊注视者',hp:56,atk:14,dc:60,spd:12,gold:32,xp:78,
+  w_guimi:{name:'深渊注视者',hp:60,atk:14,dc:61,spd:12,gold:32,xp:78,
     desc:'诡秘之都里不可名状的存在。被它注视久了，你会开始怀疑自己是不是真的。'},
   w_honghuang:{name:'巫族战将',hp:70,atk:16,dc:67,spd:12,gold:44,xp:96,
     desc:'洪荒古界的巫族勇士，肉身成圣，拳裂山河。它不屑于用兵器。'},
-  w_zhutian:{name:'万界守卫',hp:60,atk:15,dc:62,spd:14,gold:34,xp:82,
+  w_zhutian:{name:'万界守卫',hp:62,atk:15,dc:63,spd:14,gold:34,xp:82,
     desc:'诸天万界的看门人，守着一扇扇通往不同故事的门。它不允许任何“外来者”乱窜。'}
 };
 
@@ -2094,6 +2094,9 @@ function fillText(t){
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const v = $('view-'+name); if(v) v.classList.add('active');
+  /* 框架统一：每次切换视图回到顶部，保证浏览位置可预期 */
+  if(v) v.scrollTop = 0;
+  window.scrollTo(0,0);
 }
 function updateHUD(){
   const hud=$('hud'); hud.classList.add('on');
@@ -2271,6 +2274,16 @@ function startCombat(enemyId, winNode, loseNode, opts){
   updateHUD();
   applyAllyPassives();
   renderCombat();
+  /* 机制：敌人 spd 参与先手判定——spd 越高越可能抢先进攻
+     搜打撤模式走它自己的「被伏击先手」逻辑，不重复判定 */
+  if(!CB.opMode){
+    const f = roll100() + S.stats.agi;
+    const need = 50 + Math.round((e.spd-10)*2.5);
+    if(f < need){
+      combatLog(`${e.name}身法更快，抢先进攻！`, 'en');
+      setTimeout(()=>{ if(CB) combatEnemyTurn(); }, 700);
+    }
+  }
 }
 function renderCombat(){
   const e = ENEMIES[CB.id];
@@ -2310,7 +2323,7 @@ function renderCombat(){
     const b=document.createElement('div');
     b.className='skill-card'+(locked?' locked':'');
     b.innerHTML = `<span class="sk-name">${esc(sk.name)}</span><span class="sk-mp">◆ ${sk.mp}</span><span class="sk-desc">${esc(sk.desc)}</span>`;
-    b.onclick=()=>{ if(!locked) combatUseSkill(sid); };
+    b.onclick=()=>{ if(!locked){ if(CB && CB.auto) combatAutoStop(); combatUseSkill(sid); } };
     sg.appendChild(b);
   });
   const act = $('combat-actions');
@@ -2319,13 +2332,15 @@ function renderCombat(){
     b.innerHTML = `${txt}${sub?`<span class="ca-sub">${sub}</span>`:''}`;
     b.onclick = fn; act.appendChild(b);
   };
-  mk('攻击','力量+敏捷 · 命中'+CB.dc+' · 回蓝8', ()=>combatPlayerAttack(false));
-  mk('重击','伤害更高 · 命中-15', ()=>combatPlayerAttack(true));
-  mk('防御','本回合减伤50%', ()=>combatGuard());
-  if(countItem('potion')>0) mk('回响药剂',`剩余${countItem('potion')}`, ()=>combatItem('potion'));
-  if(countItem('mpotion')>0) mk('灵气药剂',`剩余${countItem('mpotion')}`, ()=>combatItem('mpotion'));
-  if(S.fate>0) mk('命运之力',`消耗1点·必中且暴击 (${S.fate})`, ()=>combatFate());
-  if(CB.opMode) mk('撤离','放弃战斗·尝试突围', ()=>opWithdrawFromCombat());
+  const man = (fn)=>()=>{ if(CB && CB.auto) combatAutoStop(); fn(); };
+  mk('攻击','力量+敏捷 · 命中'+CB.dc+' · 回蓝8', man(()=>combatPlayerAttack(false)));
+  mk('重击','伤害更高 · 命中-15', man(()=>combatPlayerAttack(true)));
+  mk('防御','本回合减伤50%', man(()=>combatGuard()));
+  if(countItem('potion')>0) mk('回响药剂',`剩余${countItem('potion')}`, man(()=>combatItem('potion')));
+  if(countItem('mpotion')>0) mk('灵气药剂',`剩余${countItem('mpotion')}`, man(()=>combatItem('mpotion')));
+  if(S.fate>0) mk('命运之力',`消耗1点·必中且暴击 (${S.fate})`, man(()=>combatFate()));
+  if(CB.opMode) mk('撤离','放弃战斗·尝试突围', man(()=>opWithdrawFromCombat()));
+  mk('⚡ 自动', CB.auto?'自动进行中 · 点击接管':'AI代打 · 一键连打', ()=>combatAuto());
   showView('combat');
 }
 function combatLog(html, cls){
@@ -2511,11 +2526,51 @@ function endEnemyTurn(){
   allyPerTurn();
   renderCombat();
 }
+/* ---------- 自动战斗（流畅度优化：AI 代打，可随时接管） ---------- */
+function combatAuto(){
+  if(!CB) return;
+  if(CB.auto){ combatAutoStop(); renderCombat(); return; }
+  CB.auto = true;
+  combatLog('—— 你切到自动挡，让技能自己飞。点「停止」或任一操作即可接管。', 'ok');
+  renderCombat();
+  CB._autoTimer = setInterval(combatAutoStep, 300);
+}
+function combatAutoStop(){
+  if(!CB) return;
+  CB.auto = false;
+  if(CB._autoTimer){ clearInterval(CB._autoTimer); CB._autoTimer=null; }
+}
+function combatAutoStep(){
+  if(!CB){ combatAutoStop(); return; }
+  // 1) 增益技能起手（瞄准/疾风/战吼/狂暴/嘲讽）
+  for(const sid of S.skills){
+    const sk = skillById(sid); if(!sk || sk.type!=='buff') continue;
+    const want = (sk.aim && !CB.buff.aim) || (sk.haste && !CB.buff.haste) ||
+                 (sk.atkup && CB.buff.atkup===0) || (sk.rage && CB.buff.rage===0) ||
+                 (sk.taunt && !CB.buff.taunt);
+    if(want && S.mp>=sk.mp){ combatUseSkill(sid); return; }
+  }
+  // 2) 生命告急 → 喝药
+  if(S.hp <= Math.max(1, Math.round(S.maxHp*0.4)) && countItem('potion')>0){ combatItem('potion'); return; }
+  // 3) 最高效攻击技能
+  let best=null, bestScore=-1;
+  for(const sid of S.skills){
+    const sk = skillById(sid); if(!sk || sk.type!=='atk') continue;
+    if(S.mp < sk.mp) continue;
+    const base = sk.int ? S.stats.int : S.stats.str;
+    const score = base*sk.power*(sk.hits||1) / sk.mp;
+    if(score>bestScore){ bestScore=score; best=sid; }
+  }
+  if(best){ combatUseSkill(best); return; }
+  // 4) 平A
+  combatPlayerAttack(false);
+}
 function combatVictory(){
   const e = ENEMIES[CB.id];
   combatLog(`你击败了 ${e.name}！`, 'crit');
   if(CB.opMode){
     // 搜打撤行动：目标已清除，进入撤离阶段
+    combatAutoStop();
     victoryRewards(false);
     gainXp(e.xp||0);
     combatLog('目标已清除！四周的异常数据四散奔逃——正是撤离的时机。', 'ok');
@@ -2528,6 +2583,7 @@ function combatVictory(){
     }, 950);
     return;
   }
+  combatAutoStop();
   victoryRewards(true);
   gainXp(e.xp||0);
   updateHUD();
@@ -3104,6 +3160,7 @@ function closeChar(){
 
 /* ---------- 死亡与轮回 ---------- */
 function renderDeath(){
+  combatAutoStop();
   const v=$('view-death');
   v.innerHTML = `
     <div class="panel" style="text-align:center">
