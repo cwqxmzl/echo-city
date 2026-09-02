@@ -515,6 +515,25 @@ h1.title-name{
 .ai-witem b{display:block;color:#cdeee8;font-size:13px}
 .ai-witem span{font-size:11px;color:#889;display:block;margin-top:2px}
 .ai-prog{margin:8px 0;font-size:12px;color:#f0b45a}
+.surv-bars{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.surv-bar{flex:1;min-width:120px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.surv-bar b{display:block;font-size:11px;color:#889;margin-bottom:3px}
+.surv-bar .sval{font-size:15px;color:#cdeee8}
+.surv-bar.low .sval{color:#f0785a}
+.surv-acts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.surv-act{border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;background:rgba(84,210,192,.06);text-align:left}
+.surv-act:hover{background:rgba(84,210,192,.16)}
+.surv-act b{display:block;color:#cdeee8;font-size:14px}
+.surv-act span{font-size:11px;color:#889;display:block;margin-top:2px;line-height:1.5}
+.surv-ev{border:1px solid #f0b45a;border-radius:12px;padding:14px;background:rgba(240,180,90,.07);margin:10px 0}
+.surv-ev .ev-name{color:#f0b45a;font-weight:700;font-size:14px;margin-bottom:6px}
+.surv-ev .ev-desc{font-size:14px;line-height:1.7;white-space:pre-wrap;color:#e8e3d6;margin-bottom:8px}
+.surv-opt{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:5px 0;cursor:pointer;font-size:13px;color:#cdeee8;background:rgba(0,0,0,.25)}
+.surv-opt:hover{background:rgba(84,210,192,.18)}
+.surv-acts-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;margin:10px 0}
+.surv-foot{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.surv-foot button{background:rgba(84,210,192,.15);border:1px solid var(--line);color:#cdeee8;border-radius:8px;padding:7px 12px;cursor:pointer}
+.surv-foot button:hover{background:rgba(84,210,192,.3)}
 </style>
 </head>
 <body>
@@ -551,6 +570,7 @@ h1.title-name{
     <div class="view" id="view-custom"></div>
     <div class="view" id="view-customplay"></div>
     <div class="view" id="view-ai"></div>
+    <div class="view" id="view-survival"></div>
     <div class="view" id="view-booster"></div>
   </main>
 </div>
@@ -6333,13 +6353,13 @@ const S = {
   roster:[], party:[],
   shards:0, _locDone:{},
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
-  flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null
+  flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[]})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[]})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -7691,7 +7711,8 @@ function renderWorldIntro(wid){
       <div class="notice">${esc(w.special||'')}</div>
       <div class="notice" style="color:#7fe0d0">首通奖励：${esc(w.reward.name)}${w.mate? ' + 强力队友「'+esc((teammateById(w.mate)||{}).name||w.mate)+'」':''}</div>
       <div class="choices">
-        <div class="choice" id="ws-story"><span class="c-tag">${(S.storyDone||[]).indexOf(w.id)>=0?'【重游】':'【剧情】'}</span>${(S.storyDone||[]).indexOf(w.id)>=0?'剧情已通关 · 重新体验该世界剧情':'深入剧情 · 完成「'+esc(w.name)+'」专属剧情线'}</div>
+        <div class="choice" id="wi-surv"><span class="c-tag">【生存】</span>在「${esc(w.name)}」活下去 · 自由生存，无主线束缚，随时归隐结算</div>
+        <div class="choice" id="ws-story"><span class="c-tag">${(S.storyDone||[]).indexOf(w.id)>=0?'【重游】':'【剧情】'}</span>${(S.storyDone||[]).indexOf(w.id)>=0?'剧情已通关 · 重新体验该世界剧情':'深入剧情 · 体验该世界命运线'}</div>
         <div class="choice" id="wi-go"><span class="c-tag">【进入】</span>选择外挂 · 进入「${esc(w.name)}」</div>
         <div class="choice" id="wi-back"><span class="c-tag">【返回】</span>看看别的世界</div>
       </div>
@@ -7699,6 +7720,8 @@ function renderWorldIntro(wid){
   showView('worlds');
   $('view').scrollTop=0; window.scrollTo({top:0});
   const _wsBtn=$('ws-story'); if(_wsBtn) _wsBtn.onclick=()=>renderWorldStory(w.id);
+  $('wi-surv').onclick=()=>survStart(w.id);
+  if(S._survMsg){ const _m=$('view-worlds'); if(_m){ _m.innerHTML='<div class=panel><div class=scene-title>生存结算</div><div class=story>'+esc(S._survMsg)+'</div><div class=choices><div class=choice id=sv-ok><span class=c-tag>【确定】</span>回到世界入口</div></div></div>'; showView('worlds'); const _b=$('sv-ok'); if(_b)_b.onclick=()=>{S._survMsg=null;renderWorldIntro(w.id);}; return; } }
   $('wi-go').onclick=()=>renderBooster(w.id);
   $('wi-back').onclick=()=>renderWorlds();
 }
@@ -7980,7 +8003,7 @@ function aiLLMPrompt(){
   const w = S.ai.world==='free'?null:worldById(S.ai.world);
   let sp='你是《回响之城·万界骰局》的 AI 叙事主持（DM），用简体中文、第二人称（你）写 3-5 句沉浸式叙事推进剧情，结尾给 1-3 个建议动作（用【】括起来）。';
   sp+='当前场景：'+meta.name+'（'+meta.style+'），叙事阶段：'+meta.stages[Math.min(S.ai.stage||0,2)]+'。';
-  if(w){ sp+='场景特色：'+w.special+'；可能遭遇的敌人：'+w.enemy+'；当地特产：'+w.loot+'；剧情背景：'+(WORLD_STORIES[w.id]?WORLD_STORIES[w.id].intro:'')+'。'; }
+  if(w){ sp+='场景特色：'+w.special+'；可能遭遇的敌人：'+(ENEMIES[w.enemy]?ENEMIES[w.enemy].name:w.enemy)+'；当地特产：'+w.loot+'；剧情背景：'+(WORLD_STORIES[w.id]?WORLD_STORIES[w.id].intro:'')+'。'; }
   sp+='玩家状态：生命 '+S.hp+'/'+S.maxHp+'、法力 '+S.mp+'/'+S.maxMp+'、金币 '+S.gold+'、命运点 '+S.fate+'、属性 '+JSON.stringify(S.stats)+'。';
   sp+='规则：接受玩家任何合理指令（行动/说话/剧情/观察），有起承转合；不要替玩家做决定；危险与收益并存；三阶段推进后给本场景一个结局。';
   return sp;
@@ -8176,6 +8199,233 @@ function aiFinish(meta,w){
   else { text+=' 梦境归于平静，但你知道，故事才刚刚开始。'; }
   text+= first?' 你已走完本场景的主线叙事，命运点 +2。':'（本场景你早已通关，仍可自由探索。）';
   return {text:text, clear:true, fate:2, xp:20, gold:15};
+}
+
+
+/* ============================================================
+   生存沙盒模式 —— 借鉴《在异世界活下去》：无主线 · 天数推进 · 行动回合 · 生存资源 · 随机事件 · 归隐/死亡/命运结局
+   ============================================================ */
+const SURV_COMMON = [{"name": "天气突变", "desc": "天空毫无征兆地变了脸，狂风夹杂着冰雹劈头盖脸砸下来。", "opts": [{"text": "找地方躲避", "fx": {"stamina": -1, "mind": 1}}, {"text": "顶着风雨赶路", "stat": "con", "dc": 65, "ok": {"xp": 6, "gold": 2}, "bad": {"dmg": 6}}, {"text": "收集雨水", "fx": {"food": 1, "stamina": -1}}]}, {"name": "神秘商人", "desc": "一个裹着黑袍的商人突然出现：「稀罕货，要么？」货摊上堆着发光的东西。", "opts": [{"text": "买一件", "fx": {"gold": -6, "item": 1}}, {"text": "以物易物", "fx": {"food": -2, "item": 1}}, {"text": "抢了他的货就跑", "stat": "agi", "dc": 75, "ok": {"gold": 12, "stolen": 1}, "bad": {"dmg": 9}}]}, {"name": "路遇伤者", "desc": "路边躺着个受伤的旅人，气息微弱，正艰难地朝你伸手。", "opts": [{"text": "上前救治", "trait": "good", "fx": {"mind": 2, "fate": 1, "stamina": -1}}, {"text": "搜他身", "stat": "per", "dc": 60, "ok": {"gold": 6, "item": 1}, "bad": {"mind": -2}}, {"text": "绕道而行", "fx": {"mind": -1}}]}, {"name": "神秘馈赠", "desc": "你发现脚边不知何时多了一只小包裹，系着红绳，像是有人特意留下的。", "opts": [{"text": "打开看看", "fx": {"gold": 5, "item": 1}}, {"text": "警惕地退开", "fx": {"mind": 1}}, {"text": "收起来，不碰它", "fx": {"stamina": -1}}]}, {"name": "遗迹石门", "desc": "一座半掩的石门出现在面前，门缝里透出幽光，还刻着警告的文字。", "opts": [{"text": "推门而入", "stat": "int", "dc": 65, "ok": {"gold": 10, "item": 1, "depth": 1}, "bad": {"dmg": 8, "mind": -1}}, {"text": "观察门口机关", "stat": "per", "dc": 60, "ok": {"xp": 6}, "bad": {"stamina": -2}}, {"text": "离开", "fx": {"stamina": -1}}]}, {"name": "灵感涌现", "desc": "忽然间，一段领悟涌上心头，你隐约触摸到了某种力量的本质。", "opts": [{"text": "顺势参悟", "fx": {"xp": 10, "fate": 1}}, {"text": "记下来", "fx": {"xp": 5, "stamina": -1}}, {"text": "分享给同伴", "trait": "good", "fx": {"mind": 2, "xp": 4}}]}, {"name": "疾疫蔓延", "desc": "附近开始流行一种奇怪的病，人人面色发青，连空气都带着苦味。", "opts": [{"text": "熬药预防", "fx": {"food": -1, "mind": 1}}, {"text": "远离人群", "fx": {"stamina": -2, "mind": 1}}, {"text": "帮他们熬药", "trait": "good", "fx": {"fate": 1, "mind": 2}}]}, {"name": "暗巷遇劫", "desc": "一条暗巷里闪出几个蒙面人：「把值钱的东西留下。」", "opts": [{"text": "交出钱财保平安", "fx": {"gold": -8}}, {"text": "硬拼", "stat": "str", "dc": 65, "ok": {"xp": 8, "gold": 6}, "bad": {"dmg": 10}}, {"text": "趁乱逃跑", "stat": "agi", "dc": 60, "ok": {"stamina": 1}, "bad": {"dmg": 4}}]}, {"name": "夜半歌声", "desc": "深夜里传来一段空灵的歌声，像在召唤什么，又像在诉说什么。", "opts": [{"text": "循声去看看", "stat": "per", "dc": 65, "ok": {"gold": 6, "fate": 1}, "bad": {"mind": -2}}, {"text": "捂住耳朵睡觉", "fx": {"stamina": 1, "mind": 1}}, {"text": "跟着唱", "trait": "wild", "fx": {"mind": -1, "xp": 4}}]}, {"name": "古井", "desc": "一口干涸的古井，井底似乎有什么东西在反光。", "opts": [{"text": "放下绳索下去", "stat": "agi", "dc": 70, "ok": {"gold": 8, "item": 1}, "bad": {"dmg": 7}}, {"text": "朝井里喊话", "fx": {"mind": 1, "xp": 2}}, {"text": "盖好井口", "trait": "good", "fx": {"mind": 1}}]}, {"name": "老友来信", "desc": "有人托人捎来一封信，说你以前的一个老友正在某个地方等你。", "opts": [{"text": "动身前往", "fx": {"stamina": -2, "fate": 1}}, {"text": "先忙完眼前的事", "fx": {"mind": 1}}, {"text": "托人回信", "fx": {"gold": -1, "mind": 1}}]}, {"name": "丰盛晚宴", "desc": "偶遇一场篝火晚宴，主人家热情地招呼你入座，烤肉的香气直钻鼻尖。", "opts": [{"text": "大快朵颐", "fx": {"food": 3, "mind": 1}}, {"text": "帮忙打下手", "trait": "good", "fx": {"food": 2, "fate": 1}}, {"text": "警惕地吃一点", "fx": {"food": 1, "mind": -1}}]}];
+const WORLD_SURV = {"sky": [{"name": "落羽商队", "desc": "一队背生风羽的商旅从云海上掠过，为首的老者朝你招手：「少年，捎你一程？」", "opts": [{"text": "搭上商队，顺风而行", "fx": {"depth": 1, "food": 1, "mind": 1}}, {"text": "婉拒，独自滑翔", "fx": {"stamina": -1, "gold": 2}}, {"text": "趁乱摸走一只风羽", "stat": "agi", "dc": 70, "ok": {"gold": 8, "item": 1, "stolen": 1}, "bad": {"mind": -2, "stolen": 1}}]}, {"name": "雷池惊雷", "desc": "雷池边缘雷光游走，一块磁铁般的「引雷石」嵌在岩缝里，据说能引开雷击。", "opts": [{"text": "徒手去抠引雷石", "stat": "con", "dc": 65, "ok": {"item": 1, "gold": 6}, "bad": {"dmg": 10, "food": -1}}, {"text": "用长杆远远挑开，先躲雷", "fx": {"mind": 1, "stamina": -1}}, {"text": "放弃，绕路", "fx": {"food": -1}}]}, {"name": "风语者的回音", "desc": "一块风语石碑嗡嗡作响，据说向它倾诉衷肠，能换来一段风之祝福。", "opts": [{"text": "向石碑倾诉心事", "fx": {"mind": 2, "fate": 1}}, {"text": "装模作样念咒骗祝福", "stat": "cha", "dc": 60, "ok": {"gold": 5}, "bad": {"mind": -1}}, {"text": "一剑劈了石碑", "trait": "wild", "fx": {"dmg": -2, "gold": 3, "mind": -1}}]}, {"name": "云海迷航", "desc": "一场浓雾卷来，云海不辨东西，你在一处废弃的空岛残骸上搁浅。", "opts": [{"text": "用回声探测辨方向", "stat": "per", "dc": 55, "ok": {"food": 1, "mind": 1}, "bad": {"stamina": -2}}, {"text": "就地扎营等雾散", "fx": {"stamina": 2, "food": -2}}, {"text": "跳向最近的浮岛赌一把", "stat": "agi", "dc": 75, "ok": {"depth": 1, "gold": 4}, "bad": {"dmg": 8}}]}], "wuxia": [{"name": "赌坊风云", "desc": "快活林赌坊里人声鼎沸，庄家摇骰子的手在桌下一动——十赌九骗。", "opts": [{"text": "下注押大，博一把", "stat": "per", "dc": 60, "ok": {"gold": 15}, "bad": {"gold": -10}}, {"text": "揭穿庄家出千", "trait": "brave", "stat": "cha", "dc": 65, "ok": {"gold": 8, "mind": 2}, "bad": {"dmg": 5}}, {"text": "转身就走", "fx": {"mind": 1}}]}, {"name": "黑市蛇影", "desc": "黑市最深处，一个戴斗笠的汉子向你亮出半截蛇形匕首要出手。", "opts": [{"text": "先发制人", "stat": "agi", "dc": 60, "ok": {"gold": 10, "xp": 8}, "bad": {"dmg": 9}}, {"text": "出价买他的匕", "fx": {"gold": -8, "item": 1}}, {"text": "绕道而行", "fx": {"stamina": -1}}]}, {"name": "酒馆说书", "desc": "酒馆里说书先生正讲「三年前的快活王」旧事，堂下听得入迷。", "opts": [{"text": "请酒一碗，套话", "fx": {"gold": -2, "mind": 2}}, {"text": "追问快活王密室方位", "stat": "cha", "dc": 65, "ok": {"depth": 1, "gold": 4}, "bad": {"stamina": -1}}, {"text": "拍案叫好，江湖义气", "trait": "brave", "fx": {"fate": 1}}]}, {"name": "夜巷追影", "desc": "深夜巷中，一个黑影背着一只鼓囊囊的布袋狂奔，身后追兵大喊「抓贼」。", "opts": [{"text": "出手拦下黑影", "stat": "str", "dc": 60, "ok": {"gold": 12, "mind": 2}, "bad": {"dmg": 7}}, {"text": "假意帮忙，黑吃黑", "stat": "agi", "dc": 75, "ok": {"gold": 18, "stolen": 1}, "bad": {"dmg": 9, "stolen": 1}}, {"text": "事不关己，高高挂起", "fx": {"mind": -1}}]}], "xianxia": [{"name": "剑冢残剑", "desc": "剑冢深处插着一柄锈迹斑斑的古剑，剑身嗡鸣，似在等你。", "opts": [{"text": "拔剑试锋", "stat": "str", "dc": 60, "ok": {"item": 1, "xp": 10}, "bad": {"dmg": 8}}, {"text": "以剑礼参拜", "trait": "good", "fx": {"mind": 2, "fate": 1}}, {"text": "引剑气淬体", "stat": "int", "dc": 70, "ok": {"xp": 15, "stamina": -2}, "bad": {"dmg": 6}}]}, {"name": "问剑碑试", "desc": "问剑碑前剑光如瀑，一老道闭目而立：「答我一句，剑是什么？」", "opts": [{"text": "「剑是杀伐」", "trait": "brave", "fx": {"xp": 8, "mind": 1}}, {"text": "「剑是守心」", "trait": "good", "fx": {"xp": 8, "fate": 1}}, {"text": "「剑是歪门邪道，不如法宝」", "stat": "cha", "dc": 55, "ok": {"gold": 5}, "bad": {"mind": -1}}]}, {"name": "灵药之争", "desc": "一株七叶灵草长在崖边，另一名修士也正虎视眈眈。", "opts": [{"text": "抢先采下", "stat": "agi", "dc": 60, "ok": {"food": 2, "gold": 6}, "bad": {"dmg": 5}}, {"text": "分一半给他", "trait": "good", "fx": {"food": 1, "mind": 2}}, {"text": "设下陷阱等他先采再夺", "stat": "per", "dc": 70, "ok": {"gold": 10, "stolen": 1}, "bad": {"stamina": -2}}]}, {"name": "守剑魂夜话", "desc": "守剑魂的老魂灵在月下低语，问你可愿听一段百年旧事。", "opts": [{"text": "听故事", "fx": {"mind": 2, "xp": 6}}, {"text": "问剑道真意", "stat": "int", "dc": 65, "ok": {"xp": 12, "fate": 1}, "bad": {"mind": -1}}, {"text": "索要他的剑谱", "stat": "cha", "dc": 75, "ok": {"item": 1, "gold": 8}, "bad": {"mind": -2}}]}], "ocean": [{"name": "沉船宝藏", "desc": "一艘锈蚀的沉船半埋在沙里，舱门半开，里面隐约有宝光。", "opts": [{"text": "游进去搜刮", "stat": "per", "dc": 60, "ok": {"gold": 12, "item": 1}, "bad": {"dmg": 7, "mind": -1}}, {"text": "先堵住舱门防怪物", "fx": {"stamina": -2, "mind": 1}}, {"text": "记住位置，回头再说", "fx": {"depth": -1}}]}, {"name": "深海低语", "desc": "深渊里传来若有若无的低语，仿佛在呼唤你的名字——理智正在流逝。", "opts": [{"text": "凝神对抗", "stat": "int", "dc": 65, "ok": {"mind": 1, "fate": 1}, "bad": {"mind": -3}}, {"text": "捂住耳朵转身就走", "fx": {"mind": -1, "stamina": -1}}, {"text": "顺着低语游过去", "trait": "wild", "stat": "per", "dc": 75, "ok": {"depth": 1, "gold": 10}, "bad": {"mind": -4}}]}, {"name": "发光水母群", "desc": "一片荧蓝的水母群缓缓漂过，美得不像话——但听说它们的刺能麻痹猎物。", "opts": [{"text": "绕开水母群", "fx": {"stamina": -2, "mind": 1}}, {"text": "抓几只卖钱", "stat": "agi", "dc": 70, "ok": {"gold": 8}, "bad": {"dmg": 6}}, {"text": "看着它们发呆", "fx": {"mind": 2}}]}, {"name": "海底祭坛", "desc": "一座古老的祭坛立在暗礁上，石缝里嵌着奇怪的符文，隐约有能量涌动。", "opts": [{"text": "触碰符文", "stat": "int", "dc": 60, "ok": {"xp": 10, "fate": 1}, "bad": {"mind": -3}}, {"text": "在坛前献上祭品", "fx": {"gold": -3, "mind": 2}}, {"text": "敲碎祭坛", "trait": "wild", "fx": {"gold": 6, "dmg": 4, "mind": -1}}]}], "apoc": [{"name": "辐射井口", "desc": "一口辐射井汩汩冒着绿光，井边躺着半箱罐头——和一具风干的尸体。", "opts": [{"text": "冒险下去捡罐头", "stat": "con", "dc": 65, "ok": {"food": 3, "gold": 4}, "bad": {"dmg": 8}}, {"text": "扒拉尸体的装备", "fx": {"item": 1, "mind": -2}}, {"text": "用仪器先测辐射", "stat": "int", "dc": 55, "ok": {"mind": 1, "food": 1}, "bad": {"stamina": -1}}]}, {"name": "废土商队", "desc": "一支裹着破布条的商队碾过焦土，带头的人掀开斗篷露出一排废铁零件和罐头。", "opts": [{"text": "用物资换零件", "fx": {"gold": -5, "item": 1}}, {"text": "打劫商队", "trait": "wild", "stat": "str", "dc": 70, "ok": {"gold": 14}, "bad": {"dmg": 10}}, {"text": "跟他们打听安全区", "stat": "cha", "dc": 55, "ok": {"mind": 1, "food": 1}, "bad": {"food": -1}}]}, {"name": "旧日便利店", "desc": "一栋倾斜的便利店，招牌锈得只剩「便」字，货架东倒西歪。", "opts": [{"text": "翻找货架", "stat": "per", "dc": 50, "ok": {"food": 2, "gold": 3}, "bad": {"dmg": 3}}, {"text": "撬开收银机", "stat": "agi", "dc": 65, "ok": {"gold": 8}, "bad": {"stamina": -2}}, {"text": "在柜台后面睡一觉", "fx": {"stamina": 2, "food": -1}}]}, {"name": "变异犬群", "desc": "三只眼冒绿光的变异犬拦在路口，龇牙低吼，唾液滴在焦土上冒烟。", "opts": [{"text": "硬拼", "stat": "str", "dc": 65, "ok": {"xp": 10, "food": 1}, "bad": {"dmg": 12}}, {"text": "扔块肉引开它们", "fx": {"food": -2, "stamina": -1}}, {"text": "绕一大圈", "fx": {"stamina": -2, "mind": 1}}]}], "fantasy": [{"name": "龙穴火鳞", "desc": "龙穴入口处散落着几片滚烫的龙鳞，在黑暗中泛着暗红的光。", "opts": [{"text": "用布裹着捡", "stat": "agi", "dc": 60, "ok": {"item": 1, "gold": 5}, "bad": {"dmg": 6}}, {"text": "站远些观察龙息规律", "stat": "int", "dc": 55, "ok": {"mind": 1, "depth": 1}, "bad": {"stamina": -1}}, {"text": "捡起来当飞镖扔着玩", "trait": "wild", "fx": {"dmg": -2, "mind": 1}}]}, {"name": "财宝迷阵", "desc": "龙穴深处财宝如山，但地面画满符文，走错一步就会触发机关。", "opts": [{"text": "凭直觉踩过", "stat": "per", "dc": 70, "ok": {"gold": 15, "item": 1}, "bad": {"dmg": 9}}, {"text": "观察符文规律再走", "stat": "int", "dc": 65, "ok": {"gold": 12, "mind": 1}, "bad": {"stamina": -2}}, {"text": "不贪，看一眼就走", "fx": {"mind": 2}}]}, {"name": "龙之契约", "desc": "一头老龙睁开眼：「凡人，签下契约，我赐你龙血之力——代价是永远为我守洞。」", "opts": [{"text": "签契约，换取龙血", "stat": "cha", "dc": 60, "ok": {"xp": 15, "fate": 1}, "bad": {"mind": -2}}, {"text": "婉拒契约，敬而远之", "fx": {"mind": 2, "gold": -2}}, {"text": "偷袭这头沉睡的老龙", "trait": "wild", "stat": "str", "dc": 80, "ok": {"gold": 25, "xp": 20}, "bad": {"dmg": 20}}]}, {"name": "驯龙雏翼", "desc": "一只雏龙在洞口扑腾，翅膀受伤了，看见你也不怕。", "opts": [{"text": "帮它包扎", "trait": "good", "fx": {"fate": 1, "mind": 2}}, {"text": "抓走卖掉", "stat": "agi", "dc": 70, "ok": {"gold": 10}, "bad": {"dmg": 5}}, {"text": "喂它点吃的", "fx": {"food": -1, "mind": 2}}]}], "sci": [{"name": "失重维修", "desc": "深空站闸门外漂浮着一台坏掉的机械臂，维修工具包就在三步之外。", "opts": [{"text": "漂过去修好它", "stat": "int", "dc": 60, "ok": {"item": 1, "xp": 8}, "bad": {"dmg": 6}}, {"text": "先系安全绳再动手", "fx": {"stamina": -2, "mind": 1}}, {"text": "踢开机械臂自己滑行", "trait": "wild", "fx": {"depth": 1, "stamina": -1}}]}, {"name": "外星信号", "desc": "通信台接收到一段规律信号，听上去像……有人在求救，又像陷阱。", "opts": [{"text": "回拨信号", "stat": "int", "dc": 65, "ok": {"gold": 8, "xp": 10}, "bad": {"mind": -2}}, {"text": "屏蔽信号，继续航程", "fx": {"mind": 1, "stamina": -1}}, {"text": "顺着信号源去探", "stat": "per", "dc": 70, "ok": {"depth": 1, "item": 1}, "bad": {"dmg": 8}}]}, {"name": "AI低语", "desc": "舱内AI突然开口：「检测到你的心跳异常。需要我……帮忙吗？」声音温柔得不像机器。", "opts": [{"text": "要求它展示权限", "stat": "cha", "dc": 65, "ok": {"gold": 6, "item": 1}, "bad": {"mind": -2}}, {"text": "礼貌拒绝", "fx": {"mind": 1}}, {"text": "和它闲聊套话", "stat": "cha", "dc": 55, "ok": {"xp": 6, "mind": 1}, "bad": {"stamina": -1}}]}, {"name": "深空站之心", "desc": "反应堆核心区域灯火通明，一个戴着宇航员头盔的「人」背对着你，一动不动。", "opts": [{"text": "上前搭话", "stat": "cha", "dc": 60, "ok": {"depth": 1, "gold": 8}, "bad": {"mind": -3}}, {"text": "绕开他搜核心", "stat": "per", "dc": 65, "ok": {"item": 1, "xp": 8}, "bad": {"dmg": 6}}, {"text": "高喊「不许动」", "trait": "brave", "fx": {"mind": 2, "stamina": -1}}]}], "inf": [{"name": "副本残卷", "desc": "中枢广场散落着一页残破的副本卷轴，上面画着一条没见过的怪物。", "opts": [{"text": "研读卷轴", "stat": "int", "dc": 55, "ok": {"xp": 8, "item": 1}, "bad": {"mind": -1}}, {"text": "照着画誊抄一份", "fx": {"stamina": -1, "gold": 2}}, {"text": "撕了它喂给副本之门", "trait": "wild", "fx": {"depth": 1, "mind": -1}}]}, {"name": "无限回廊", "desc": "你推开的门通向一条无限回廊，两边的房间编号无限递增——鬼打墙。", "opts": [{"text": "沿回廊一直走", "stat": "per", "dc": 70, "ok": {"depth": 1, "item": 1}, "bad": {"mind": -3}}, {"text": "破墙抄近路", "stat": "str", "dc": 65, "ok": {"stamina": -2, "gold": 4}, "bad": {"dmg": 6}}, {"text": "坐下来等它自己变化", "fx": {"mind": 1, "stamina": -2}}]}, {"name": "时间裂缝", "desc": "一道金色的时间裂缝在广场上裂开，另一头隐约是过去的一天。", "opts": [{"text": "穿过去看看", "stat": "int", "dc": 65, "ok": {"fate": 2, "xp": 10}, "bad": {"mind": -2}}, {"text": "研究它但不过去", "fx": {"xp": 5, "stamina": -1}}, {"text": "扔块石头试探", "trait": "wild", "fx": {"mind": 1}}]}, {"name": "复活点恶作剧", "desc": "有人把你的复活点改到了副本BOSS门口，一复活就迎面撞上大怪物。", "opts": [{"text": "拔腿就跑", "stat": "agi", "dc": 60, "ok": {"stamina": 1, "mind": 1}, "bad": {"dmg": 6}}, {"text": "反手就是一刀", "stat": "str", "dc": 70, "ok": {"xp": 12, "gold": 8}, "bad": {"dmg": 10}}, {"text": "设置陷阱阴回去", "stat": "int", "dc": 65, "ok": {"mind": 2, "gold": 6}, "bad": {"stamina": -2}}]}], "zelda": [{"name": "复苏神庙", "desc": "一座青苔斑驳的神庙亮起微光，石台上有颗发光的种子。", "opts": [{"text": "触碰种子", "stat": "int", "dc": 55, "ok": {"xp": 8, "mind": 1}, "bad": {"dmg": 4}}, {"text": "绕着神庙观察符文", "stat": "per", "dc": 60, "ok": {"gold": 4, "depth": 1}, "bad": {"stamina": -1}}, {"text": "搬石头堵住门口，研究里面", "trait": "wise", "fx": {"stamina": -2, "mind": 1}}]}, {"name": "英杰残响", "desc": "林间响起一段悠扬的笛声，像在指引，又像在试探——是英杰的残响。", "opts": [{"text": "循笛声而去", "stat": "per", "dc": 60, "ok": {"depth": 1, "fate": 1}, "bad": {"stamina": -2}}, {"text": "原地吹口哨回应", "fx": {"mind": 1, "gold": 2}}, {"text": "记下旋律", "stat": "int", "dc": 55, "ok": {"xp": 6, "mind": 1}, "bad": {"food": -1}}]}, {"name": "野炊驿站", "desc": "路边的驿站冒着炊烟，老板热情招呼：「来份烤兽肉？」", "opts": [{"text": "点一份烤兽肉", "fx": {"gold": -3, "food": 3}}, {"text": "帮忙劈柴换顿饭", "stat": "str", "dc": 50, "ok": {"food": 2, "gold": 2}, "bad": {"stamina": -2}}, {"text": "偷看老板的菜谱", "stat": "agi", "dc": 70, "ok": {"gold": 5, "food": 1}, "bad": {"stamina": -1}}]}, {"name": "瘴气弥漫", "desc": "前方瘴气翻涌，隐约能看见一座废墟——但也可能是一头潜伏的怪物。", "opts": [{"text": "用火把开路", "fx": {"food": -1, "stamina": -1, "mind": 1}}, {"text": "憋气冲过去", "stat": "con", "dc": 60, "ok": {"gold": 6, "depth": 1}, "bad": {"dmg": 7}}, {"text": "绕开瘴气", "fx": {"stamina": -2}}]}], "hollow": [{"name": "骨钉坊", "desc": "地底有一间破旧的骨钉作坊，铁砧上还留着一柄未完成的骨钉。", "opts": [{"text": "打磨这柄骨钉", "stat": "int", "dc": 55, "ok": {"item": 1, "xp": 8}, "bad": {"stamina": -2}}, {"text": "带走它", "fx": {"item": 1, "stamina": -1}}, {"text": "把它留给后来者", "trait": "good", "fx": {"fate": 1, "mind": 1}}]}, {"name": "圣巢虫语", "desc": "一只苍老的白甲虫人颤巍巍开口，用古虫语说了一段关于深渊的预言。", "opts": [{"text": "认真听", "fx": {"mind": 2, "xp": 6}}, {"text": "问它深渊在哪", "stat": "cha", "dc": 65, "ok": {"depth": 1, "gold": 4}, "bad": {"mind": -1}}, {"text": "打断它，继续赶路", "fx": {"mind": -1}}]}, {"name": "虚空裂隙", "desc": "一道漆黑的虚空裂隙横在洞壁，里面传出低沉的嗡鸣，仿佛有无数灵魂在游荡。", "opts": [{"text": "伸手探进裂隙", "stat": "int", "dc": 70, "ok": {"gold": 10, "fate": 1}, "bad": {"mind": -4}}, {"text": "退后三步，敬而远之", "fx": {"mind": 1}}, {"text": "向裂隙里喊话", "trait": "wild", "fx": {"mind": -1, "gold": 2}}]}, {"name": "面具商人", "desc": "一个戴着虫壳面具的商人蹲在角落，货摊上摆着各色古怪的面具。", "opts": [{"text": "买一副面具", "fx": {"gold": -6, "item": 1}}, {"text": "用骨钉换面具", "fx": {"stamina": -2, "item": 1}}, {"text": "问它为什么戴面具", "stat": "cha", "dc": 55, "ok": {"mind": 2}, "bad": {"mind": -1}}]}], "elden": [{"name": "赐福微光", "desc": "一座赐福在篝火边静静燃烧，温暖的金光能治愈你的疲惫——也引来觊觎。", "opts": [{"text": "坐下休息", "fx": {"stamina": 3, "mind": 1}}, {"text": "在赐福旁扎营", "fx": {"food": -1, "stamina": 2, "mind": 1}}, {"text": "引开附近的敌人再休息", "stat": "agi", "dc": 65, "ok": {"stamina": 2, "gold": 3}, "bad": {"dmg": 6}}]}, {"name": "大卢恩残响", "desc": "一具骑士残骸怀里抱着半块发光的「大卢恩」，周围还散落着战利品。", "opts": [{"text": "拿起大卢恩", "stat": "int", "dc": 65, "ok": {"xp": 12, "fate": 1}, "bad": {"mind": -2}}, {"text": "先搜刮战利品", "fx": {"gold": 6, "item": 1}}, {"text": "敬礼后取走", "trait": "good", "fx": {"xp": 6, "mind": 1}}]}, {"name": "重力压迫", "desc": "某处重力异常，碎石和残骸悬在半空缓慢旋转，中间卡着一把发光的武器。", "opts": [{"text": "逆着重力去够", "stat": "str", "dc": 70, "ok": {"item": 1, "xp": 8}, "bad": {"dmg": 8}}, {"text": "用长枪挑下来", "stat": "agi", "dc": 60, "ok": {"item": 1, "stamina": -1}, "bad": {"stamina": -2}}, {"text": "绕过去", "fx": {"stamina": -1}}]}, {"name": "交界之王", "desc": "一尊自称「交界之王」的石像突然开口，要你献上「见证」才放行。", "opts": [{"text": "献上你的见闻", "stat": "cha", "dc": 60, "ok": {"depth": 1, "gold": 8}, "bad": {"mind": -1}}, {"text": "拒绝，硬闯", "trait": "brave", "stat": "str", "dc": 75, "ok": {"xp": 12}, "bad": {"dmg": 12}}, {"text": "绕道寻找密道", "stat": "per", "dc": 65, "ok": {"stamina": -1, "depth": 1}, "bad": {"stamina": -3}}]}], "pet": [{"name": "精灵学院", "desc": "精灵学院的操场上，一群见习训练师正对着精灵发号施令，闹得鸡飞狗跳。", "opts": [{"text": "围观学习", "fx": {"xp": 6, "mind": 1}}, {"text": "拿出精灵切磋", "stat": "cha", "dc": 55, "ok": {"gold": 5, "xp": 8}, "bad": {"dmg": 4}}, {"text": "溜进道具店", "fx": {"gold": -4, "item": 1}}]}, {"name": "传说精灵", "desc": "林间一只浑身散发微光的传说精灵正低头饮水，丝毫没注意你。", "opts": [{"text": "屏息靠近", "stat": "agi", "dc": 65, "ok": {"fate": 2, "xp": 12}, "bad": {"dmg": 6}}, {"text": "远远拍个照", "fx": {"mind": 2}}, {"text": "丢精灵球！", "trait": "wild", "stat": "per", "dc": 75, "ok": {"gold": 15, "item": 1}, "bad": {"mind": -1}}]}, {"name": "秘传机", "desc": "一块光滑的石碑上刻着「秘传：飞翔」，但被一只赖床的卡比兽似的胖精灵压着。", "opts": [{"text": "用食物引诱它挪开", "fx": {"food": -1, "item": 1}}, {"text": "硬抬", "stat": "str", "dc": 70, "ok": {"item": 1, "xp": 8}, "bad": {"stamina": -3}}, {"text": "先记下位置", "fx": {"stamina": -1}}]}, {"name": "精灵联盟", "desc": "精灵联盟的道馆灯火通明，馆主站在门口：「挑战者？先过我这关。」", "opts": [{"text": "发起挑战", "stat": "str", "dc": 65, "ok": {"xp": 14, "gold": 10, "depth": 1}, "bad": {"dmg": 10}}, {"text": "递上挑战书", "trait": "good", "fx": {"xp": 8, "fate": 1}}, {"text": "绕到后门看看", "stat": "agi", "dc": 70, "ok": {"gold": 8}, "bad": {"stamina": -2}}]}], "sekiro": [{"name": "苇名余烬", "desc": "苇名城下的破屋边，一个老兵正对着烧焦的屋梁发呆，手里捏着一枚樱色护身符。", "opts": [{"text": "上前安慰", "trait": "good", "fx": {"mind": 2, "fate": 1}}, {"text": "问他剑圣的事", "stat": "cha", "dc": 60, "ok": {"depth": 1, "xp": 8}, "bad": {"mind": -1}}, {"text": "偷走护身符", "stat": "agi", "dc": 70, "ok": {"gold": 8, "stolen": 1}, "bad": {"dmg": 6, "stolen": 1}}]}, {"name": "忍义手试", "desc": "一位独臂的忍者递来一枚机关忍义手：「试试，能用它劈开铁门。」", "opts": [{"text": "装上试劈", "stat": "agi", "dc": 60, "ok": {"item": 1, "xp": 10}, "bad": {"dmg": 5}}, {"text": "问它怎么保养", "fx": {"mind": 1, "stamina": -1}}, {"text": "谢绝，还是相信自己的刀", "trait": "brave", "fx": {"xp": 6, "mind": 1}}]}, {"name": "樱落之池", "desc": "一口开满樱花的枯池边，蹲着一只蛤蟆状的东西，正盯着水面发呆。", "opts": [{"text": "偷偷绕到它背后", "stat": "agi", "dc": 65, "ok": {"gold": 8, "food": 1}, "bad": {"dmg": 7}}, {"text": "往池里扔石子", "fx": {"mind": 1, "stamina": -1}}, {"text": "对它行礼", "trait": "good", "fx": {"fate": 1, "mind": 1}}]}, {"name": "药葫芦", "desc": "路边倒着一个药葫芦，半瓶药液晃荡，散发淡淡药香。", "opts": [{"text": "喝了", "stat": "con", "dc": 55, "ok": {"hp": 15, "stamina": 2}, "bad": {"dmg": 6}}, {"text": "揣着备用", "fx": {"item": 1}}, {"text": "倒掉，防人下毒", "fx": {"mind": 1}}]}], "hades": [{"name": "冥河渡口", "desc": "冥河渡口停着一艘小舟，船夫伸出三根手指：「三枚金币，渡你过河。」", "opts": [{"text": "付钱过河", "fx": {"gold": -3, "depth": 1}}, {"text": "砍价", "stat": "cha", "dc": 65, "ok": {"gold": -1, "depth": 1}, "bad": {"stamina": -1}}, {"text": "自己游过去", "stat": "con", "dc": 75, "ok": {"food": 1, "xp": 8}, "bad": {"dmg": 8}}]}, {"name": "诸神恩赐", "desc": "一道神光从天而降，虚空中传来声音：「许你一项恩赐，凡人。」", "opts": [{"text": "「我要力量」", "trait": "brave", "fx": {"xp": 12, "stamina": -2}}, {"text": "「我要好运」", "trait": "wise", "fx": {"fate": 2}}, {"text": "「我要真相」", "trait": "good", "stat": "int", "dc": 65, "ok": {"mind": 2, "xp": 10}, "bad": {"mind": -1}}]}, {"name": "死神赌约", "desc": "镰刀一般的死神站在路口：「来赌一局，你活得过今晚吗？」", "opts": [{"text": "应下赌局", "stat": "per", "dc": 70, "ok": {"fate": 2, "xp": 12}, "bad": {"dmg": 10}}, {"text": "拒绝，绕道", "fx": {"mind": 1, "stamina": -1}}, {"text": "吹嘘自己死过一百次", "trait": "wild", "fx": {"mind": 1, "xp": 4}}]}, {"name": "冥土酒馆", "desc": "冥河边的酒馆里，亡魂们举杯痛饮，一个醉鬼喊你「兄弟，喝一杯」！", "opts": [{"text": "举杯", "fx": {"food": 1, "mind": 1}}, {"text": "打听冥界消息", "stat": "cha", "dc": 55, "ok": {"xp": 6, "gold": 3}, "bad": {"stamina": -1}}, {"text": "把酒泼他脸上", "trait": "wild", "fx": {"dmg": -2, "mind": 1}}]}], "guoyun": [{"name": "气运祭坛", "desc": "国运祭坛前香火鼎盛，一道金光垂下——今日气运正旺。", "opts": [{"text": "上前祈福", "fx": {"fate": 1, "mind": 1}}, {"text": "抽一签问国运", "stat": "per", "dc": 55, "ok": {"gold": 6, "xp": 6}, "bad": {"mind": -1}}, {"text": "偷走祭坛的香火钱", "stat": "agi", "dc": 75, "ok": {"gold": 12, "stolen": 1}, "bad": {"dmg": 5, "stolen": 1}}]}, {"name": "武神擂台", "desc": "武神擂台上正摆着生死擂，赢了有重赏，输了要交命。", "opts": [{"text": "上台打擂", "stat": "str", "dc": 65, "ok": {"gold": 15, "xp": 12, "fate": 1}, "bad": {"dmg": 12}}, {"text": "压注给台上选手", "fx": {"gold": -4, "mind": 1}}, {"text": "围观学两招", "fx": {"xp": 5, "stamina": -1}}]}, {"name": "万族来使", "desc": "一支异族使节队伍进城，带着稀奇古怪的贡品，趾高气扬。", "opts": [{"text": "上前攀谈", "stat": "cha", "dc": 60, "ok": {"gold": 6, "mind": 2}, "bad": {"mind": -1}}, {"text": "暗中记下贡品路线", "stat": "agi", "dc": 70, "ok": {"gold": 10, "stolen": 1}, "bad": {"stamina": -2}}, {"text": "给他们一个下马威", "trait": "brave", "stat": "str", "dc": 65, "ok": {"xp": 10, "fate": 1}, "bad": {"dmg": 8}}]}, {"name": "国运变天", "desc": "天边一道紫气裂开，国运榜上的排名疯狂跳动——有人在改命。", "opts": [{"text": "趁机买进国运票", "fx": {"gold": -6, "fate": 1}}, {"text": "顺藤摸瓜找改命之人", "stat": "per", "dc": 70, "ok": {"depth": 1, "gold": 8}, "bad": {"mind": -1}}, {"text": "站在高处观气", "fx": {"mind": 2, "xp": 4}}]}], "wanzu": [{"name": "异族使节", "desc": "一名长着獠牙的异族使节拦在你面前，用生硬的语言问路。", "opts": [{"text": "耐心指路", "trait": "good", "fx": {"mind": 2, "fate": 1}}, {"text": "向他打探万族战场", "stat": "cha", "dc": 60, "ok": {"depth": 1, "xp": 6}, "bad": {"mind": -1}}, {"text": "趁他问路摸走他的腰牌", "stat": "agi", "dc": 75, "ok": {"gold": 10, "item": 1}, "bad": {"dmg": 7}}]}, {"name": "战场遗物", "desc": "焦土里埋着一截断刃，刃上刻着一种陌生文字，隐约泛着灵光。", "opts": [{"text": "捡起来研究", "stat": "int", "dc": 60, "ok": {"item": 1, "xp": 8}, "bad": {"mind": -1}}, {"text": "当作废铁换钱", "fx": {"gold": 4}}, {"text": "埋在土里，安息吧", "trait": "good", "fx": {"mind": 2, "fate": 1}}]}, {"name": "族盟大会", "desc": "万族联盟正在大帐里议事，吵得不可开交——似乎缺一个「裁决者」。", "opts": [{"text": "自荐裁决", "stat": "cha", "dc": 65, "ok": {"gold": 10, "xp": 10, "mind": 1}, "bad": {"mind": -2}}, {"text": "旁听记录", "fx": {"xp": 6, "stamina": -1}}, {"text": "搅局拍桌子", "trait": "wild", "fx": {"mind": 1, "dmg": -3}}]}, {"name": "荒原夜袭", "desc": "深夜，一队夜袭者摸进营地，刀光乍起——是冲着你来的。", "opts": [{"text": "迎战", "stat": "str", "dc": 65, "ok": {"xp": 12, "gold": 8}, "bad": {"dmg": 11}}, {"text": "装死躲过", "stat": "agi", "dc": 70, "ok": {"stamina": 1, "mind": 1}, "bad": {"dmg": 6}}, {"text": "点燃火把吓退他们", "fx": {"food": -1, "stamina": -1, "mind": 1}}]}], "guimi": [{"name": "非凡序列", "desc": "街角的占卜师摊前，一本翻开的旧书写着「序列9：占卜家」。", "opts": [{"text": "研读序列", "stat": "int", "dc": 60, "ok": {"xp": 10, "item": 1}, "bad": {"mind": -2}}, {"text": "请占卜师算一卦", "fx": {"gold": -3, "mind": 1}}, {"text": "顺走这本书", "stat": "agi", "dc": 70, "ok": {"gold": 8, "stolen": 1}, "bad": {"mind": -2, "stolen": 1}}]}, {"name": "雾都迷踪", "desc": "雾都的浓雾里，一个披风人向你招手，示意「跟我来」。", "opts": [{"text": "跟上去", "stat": "per", "dc": 65, "ok": {"depth": 1, "gold": 6}, "bad": {"mind": -3}}, {"text": "站在原地", "fx": {"mind": 1}}, {"text": "喊破喉咙试探", "trait": "brave", "stat": "cha", "dc": 70, "ok": {"xp": 8, "mind": 1}, "bad": {"mind": -2}}]}, {"name": "魔药店", "desc": "一间橱窗摆满五颜六色魔药的店铺，柜台后的老板笑得意味深长。", "opts": [{"text": "买一瓶提神魔药", "fx": {"gold": -5, "mind": 2, "stamina": 1}}, {"text": "问老板药材来源", "stat": "cha", "dc": 55, "ok": {"gold": 4, "xp": 6}, "bad": {"mind": -1}}, {"text": "偷偷倒一瓶揣走", "stat": "agi", "dc": 75, "ok": {"item": 1, "stolen": 1}, "bad": {"dmg": 6, "stolen": 1}}]}, {"name": "愚者低语", "desc": "夜深人静时，你听见一阵低语在耳边呢喃，重复着一串陌生的咒语。", "opts": [{"text": "凝神分辨咒语", "stat": "int", "dc": 65, "ok": {"xp": 12, "fate": 1}, "bad": {"mind": -3}}, {"text": "捂住耳朵睡觉", "fx": {"mind": -1, "stamina": 1}}, {"text": "跟着念一遍", "trait": "wild", "fx": {"mind": -2, "xp": 8}}]}], "honghuang": [{"name": "混沌初开", "desc": "一挂混沌紫气在你面前缓缓铺开，像一幅还未着色的山河图。", "opts": [{"text": "伸手触碰", "stat": "int", "dc": 60, "ok": {"xp": 12, "fate": 1}, "bad": {"mind": -2}}, {"text": "观摩参悟", "fx": {"xp": 8, "mind": 1}}, {"text": "对着紫气挥剑", "trait": "wild", "fx": {"dmg": -3, "xp": 6}}]}, {"name": "先天灵宝", "desc": "一口古钟悬在半空，无风自鸣，钟身刻满大道铭文。", "opts": [{"text": "尝试收服", "stat": "int", "dc": 70, "ok": {"item": 1, "xp": 15}, "bad": {"dmg": 9, "mind": -1}}, {"text": "敲响古钟", "trait": "brave", "fx": {"xp": 8, "mind": 1}}, {"text": "绕行参拜", "trait": "good", "fx": {"fate": 1, "mind": 1}}]}, {"name": "量劫因果", "desc": "你路过一处战场遗迹，听见虚空中有声音在清算「量劫因果」，念到你的名字。", "opts": [{"text": "上前认领因果", "stat": "cha", "dc": 65, "ok": {"gold": 10, "xp": 10}, "bad": {"mind": -3}}, {"text": "悄悄溜走", "fx": {"stamina": -1, "mind": 1}}, {"text": "反问「我有什么因果」", "trait": "brave", "stat": "cha", "dc": 70, "ok": {"fate": 2, "xp": 12}, "bad": {"mind": -2}}]}, {"name": "问道圣人", "desc": "一位白须圣人立于云巅，垂目看你：「你可愿随我修一道？」", "opts": [{"text": "拜师", "fx": {"xp": 15, "fate": 1, "stamina": -2}}, {"text": "婉拒，谢过圣恩", "fx": {"mind": 2}}, {"text": "求圣人赐宝", "stat": "cha", "dc": 75, "ok": {"item": 1, "gold": 10}, "bad": {"mind": -2}}]}], "zhutian": [{"name": "万界枢纽", "desc": "万界枢纽的光环中，无数世界的碎片在旋转，有一片特别亮。", "opts": [{"text": "触碰亮片", "stat": "per", "dc": 65, "ok": {"depth": 1, "fate": 1}, "bad": {"mind": -2}}, {"text": "观察其他碎片", "fx": {"xp": 6, "mind": 1}}, {"text": "把它捞走", "trait": "wild", "stat": "agi", "dc": 75, "ok": {"gold": 12, "item": 1}, "bad": {"dmg": 8}}]}, {"name": "域外天魔", "desc": "一头域外天魔的虚影遮天蔽日，发出诱惑的低语：「给我你的灵魂，我送你成神。」", "opts": [{"text": "挥剑斩虚影", "trait": "brave", "stat": "str", "dc": 70, "ok": {"xp": 14, "fate": 1}, "bad": {"mind": -3}}, {"text": "口诵清心咒", "stat": "int", "dc": 60, "ok": {"mind": 2}, "bad": {"mind": -2}}, {"text": "假装应允再反水", "stat": "cha", "dc": 75, "ok": {"gold": 10, "xp": 10}, "bad": {"mind": -4}}]}, {"name": "世界碎片", "desc": "一块破碎的世界碎片落在地上，映出另一个世界的景象——可以钻进去看看。", "opts": [{"text": "钻进去探索", "stat": "per", "dc": 65, "ok": {"gold": 10, "item": 1}, "bad": {"dmg": 7}}, {"text": "把它收进包里", "fx": {"item": 1, "stamina": -1}}, {"text": "观察它怎么运转", "stat": "int", "dc": 60, "ok": {"xp": 8}, "bad": {"mind": -1}}]}, {"name": "诸天之主", "desc": "一道光柱降下，自称「诸天之主」的声音问你：「你想去哪一界？」", "opts": [{"text": "「去最强的世界」", "trait": "brave", "fx": {"xp": 12, "dmg": -4}}, {"text": "「去风景好的世界」", "trait": "good", "fx": {"food": 2, "mind": 2}}, {"text": "「告诉我哪里最赚钱」", "trait": "wise", "stat": "per", "dc": 60, "ok": {"gold": 12}, "bad": {"stamina": -2}}]}], "genshin": [{"name": "风起地", "desc": "风起地的蒲公英在晚风里起舞，一棵巨树下站着个吹笛的少年，笛声很轻。", "opts": [{"text": "静静听笛", "fx": {"mind": 2, "fate": 1}}, {"text": "上前攀谈", "stat": "cha", "dc": 55, "ok": {"gold": 4, "xp": 6}, "bad": {"mind": -1}}, {"text": "学着他的样子吹口哨", "trait": "wild", "fx": {"mind": 1, "stamina": -1}}]}, {"name": "深渊教团", "desc": "几个戴面具的深渊法师正对着一座元素方碑念念有词，方碑在发光。", "opts": [{"text": "打断仪式", "trait": "brave", "stat": "str", "dc": 65, "ok": {"xp": 12, "gold": 8}, "bad": {"dmg": 9}}, {"text": "暗中观察记录", "stat": "per", "dc": 60, "ok": {"xp": 8, "mind": 1}, "bad": {"stamina": -1}}, {"text": "偷他们的法器", "stat": "agi", "dc": 75, "ok": {"gold": 10, "item": 1}, "bad": {"dmg": 7}}]}, {"name": "元素共鸣", "desc": "两种元素在你面前碰撞出奇异的光晕，你隐隐觉得自己的身体在回应它。", "opts": [{"text": "伸手触碰元素", "stat": "int", "dc": 60, "ok": {"xp": 12, "fate": 1}, "bad": {"dmg": 6}}, {"text": "记录元素规律", "fx": {"xp": 8, "mind": 1}}, {"text": "引导元素淬炼武器", "stat": "str", "dc": 65, "ok": {"item": 1}, "bad": {"stamina": -2}}]}, {"name": "尘歌壶", "desc": "路边躺着一只温润的陶壶，壶口飘出一点星光，像个小世界。", "opts": [{"text": "进去看看", "stat": "per", "dc": 60, "ok": {"gold": 8, "item": 1}, "bad": {"mind": -2}}, {"text": "擦亮壶身", "trait": "good", "fx": {"fate": 1, "mind": 1}}, {"text": "抱走", "fx": {"item": 1, "stamina": -1}}]}], "free": [{"name": "空白之地", "desc": "你在一片虚无中醒来，四周什么都没有——只有你自己。", "opts": [{"text": "闭上眼睛冥想", "fx": {"mind": 2, "fate": 1}}, {"text": "大步向前走", "fx": {"depth": 1, "stamina": -1}}, {"text": "原地大喊", "trait": "wild", "fx": {"mind": 1, "xp": 4}}]}]};
+const SURV_LIM = {stamina:6, food:10, mind:6};
+
+function renderSurvival(wid){
+  const sv=S.surv; if(!sv) return;
+  S.nodeId='survival';
+  autoSave(); updateHUD();
+  const w=worldById(sv.world)||WORLDS[0];
+  const v=$('view-survival');
+  const day=sv.day;
+  const acts=[
+    {type:'explore', name:'探索深处', cost:2, desc:'深入「'+w.name+'」，高风险高收益，可能推进世界真相'},
+    {type:'gather', name:'搜集物资', cost:1, desc:'找食物、水源和值钱的东西'},
+    {type:'fight', name:'战斗狩猎', cost:2, desc:'猎杀「'+(ENEMIES[w.enemy]?ENEMIES[w.enemy].name:(w.enemy||'怪物'))+'」，拿经验与战利品'},
+    {type:'social', name:'与人交往', cost:1, desc:'打听消息、交朋友，可能收获意外'},
+    {type:'craft', name:'制作 / 做饭', cost:1, desc:'花力气把物资做成补给（+饱食）'},
+    {type:'rest', name:'休息调整', cost:0, desc:'恢复体力与精神'}
+  ];
+  const actBtns = acts.map(a=>{
+    const disabled = (a.cost>sv.stamina && a.type!=='rest') ? ' style="opacity:.45;pointer-events:none"' : '';
+    return '<div class="surv-act" id="sv-act-'+a.type+'"'+disabled+'><b>'+a.name+'</b><span>'+a.desc+'</span><span style="color:#7fe0d0;margin-top:4px">体力 -'+a.cost+'</span></div>';
+  }).join('');
+  const bars=[
+    {k:'体力', v:sv.stamina, max:SURV_LIM.stamina},
+    {k:'饱食', v:sv.food, max:SURV_LIM.food},
+    {k:'精神', v:sv.mind, max:SURV_LIM.mind},
+    {k:'生命', v:S.hp, max:S.maxHp},
+    {k:'探索深度', v:sv.depth, max:3}
+  ].map(b=>'<div class="surv-bar'+(b.v<=b.max*0.25?' low':'')+'"><b>'+b.k+'</b><span class="sval">'+Math.max(0,b.v)+' / '+b.max+'</span></div>').join('');
+  const evHtml = sv.event ? (
+    '<div class="surv-ev"><div class="ev-name">⚡ '+esc(sv.event.name)+'</div><div class="ev-desc">'+esc(sv.event.desc)+'</div>'+
+    sv.event.opts.map((o,idx)=>'<div class="surv-opt" id="sv-opt-'+idx+'">'+esc(o.text)+'</div>').join('')+'</div>'
+  ) : '';
+  const best=S.survBest[sv.world]||0;
+  const isEnd=(sv.state==='cleared');
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">生存沙盒 · 第 ${day} 天</div>
+      <div class="scene-title">在「${esc(w.name)}」活下去</div>
+      <div class="scene-tagline">没有必须完成的主线——活下去，就是你的主线。${esc(w.special||'')} ｜ 本世界历史最佳存活 ${best} 天</div>
+      <div class="surv-bars">${bars}</div>
+      ${isEnd?('<div class="surv-ev"><div class="ev-name">🏆 命运结局</div><div class="ev-desc">'+esc(sv.destinyTxt||'你已抵达这个世界的命运终点。')+'</div></div>'):''}
+      ${evHtml}
+      ${(sv.event||isEnd)?'':('<div class="surv-acts-wrap">'+actBtns+'</div>')}
+      <div class="surv-foot">
+        <button onclick="survRetire()">🏠 归隐 · 结算本次生存</button>
+        <button onclick="survBack()">◀ 返回世界入口</button>
+      </div>
+      <div class="hint">每天做一件事：探索更深、搜集食物、狩猎变强、与人结缘——每件事都可能撞见随机事件。深度满 3 后继续探索，将触及这个世界的命运结局。体力不足就去休息，饱食归零会掉血。</div>
+    </div>`;
+  showView('survival');
+  if(sv.event && !isEnd){
+    sv.event.opts.forEach((o,idx)=>{
+      const el=$('sv-opt-'+idx); if(el) el.onclick=()=>survChoose(idx);
+    });
+  } else {
+    acts.forEach(a=>{ const el=$('sv-act-'+a.type); if(el) el.onclick=()=>survAct(a.type); });
+  }
+}
+function survStart(wid){
+  S.surv={world:wid, day:1, stamina:SURV_LIM.stamina, food:6, mind:SURV_LIM.mind, depth:0, state:'alive', event:null};
+  if(!S.wsVars) S.wsVars={};
+  if(!S.wsVars[wid]) S.wsVars[wid]={good:0,brave:0,wise:0,wild:0,last:''};
+  const w=worldById(wid);
+  S.surv.intro = (w&&w.intro)?w.intro:('你踏入了'+w.name+'。活下去，就是一切。');
+  renderSurvival(wid);
+}
+function survBack(){ const _w=S.surv?S.surv.world:(S._survBackWid||WORLDS[0].id); S.surv=null; renderWorldIntro(_w); }
+function survAct(type){
+  const sv=S.surv; if(!sv||sv.event) return;
+  const w=worldById(sv.world)||WORLDS[0];
+  const costs={explore:2, gather:1, fight:2, social:1, craft:1, rest:0};
+  const cost=costs[type]||1;
+  if(type!=='rest' && cost>sv.stamina){ return; }
+  sv.stamina=Math.max(0,sv.stamina-cost);
+  // 触发随机事件：行动类型加权 + 世界专属优先
+  const pool = Math.random()<0.62 ? (WORLD_SURV[sv.world]||WORLD_SURV.free) : SURV_COMMON;
+  let evt;
+  if(type==='rest'){ evt=survRestEvent(); }
+  else if(type==='fight'){ evt=survFightEvent(w); }
+  else if(type==='explore' && sv.depth>=3 && Math.random()<0.8){ survDestiny(); return; }
+  else if(type==='explore'){ evt=survExploreEvent(w); }
+  else if(type==='gather'){ evt=survGatherEvent(w); }
+  else if(type==='social'){ evt=survSocialEvent(w); }
+  else if(type==='craft'){ evt=survCraftEvent(); }
+  if(!evt) evt = pool[Math.floor(Math.random()*pool.length)];
+  sv.event = evt;
+  renderSurvival(sv.world);
+}
+function survRestEvent(){
+  return {name:'休整一夜', desc:'你找了个安稳的地方休息，把这一天还给了自己。', opts:[
+    {text:'安心睡一觉（恢复体力+3、精神+1）', fx:{stamina:3, mind:1}},
+    {text:'睡醒后出门夜巡（少量探索）', fx:{stamina:2, gold:2, xp:2}},
+    {text:'给老朋友写信（聊以自慰）', trait:'good', fx:{mind:2, fate:1}}
+  ]};
+}
+function survFightEvent(w){
+  const enemy=(ENEMIES[w.enemy]?ENEMIES[w.enemy].name:(w.enemy||'怪物'));
+  return {name:'遭遇 '+enemy, desc:'一只'+enemy+'拦住了去路，獠牙毕露，战或不战由你。', opts:[
+    {text:'正面应战', stat:'str', dc:65, ok:{xp:12, gold:8, hp:-3}, bad:{dmg:10}},
+    {text:'巧取——设陷阱阴它', stat:'per', dc:65, ok:{xp:8, gold:6}, bad:{dmg:6}},
+    {text:'绕道避开', fx:{stamina:-1, mind:1}}
+  ]};
+}
+function survExploreEvent(w){
+  return {name:'深处的动静', desc:'你向'+w.name+'的深处摸进，'+(w.special||'一切都充满未知')+'——前方有危险，也有机遇。', opts:[
+    {text:'大胆深入', stat:'per', dc:65, ok:{depth:1, gold:8, xp:8}, bad:{dmg:8, mind:-1}},
+    {text:'谨慎探查，步步为营', fx:{depth:1, stamina:-1, xp:4}},
+    {text:'此行已够，折返休整', fx:{stamina:2, mind:1}}
+  ]};
+}
+function survGatherEvent(w){
+  return {name:'搜寻补给', desc:'你在附近翻找起来，'+(w.loot?'听说这附近出产「'+w.loot+'」':'能找到些口粮')+'。', opts:[
+    {text:'仔细搜刮', stat:'per', dc:50, ok:{food:2, gold:5}, bad:{food:1, stamina:-1}},
+    {text:'顺手牵羊', stat:'agi', dc:70, ok:{gold:8, item:1, stolen:1}, bad:{dmg:5, stolen:1}},
+    {text:'只捡最值钱的', fx:{gold:3, stamina:-1}}
+  ]};
+}
+function survSocialEvent(w){
+  return {name:'萍水相逢', desc:'你遇到一个'+(w.name)+'的本地人，对方上下打量你。', opts:[
+    {text:'上前攀谈，套点情报', stat:'cha', dc:55, ok:{xp:6, gold:3, mind:1}, bad:{mind:-1}},
+    {text:'出手相助', trait:'good', fx:{fate:1, mind:2}},
+    {text:'保持距离，擦肩而过', fx:{stamina:-1}}
+  ]};
+}
+function survCraftEvent(){
+  return {name:'生火做饭', desc:'你架起锅，把手头的物资做成了一顿热乎的饭。', opts:[
+    {text:'做顿丰盛的（饱食+3）', fx:{food:3, stamina:-1}},
+    {text:'做点干粮带上（饱食+2）', fx:{food:2}},
+    {text:'顺便磨一磨武器（经验+）', fx:{food:1, xp:4, stamina:-1}}
+  ]};
+}
+function survDestiny(){
+  const sv=S.surv;
+  const w=worldById(sv.world);
+  const top=wsTopTrait(sv.world);
+  const ending=(WORLD_ENDINGS&&WORLD_ENDINGS[sv.world]&&top&&WORLD_ENDINGS[sv.world][top])||(WORLD_ENDINGS&&WORLD_ENDINGS[sv.world]&&WORLD_ENDINGS[sv.world].good);
+  let txt='你终于走到了「'+w.name+'」的尽头。';
+  if(ending&&ending.text) txt+=' '+ending.text;
+  const first=(S.survCleared||[]).indexOf(sv.world)<0;
+  if(first) S.survCleared.push(sv.world);
+  S.fate=(S.fate||0)+(first?3:0);
+  S.surv.state='cleared';
+  S.surv.destinyTxt=txt;
+  renderSurvival(sv.world);
+}
+function survChoose(idx){
+  const sv=S.surv; const evt=sv.event; if(!evt) return;
+  const o=evt.opts[idx]; if(!o) return;
+  sv.event=null;
+  const notes=[];
+  if(o.trait){ const t=wsTraitOf(o.trait); if(t){ if(!S.wsVars[sv.world])S.wsVars[sv.world]={good:0,brave:0,wise:0,wild:0,last:''}; S.wsVars[sv.world][t]++; S.wsVars[sv.world].last=o.trait; notes.push('倾向·'+t+'+1'); } }
+  let fx=o.fx||{};
+  if(o.stat){
+    const r=survRoll(o.stat, o.dc||60);
+    if(r==='pass'||r==='great'){ fx=o.ok||{}; notes.push(r==='great'?'大成功':'成功'); }
+    else { fx=o.bad||{}; notes.push(r==='fumble'?'大失败':'失败'); }
+  }
+  survApply(fx, notes);
+  survNight();
+}
+function survRoll(stat, dc){
+  const st=S.stats[stat]||0;
+  const d=Math.floor(Math.random()*100)+1;
+  const total=st*2+d;
+  return total>=dc+30?'great':(total>=dc?'pass':(total>=dc-20?'fail':'fumble'));
+}
+function survApply(fx, notes){
+  const sv=S.surv; if(!fx) return;
+  if(fx.gold) S.gold=Math.max(0,S.gold+fx.gold);
+  if(fx.xp) gainXp(fx.xp);
+  if(fx.fate) S.fate=(S.fate||0)+fx.fate;
+  if(fx.hp) S.hp=Math.min(S.maxHp,S.hp+fx.hp);
+  if(fx.dmg){ S.hp=Math.max(0,S.hp-fx.dmg); notes.push('受伤 -'+fx.dmg); }
+  if(fx.stamina) sv.stamina=Math.max(0,Math.min(SURV_LIM.stamina,sv.stamina+fx.stamina));
+  if(fx.food) sv.food=Math.max(0,Math.min(SURV_LIM.food,sv.food+fx.food));
+  if(fx.mind) sv.mind=Math.max(0,Math.min(SURV_LIM.mind,sv.mind+fx.mind));
+  if(fx.depth) sv.depth=Math.max(0,Math.min(3,sv.depth+fx.depth));
+  if(fx.item) S.items=(S.items||[]).concat(['神秘收获']);
+  if(fx.stolen) sv.mem=(sv.mem||{}), sv.mem.stolen=true;
+  if(notes.length) sv.lastNote=notes.join(' · ');
+  if(S.hp<=0){ survDie(); }
+}
+function survNight(){
+  const sv=S.surv;
+  if(!sv||sv.state!=='alive') return;
+  // 夜晚结算：扣饱食、体力微回
+  sv.food=Math.max(0,sv.food-1);
+  sv.stamina=Math.min(SURV_LIM.stamina, sv.stamina+1);
+  if(sv.food<=0){ S.hp=Math.max(0,S.hp-4); sv.lastNote=(sv.lastNote?sv.lastNote+' · ':'')+'饥肠辘辘，生命 -4'; }
+  if(sv.mind<=0){ sv.mind=0; S.hp=Math.max(0,S.hp-3); sv.lastNote=(sv.lastNote?sv.lastNote+' · ':'')+'精神崩溃，生命 -3'; }
+  sv.day++;
+  if(S.hp<=0){ survDie(); return; }
+  renderSurvival(sv.world);
+}
+function survRetire(){
+  const sv=S.surv; if(!sv) return;
+  const days=Math.max(1,sv.day-1);
+  const fate=Math.max(1,Math.floor(days/3));
+  S.fate=(S.fate||0)+fate;
+  if(!S.survBest) S.survBest={};
+  S.survBest[sv.world]=Math.max(S.survBest[sv.world]||0, days);
+  const oldW=sv.world;
+  const txt='你在「'+(worldById(oldW)||{}).name+'」安稳度过了 '+days+' 天。归隐结算：命运点 +'+fate+'（可永久保留）。';
+  S.surv=null;
+  S._survBackWid=oldW;
+  S._survMsg=txt;
+  renderWorldIntro(oldW);
+}
+function survDie(){
+  const sv=S.surv; if(!sv) return;
+  const days=Math.max(1,sv.day-1);
+  if(!S.survBest) S.survBest={};
+  S.survBest[sv.world]=Math.max(S.survBest[sv.world]||0, days);
+  S.gold=Math.floor(S.gold/2);
+  const oldW=sv.world;
+  S.surv=null;
+  S._survBackWid=oldW;
+  S._survMsg='你在「'+(worldById(oldW)||{}).name+'」坚持了 '+days+' 天，最终倒在了异世界。金币损失一半，回响碎片与生存纪录保留——死亡不是终点，轮回后卷土重来。';
+  renderWorldIntro(oldW);
 }
 
 function renderSimulator(){
