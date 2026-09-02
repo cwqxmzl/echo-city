@@ -603,6 +603,12 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
 /* ===== 第二十轮：词条叙事化 / 内心独白 ===== */
 .tag-lore{font-size:11px;color:#9fb7c4;font-style:italic;line-height:1.5;margin-top:4px;opacity:.85;letter-spacing:.02em;}
 .story .mono, .story mono, [class*="mono"]{color:#b9c6d0;font-style:italic;}
+
+/* ===== 第二十一轮：选项隐性预告 ===== */
+.choice-warn{color:#ff9c8c;border-color:rgba(255,110,90,.5)!important;background:rgba(255,90,70,.06);}
+.choice-warn .c-tag{color:#ff6b5e;}
+.choice-warm{color:#cfe8cf;border-color:rgba(130,220,140,.4)!important;background:rgba(130,220,140,.05);}
+.choice-warm .c-tag{color:#7fdd8b;}
 </style>
 </head>
 <body>
@@ -7037,11 +7043,11 @@ choices:[
 N({id:'c1_e1a',chap:'第一章 · 旧日街区',title:'街角的回响',tagline:'探索 · 随机事件',
 text:'街角的路灯下，站着一个半透明的身影。\n\n她穿着这个城市早已过时的旧式工装，一遍遍地重复着同一个动作——伸手，像是要把什么东西递给面前的人。\n\n她的嘴唇翕动，却发不出声音。\n\n{echo}“……”{/echo}\n\n你认出来了。这是上周目的她。某个在轮回中死去，却不肯消散的NPC。\n\n她手里的东西，似乎是一枚旧钥匙。',
 choices:[
-  {text:'蹲下，平静地听她“说话”',tag:'安抚',desc:'她的执念很深，想安抚她并不容易（难度 · 相当困难）',kind:'check',stat:'per',dc:52,
+  {text:'蹲下身，放轻声音，试着安抚她',tag:'安抚',desc:'她的执念很深，想安抚她并不容易（难度 · 相当困难）',kind:'check',stat:'per',dc:52,
    succ:'c1_ghost_peace',fail:'c1_ghost_aggro',succCrit:'c1_ghost_peace_crit',failFumb:'c1_ghost_aggro_fumb',
    succText:'（1d100+感知 判定成功）她的动作渐渐慢下来，瞳孔里映出你的脸。她终于“看清”了你——然后，把钥匙轻轻放在你手心。\n\n【获得：旧城钥匙】她张了张嘴，这次你读懂了唇语：“……中城区……塔……别去……”'},
-  {text:'抽出武器，警惕后退',tag:'战斗',desc:'她是异常数据，危险',kind:'combat',enemy:'ghost',win:'c1_ghost_kill',lose:'death'},
-  {text:'模仿她的动作，伸手接过',tag:'共情',desc:'她像是认出了谁，你的心莫名发紧（难度 · 相当困难）',kind:'check',stat:'cha',dc:55,
+  {text:'面无表情，抬手直接打散她',tag:'战斗',desc:'她拦在路中间，不打算让开',kind:'combat',enemy:'ghost',win:'c1_ghost_kill',lose:'death'},
+  {text:'学着她的样子，伸手接过钥匙',tag:'共情',desc:'她像是认出了谁，你的心莫名发紧（难度 · 相当困难）',kind:'check',stat:'cha',dc:55,
    succ:'c1_ghost_give',fail:'c1_ghost_aggro',succCrit:'c1_ghost_give_crit',failFumb:'c1_ghost_aggro_fumb',
    succText:'（1d100+魅力 判定成功）你伸出手，学着她的样子。她的眼睛亮了一下，然后把钥匙放进你手里，身形渐渐淡去。\n\n“谢谢……”\n\n这是她说的唯一一句人话。\n\n【获得：旧城钥匙】\n\n你的心中多了一点重量。也许这座城里的“异常”，并非全是敌人。'}
 ]});
@@ -7996,6 +8002,7 @@ function newRun(){
   S.nodeId = null;
   S.revealedSelf=false;
   S.reEcho=0; S.bp=0;
+  S._runGold0=S.gold; S._runEcho0=S.echoes;
 }
 function resetRun(){ newRun(); S.run++; checkAchievements(); }
 
@@ -8289,6 +8296,14 @@ function combatSpeedToggle(){
 
 function runCheck(stat, dc, label){
   if(S._consolation){ S._consolation=false; const _c=critRange(); return {stat:stat,dc:dc,label:label,roll:Math.max(1,_c),mod:0,total:999,crit:true,fumb:false,success:true,rerolled:false,consoled:true}; }
+  /* 动态仁慈：连续失败悄悄降难度、连续成功略升、三次失败赠一次免费重掷（不提示，保持命运感） */
+  S._checkHist = S._checkHist||{};
+  const key = String(label)+'|'+dc;
+  const h = S._checkHist[key] || {fail:0, succ:0};
+  let effDc = dc;
+  if(h.fail>=2) effDc -= 5;
+  if(h.fail>=4) effDc -= 5;
+  if(h.succ>=3 && dc>=50) effDc += 3;
   let roll = roll100();
   let rerolled=false;
   if(roll>=98 && S.talents.includes('fate')){ rerolled=true; roll=roll100(); }
@@ -8296,8 +8311,22 @@ function runCheck(stat, dc, label){
   const fumb = roll>=98;  // 天命护体：大失败只余 2%
   const mod = statValue(stat) + checkBonus(stat);
   const total = roll + mod;
-  const success = crit ? true : (total>=dc);
-  return {stat,dc,label,roll,mod,total,crit,fumb,success,rerolled};
+  let success = crit ? true : (total>=effDc);
+  if(!success && !crit && h.fail>=3 && !rerolled && !fumb){
+    // 免费重掷（仁慈）：连续 3 次败在同一判定后，命运拉你一把
+    rerolled=true;
+    roll=roll100();
+    const c2 = roll<=critRange();
+    const f2 = roll>=98;
+    const t2 = roll + mod;
+    const s2 = c2 ? true : (t2>=effDc);
+    h.fail = 0; h.succ = s2 ? h.succ+1 : 0;
+    S._checkHist[key]=h;
+    return {stat,dc:effDc,label,roll,mod,total:t2,crit:c2,fumb:f2,success:s2,rerolled,mercy:true};
+  }
+  if(success){ h.succ++; h.fail=0; } else { h.fail++; h.succ=0; }
+  S._checkHist[key]=h;
+  return {stat,dc:effDc,label,roll,mod,total,crit,fumb,success,rerolled};
 }
 
 /* ===== 键盘快捷键（第十七轮 · 不打断沉浸的高效操作） =====
@@ -8369,6 +8398,7 @@ function diceLog(res){
 
 /* ---------- 节点渲染 ---------- */
 function gotoNode(id){
+  if(id==='death'){ showDeathSettlement(); return; }
   if(id==='__map__'){ renderMap(); return; }
   if(id==='__loc__'){ const l=locById(S._locReturn||S._location); if(l){ renderLocation(l); return; } renderMap(); return; }
   const n = NODES[id];
@@ -8435,13 +8465,45 @@ function patchCorner(){
   if(tier>=2) ch.push(JSON.parse(JSON.stringify(base[2])));
   n.choices=ch;
 }
+
+/* ===== 第二十一轮：死亡结算正向化 ===== */
+function showDeathSettlement(){
+  const first = !S._diedBefore; S._diedBefore = true;
+  if(first){ S.fate=(S.fate||0)+1; }
+  const gGain = Math.max(0,(S.gold||0)-(S._runGold0||0));
+  const eGain = Math.max(0,(S.echoes||0)-(S._runEcho0||0));
+  const newT = (S.tagBag||[]).length;
+  const newW = (S.worldsCleared||[]).length;
+  const where = S.nodeId==='combat' ? '战斗中' : (S._returnNode? locLabel(S._returnNode) : '回响之城');
+  S.nodeId='death';
+  updateHUD();
+  const v=$('view-scene');
+  const reward = first
+    ? '<b class="hlc">首次轮回奖励：命运点 +1</b> —— 命运记住了你的名字，下一把，起点更高。'
+    : '本轮回继承命运点：'+(4+Math.floor(S.echoes/2))+'（随回响碎片增长）';
+  v.innerHTML = `<div class="panel">
+    <div class="scene-chap">轮回 · 第 ${S.run} 周目 · 落幕</div>
+    <div class="scene-title">死亡不是终点，是蓄力</div>
+    <div class="scene-tagline">你倒在回响之中——但这一周目的成长，将随你进入下一次轮回。</div>
+    <div class="story">【本轮收获结算】\n\n本局推进：${where}\n本局获得金币：+${gGain}（全部永久继承，死亡也不掉）\n本局回响碎片：+${eGain}（永久累积）\n已解锁：词条 ×${newT} · 世界 ×${newW} · 结局 ${S.finishedEndings.length}/4\n\n${reward}\n\n越轮回，越强大。你的每一分积累，都在为下一次轮回铺路——出发吧，旅者。</div>
+    <div class="choices">
+      <div class="choice" id="ds-restart"><span class="c-tag">【轮回再启】</span>带着全部积累，开始下一次冒险<span class="c-desc">金币 / 回响碎片 / 词条 / 成就全部保留</span></div>
+      <div class="choice" id="ds-save"><span class="c-tag">【保存退出】</span>保存进度，下次继续<span class="c-desc">进度已自动存档，可随时恢复</span></div>
+    </div>
+  </div>`;
+  showView('scene');
+  $('view').scrollTop=0;
+  autoSave();
+  $('ds-restart').onclick=()=>renderTitle();
+  $('ds-save').onclick=()=>renderTitle();
+}
 const NODE_ARRIVAL = {
-  'c1_ghost_peace': ()=>{ S.flag.old_key=true; npcTouch('linwan',10,5); },
-  'c1_ghost_give': ()=>{ S.flag.old_key=true; npcTouch('linwan',20,10); },
+  'c1_ghost_peace': ()=>{ S.flag.old_key=true; npcTouch('linwan',10,5); const _n=NODES['c1_ghost_peace']; if(_n) _n.text+='\n\n{mono}你心里对她少了几分戒备。原来她，也只是个等不到人的可怜人。{/mono}'; },
+  'c1_ghost_give': ()=>{ S.flag.old_key=true; npcTouch('linwan',20,10); const _n=NODES['c1_ghost_give']; if(_n) _n.text+='\n\n{mono}你想帮一个人，哪怕她只是一串记忆。{/mono}'; },
   'c1_e1a': ()=>patchCorner(),
   'c1_ghost_peace_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',15,8); },
   'c1_ghost_give_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',25,12); },
-  'c1_ghost_aggro': ()=>npcTouch('linwan',2,3),
+  'c1_ghost_aggro': ()=>{ npcTouch('linwan',2,3); const _n=NODES['c1_ghost_aggro']; if(_n) _n.text+='\n\n{mono}这次没把握好。下次，也许该换个方式。{/mono}'; },
   'c1_ghost_aggro_fumb': ()=>npcTouch('linwan',-8,4),
   'c1_ghost_kill': ()=>npcTouch('linwan',-15,5),
   'c1_merchant_crystal': ()=>{ S.flag.mystery_key=true; },
@@ -8480,8 +8542,11 @@ function renderScene(n){
   const choices = filterChoices(n.choices);
   choices.forEach((c,idx)=>{
     const b = document.createElement('div');
-    b.className='choice'+(c.hidden?' hidden-mystery':'');
-    let tag = c.tag? `<span class="c-tag">【${esc(c.tag)}】</span>`:'';
+    let _risk='';
+    if(c.kind==='check' && c.dc>=65) _risk=' choice-warn';
+    else if(c.tag==='安抚'||c.tag==='共情'||c.tag==='救人'||c.tag==='对话'||c.tag==='温柔') _risk=' choice-warm';
+    b.className='choice'+(c.hidden?' hidden-mystery':'')+_risk;
+    let tag = c.tag? `<span class="c-tag">${c.kind==='check'&&c.dc>=65?'⚠ ':''}【${esc(c.tag)}】</span>`:'';
     let desc = c.desc? `<div class="c-desc">${esc(c.desc)}</div>`:'';
     if(c.kind==='check' && !/难度/.test(desc)){ desc += `<div class="c-desc">难度：${dcWord(c.dc||50)}</div>`; }
     b.innerHTML = `${tag}${esc(c.text)}${desc}`;
