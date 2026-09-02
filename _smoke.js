@@ -584,7 +584,7 @@ step('典型世界特色机制', () => {
   G('window.rand=(n)=>Math.floor(Math.random()*n)');
   // 圣巢深渊：死亡掉魂
   G('S.gold=100; S._hollowSoul=0; startOperation("hollow"); S.hp=0; renderDeath()');
-  ok('圣巢掉魂', G('S._hollowSoul===40'));
+  ok('圣巢掉魂(15%)', G('S._hollowSoul===15'));
 });
 
 step('撤离按钮修复（op-withdraw 点击有反应）', () => {
@@ -713,7 +713,7 @@ step('AI 记忆 · 偷窃被记住', () => {
   ok('偷窃记忆已记录', G('S.ai.mem.stolen===true'));
 });
 step('AI 场景推进与通关', () => {
-  G('S.ai.stage=2;');
+  G('S.ai.stage=2; S.stats.per=99;');
   G('aiSubmitStr("向前探索")');
   ok('到达末章后行动可通关', G('(S.aiCleared||[]).indexOf("sky")>=0'));
   ok('通关获得命运点', G('S.fate>=2'));
@@ -782,6 +782,33 @@ step('死亡结算', () => {
 });
 step('生存沙盒无运行时错误', () => {
   ok('无运行时错误', errors.length === 0);
+});
+
+step('万界·数值增强&限制取消（第四轮A-F）', () => {
+  // 死亡金币全保留
+  G('boot(); newRun(); applyClass("sword"); S.gold=200; S.hp=1; renderDeath()');
+  ok('死亡保留金币(200)', G('S._keepGold===200'));
+  // 初始资源加强
+  G('newRun(); applyClass("sword")');
+  ok('初始金币40+职业20', G('S.gold>=60'));
+  ok('初始命运点4+', G('S.fate>=4'));
+  ok('初始生命40+', G('S.maxHp>=40'));
+  // 词条增强：丰收已装备
+  G('boot(); newRun(); applyClass("sword"); S.equippedTags=["harvest"]; S.tagBag=["harvest"]; startOperation("sky"); OP.collected=[]; OP.tags=["词条·丰收"]; S.gold=0;');
+  G('opExploreLoot(false);');
+  ok('词条·丰收已装备', G('S.equippedTags.includes("harvest")'));
+  // 生存沙盒：体力不足也能行动
+  G('boot(); newRun(); applyClass("sword"); S.surv={world:"sky", day:1, stamina:0, food:5, mind:5, depth:0, state:"alive", event:null};');
+  G('survAct("explore")');
+  ok('体力0仍可行动(状态保留)', G('S.surv!==null && S.surv.state==="alive"'));
+  // 外挂增强：签到开局 30 金 + 3 命运
+  G('boot(); newRun(); S.boosters=["sign"]; applyExternals("sky")');
+  ok('签到外挂+30金', G('S.gold>=30'));
+  // 大失败区间收窄：critRange 含 crit 词条
+  G('boot(); newRun(); S.equippedTags=["rage"];');
+  ok('critRange≥14(基础8+狂暴6)', G('critRange()>=14'));
+  // 无运行时错误
+  ok('无运行时错误(本轮)', errors.length === 0);
 });
 
 console.log('\n== 汇总 ==');
