@@ -566,6 +566,28 @@ h1.title-name{
 #save-toast .st{background:rgba(16,42,58,.94);border:1px solid rgba(127,224,208,.5);border-radius:10px;padding:8px 14px;font-size:12px;color:#7fe0d0;display:flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(0,0,0,.45);}
 #save-toast .st-ico{width:9px;height:9px;border-radius:50%;background:#7fe0d0;box-shadow:0 0 10px #7fe0d0;animation:stBlink 1s ease-in-out infinite;}
 @keyframes stBlink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ===== 第十八轮：面板标签导航 / 成就图鉴 / 品级色板 / 彩蛋toast ===== */
+.char-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px;position:sticky;top:0;background:rgba(10,18,26,.92);padding:6px 0;z-index:5;border-bottom:1px solid rgba(127,224,208,.15);}
+.ctab{cursor:pointer;font-size:12px;letter-spacing:.05em;padding:5px 11px;border-radius:999px;border:1px solid rgba(127,224,208,.25);color:var(--cyan);transition:all .15s;user-select:none;}
+.ctab:hover{filter:brightness(1.2);}
+.ctab.active{background:rgba(127,224,208,.16);border-color:var(--cyan);color:#d9fff8;box-shadow:0 0 8px rgba(127,224,208,.3);}
+/* 成就图鉴 */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px;}
+.ach-card{background:rgba(20,32,42,.7);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px;opacity:.55;}
+.ach-card.a-on{opacity:1;border-color:rgba(255,182,77,.5);box-shadow:0 0 10px rgba(255,182,77,.15);}
+.ach-card .a-n{font-size:13px;font-weight:700;color:#fff;margin:4px 0 2px;}
+.ach-card .a-d{font-size:11px;color:#9aa8b4;}
+.ach-card .a-r{font-size:11px;color:var(--gold);margin-top:3px;}
+.ach-card .a-ok{font-size:11px;color:#7fe0d0;margin-top:4px;letter-spacing:.1em;}
+/* 成就/彩蛋 toast */
+#ach-toast{position:fixed;top:20%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:9999;opacity:0;pointer-events:none;transition:all .28s ease;}
+#ach-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+#ach-toast .at{background:rgba(12,20,28,.96);border:1px solid #7fe0d0;border-radius:14px;padding:14px 20px;min-width:280px;max-width:420px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.6);}
+#ach-toast .at-t{font-size:16px;font-weight:800;color:#ffd88a;letter-spacing:.08em;margin-bottom:6px;}
+#ach-toast .at-d{font-size:13px;color:#cfe3ec;line-height:1.5;}
+/* 品级色板（统一） */
+.tier-d{color:#9aa7b0}.tier-c{color:#e8eef2}.tier-b{color:#7be37b}.tier-a{color:#6bb5ff}.tier-s{color:#c88cff}.tier-ss{color:#ffb64d}.tier-sss{color:#ff6b6b;text-shadow:0 0 8px rgba(255,107,107,.5)}
 </style>
 </head>
 <body>
@@ -7608,7 +7630,7 @@ function markPermanent(){
   S.permaStat = S.permaStat||{};
   const keys=['str','agi','int','cha','con','per'];
   const k=keys[rand(keys.length)];
-  S.permaStat[k]=(S.permaStat[k]||0)+1;
+  S.permaStat[k]=(S.permaStat[k]||0)+1; S._permSum=(S._permSum||0)+1;
   saveSave(); renderHub(); updateHUD();
   alert('灵魂烙印加深——'+({str:'力量',agi:'敏捷',int:'智力',cha:'魅力',con:'体质',per:'感知'}[k])+' 永久 +1（轮回不灭）！');
 }
@@ -7651,10 +7673,10 @@ const S = {
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[]})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -7900,7 +7922,7 @@ function newRun(){
   S.revealedSelf=false;
   S.reEcho=0; S.bp=0;
 }
-function resetRun(){ newRun(); S.run++; }
+function resetRun(){ newRun(); S.run++; checkAchievements(); }
 
 /* ---------- 职业 ---------- */
 function applyClass(cid){
@@ -8092,7 +8114,106 @@ function updateHUD(){
 /* ---------- 骰子系统（安科） ---------- */
 function roll100(){ return rand(100)+1; }
 function critRange(){ return (S.talents.includes('fate')?12:8) + (hasTagFx('crit')?6:0) + (hasTagFx('luck')?6:0) + (hasTagFx('omni')?2:0); }
+
+/* ===== 第十八轮：骰子彩蛋 / 成就图鉴 / 战斗倍速 ===== */
+const ACHIEVEMENTS = [
+  {id:'first-blood', n:'初试锋芒', d:'首次赢得一场战斗胜利', echo:2},
+  {id:'first-world', n:'破界初旅', d:'首次通关一个世界', echo:5},
+  {id:'world-3', n:'三界行者', d:'累计通关 3 个世界', echo:10},
+  {id:'world-10', n:'万界之主', d:'累计通关 10 个世界', echo:20},
+  {id:'run-1', n:'初入轮回', d:'完成第一次轮回', echo:3, fate:1},
+  {id:'gold-500', n:'万贯家财', d:'金币达到 500', echo:5},
+  {id:'tags-5', n:'词条收藏家', d:'词条背包拥有 5 个词条', echo:5},
+  {id:'crit-3', n:'欧皇附体', d:'连续掷出 3 次大成功', fate:2},
+  {id:'fumb-5', n:'非酋见证', d:'累计遭遇 5 次大失败', fate:2},
+  {id:'perma-10', n:'烙印初成', d:'碎片烙印累计 +10 全属性', echo:8},
+];
+function achDone(id){ return (S.achievements||[]).includes(id); }
+function toastBanner(title, desc, color){
+  let el=document.getElementById('ach-toast');
+  if(!el){ el=document.createElement('div'); el.id='ach-toast'; document.body.appendChild(el); }
+  el.innerHTML='<div class="at" style="border-color:'+(color||'#7fe0d0')+'"><div class="at-t">'+esc(title)+'</div><div class="at-d">'+esc(desc)+'</div></div>';
+  el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove('show'); }, 3200);
+}
+function grantAch(id){
+  if(!S.achievements) S.achievements=[];
+  if(S.achievements.includes(id)) return;
+  const a=ACHIEVEMENTS.find(function(x){ return x.id===id; }); if(!a) return;
+  S.achievements.push(id);
+  if(a.echo) S.echoes+=a.echo;
+  if(a.fate) S.fate+=a.fate;
+  saveSave(); updateHUD();
+  let rw=''; if(a.echo) rw+='回响碎片 +'+a.echo+' '; if(a.fate) rw+='命运点 +'+a.fate;
+  toastBanner('🏆 成就解锁 · '+a.n, a.d+(rw? '（'+rw+'）':''));
+}
+function checkAchievements(){
+  if(!S) return;
+  if((S._wins||0)>=1) grantAch('first-blood');
+  if((S.worldsCleared||[]).length>=1) grantAch('first-world');
+  if((S.worldsCleared||[]).length>=3) grantAch('world-3');
+  if((S.worldsCleared||[]).length>=10) grantAch('world-10');
+  if((S.totalRuns||0)>=1) grantAch('run-1');
+  if(S.gold>=500) grantAch('gold-500');
+  if((S.tagBag||[]).length>=5) grantAch('tags-5');
+  if((S._fumbTotal||0)>=5) grantAch('fumb-5');
+  if((S._permSum||0)>=10) grantAch('perma-10');
+}
+function renderAchievements(){
+  S._returnNode=S.nodeId; S.nodeId='ach'; updateHUD();
+  checkAchievements();
+  const v=$('view-char');
+  let html=`<div class="panel">
+    <div class="scene-chap">图鉴 · 第 ${S.run} 周目</div>
+    <div class="scene-title">万界图鉴 · 成就</div>
+    <div class="scene-tagline">每一步都算数——战斗、探索、骰运、轮回，都会在这里留下痕迹。达成成就领取回响碎片与命运点。</div>
+    <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">已解锁 ${(S.achievements||[]).length}/${ACHIEVEMENTS.length}</div>
+    <div class="ach-grid">`;
+  ACHIEVEMENTS.forEach(function(a){
+    const done=achDone(a.id);
+    let rw=''; if(a.echo) rw+='碎片 +'+a.echo+' '; if(a.fate) rw+='命运 +'+a.fate;
+    html+=`<div class="ach-card${done?' a-on':''}">${done?'🏆':'🔒'}<div class="a-n">${esc(a.n)}</div><div class="a-d">${esc(a.d)}</div><div class="a-r">${rw}</div>${done?'<div class="a-ok">已达成</div>':''}</div>`;
+  });
+  html+=`</div>
+    <div class="choices"><div class="choice" id="ach-close"><span class="c-tag">【返回】</span>返回</div></div>
+  </div>`;
+  v.innerHTML=html; showView('char');
+  $('ach-close').onclick=function(){ closeChar(); };
+}
+/* 骰子彩蛋：连续大成功 → 天选之人；连续大失败 → 非酋的慰藉 */
+function diceEaster(kind){
+  if(kind==='crit'){
+    S._critStreak=(S._critStreak||0)+1; S._fumbStreak=0; S._runCrits=(S._runCrits||0)+1;
+    if(S._critStreak>=3){
+      S._critStreak=0; grantAch('crit-3');
+      const pool=TAG_POOL.filter(function(t){ return t.g==='A'||t.g==='S'; });
+      if(pool.length){ const t=pool[rand(pool.length)]; S.tagBag=S.tagBag||[]; S.tagBag.push(t.id);
+        toastBanner('🎰 天选之人！', '三连大成功！系统被你的欧气震得说不出话，随手甩出一枚「'+t.n+'」塞进你的词条背包，还多给了 1 点命运点。', '#ffb64d');
+        S.fate=(S.fate||0)+1; saveSave(); updateHUD(); }
+    }
+  } else if(kind==='fumb'){
+    S._fumbStreak=(S._fumbStreak||0)+1; S._critStreak=0; S._fumbTotal=(S._fumbTotal||0)+1;
+    if(S._fumbStreak>=3){
+      S._fumbStreak=0;
+      S._consolation=true; S.echoes=(S.echoes||0)+2; saveSave(); updateHUD();
+      toastBanner('😢 非酋的慰藉', '三连大失败，连系统都看不下去了——硬塞给你一颗「下次判定必定大成功」的后悔药，外加 2 枚回响碎片压压惊。', '#7fe0d0');
+      checkAchievements();
+    }
+  }
+}
+/* 战斗连打倍速切换：1x → 2x → 3x */
+function combatSpeedToggle(){
+  if(!CB) return;
+  const r=[1,2,3];
+  const i=r.indexOf(CB._speed||1);
+  CB._speed=r[(i+1)%r.length];
+  if(CB.auto){ clearInterval(CB._autoTimer); CB._autoTimer=setInterval(combatAutoStep, Math.round(300/(CB._speed||1))); }
+  combatLog('—— 连打速度已切到 '+CB._speed+'x'+(CB._speed>1?'（眼睛要跟不上啦）':'（养生模式，稳稳地打）'), 'ok');
+  renderCombat();
+}
+
 function runCheck(stat, dc, label){
+  if(S._consolation){ S._consolation=false; const _c=critRange(); return {stat:stat,dc:dc,label:label,roll:Math.max(1,_c),mod:0,total:999,crit:true,fumb:false,success:true,rerolled:false,consoled:true}; }
   let roll = roll100();
   let rerolled=false;
   if(roll>=98 && S.talents.includes('fate')){ rerolled=true; roll=roll100(); }
@@ -8274,6 +8395,7 @@ function resolveChoice(c){
   if(c.kind==='check'){
     const res = runCheck(c.stat, c.dc, c.tag||'判定');
     diceLog(res);
+    if(res.crit) diceEaster('crit'); else if(res.fumb) diceEaster('fumb'); else { S._critStreak=0; S._fumbStreak=0; }
     // 记录判定上下文（供剧情下方【命运】重掷使用）
     S._lastCheck = {stat:c.stat, dc:c.dc, label:c.tag||'判定', succ:c.succ, fail:c.fail, succCrit:c.succCrit||c.succ, failFumb:c.failFumb||c.fail};
     // 四档剧情路由：大成功/普通成功/普通失败/大失败
@@ -8503,6 +8625,7 @@ function renderCombat(){
         (t.down?'<div class="ally-down">倒地 · 被动失效</div>'
           :'<div class="ally-btns"><button class="cact ally-btn" '+(en>=30?'':'disabled')+' onclick="combatAllySkill(\''+t.id+'\',\'skill\')">战技 · '+esc(conf.skill.name)+'</button><button class="cact ally-btn ult" '+(en>=100?'':'disabled')+' onclick="combatAllySkill(\''+t.id+'\',\'ult\')">终结技 · '+esc(conf.ult.name)+'</button></div>')+
       '</div>'; }).join('')+'</div>'; })()}
+      <div class="speedbar" style="display:flex;align-items:center;gap:8px;margin:8px 0 2px"><span style="font-size:11px;color:var(--cyan);letter-spacing:.1em">连打速度</span><button class="cact" style="padding:4px 12px" onclick="combatSpeedToggle()">'+(CB&&CB._speed?CB._speed:1)+'x</button><span style="font-size:11px;color:var(--ink-dim)">自动连打时生效 · 想亲手打随时接管</span></div>
       <div class="battle-log" id="battle-log">${logEntries.join('<br>')}</div>
       <div class="skill-slot">
         <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em">技能 · 携带 ${S.skills.length}/3</div>
@@ -8758,7 +8881,7 @@ function combatAuto(){
   CB.auto = true;
   combatLog('—— 你切到自动挡，让技能自己飞。点「停止」或任一操作即可接管。', 'ok');
   renderCombat();
-  CB._autoTimer = setInterval(combatAutoStep, 300);
+  CB._autoTimer = setInterval(combatAutoStep, Math.round(300/(CB._speed||1)));
 }
 function combatAutoStop(){
   if(!CB) return;
@@ -8835,6 +8958,7 @@ function combatVictory(){
   setTimeout(()=>gotoNode(winNode), 900);
 }
 function victoryRewards(withLoot){
+  S._wins=(S._wins||0)+1; checkAchievements();
   const e = ENEMIES[CB.id];
   S.gold += Math.round((e.gold||0)*2.5);
   gainXp(Math.round((e.xp||0)*2.5));
@@ -10268,6 +10392,7 @@ function renderHub(){
         <div class="hub-card" id="hub-tagws"><div class="hc-icon">🔖</div><div class="hc-name">词条工作台</div><div class="hc-desc">红色神器：词条背包（死亡不掉落）/ 词条合成 / 词条分解 / 插槽解除。把搜刮到的词条，铸成你的力量。</div><div class="hc-meta">词条 ${(S.tagBag||[]).length} 个 · 生效 ${(S.equippedTags||[]).length} 个</div></div>
         <div class="hub-card" id="hub-custom"><div class="hc-icon">✍</div><div class="hc-name">自定义剧本</div><div class="hc-desc">用简单 JSON 写一段你自己的多分支剧情，导入即玩。</div><div class="hc-meta">人人都能当编剧</div></div>
         <div class="hub-card" id="hub-ai"><div class="hc-icon">🧠</div><div class="hc-name">AI 剧情模式</div><div class="hc-desc">自由输入行动 / 说 / 剧情 / 看，叙事实时回应——你偷过的东西会被记住，你救下的人会回来报恩。可选接真实 AI，无限剧情。</div><div class="hc-meta">本地引擎开箱即玩 · '${(S.aiCleared||[]).length}/21 场景已探索'</div></div>
+        <div class="hub-card" id="hub-ach"><div class="hc-icon">🏆</div><div class="hc-name">万界图鉴 · 成就</div><div class="hc-desc">战斗、探索、骰运、轮回——每一步都算数。达成成就领取回响碎片与命运点。</div><div class="hc-meta">已解锁 ${(S.achievements||[]).length}/${ACHIEVEMENTS.length}</div></div>
       </div>
       <div class="notice" style="margin-top:16px">提示：主线（回响之城）与万界冒险互不冲突——想打主线打主线，想闯异界闯异界，自由得很。</div>
     </div>`;
@@ -10281,6 +10406,7 @@ function renderHub(){
   $('hub-tagws').onclick=()=>renderTagWorkshop();
   $('hub-custom').onclick=()=>renderCustomEditor();
   $('hub-ai').onclick=()=>renderAI();
+  $('hub-ach').onclick=()=>renderAchievements();
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
 
@@ -10476,7 +10602,16 @@ function renderChar(){
     <div class="scene-chap">角色 · 第 ${S.run} 周目</div>
     <div class="scene-title">${esc(c? c.name : '未定')} · Lv.${S.level}</div>
     <div class="scene-tagline">${esc(c? c.role : '')} ｜ 经验 ${S.xp}/${xpNeed(S.level)} ｜ 已完成世界 ${S.worldsCleared.length}/${WORLDS.length}</div>
-    <div class="char-top">
+    <div class="char-tabs" id="char-tabs">
+      <div class="ctab active" data-sec="stats">属性</div>
+      <div class="ctab" data-sec="equip">装备</div>
+      <div class="ctab" data-sec="party">队伍</div>
+      <div class="ctab" data-sec="skills">技能</div>
+      <div class="ctab" data-sec="inv">背包</div>
+      <div class="ctab" data-sec="tags">词条</div>
+      <div class="ctab" data-sec="ach">成就</div>
+    </div>
+    <div class="char-top" id="char-sec-stats">
       <div class="char-block"><div class="cb-k">生命</div><div class="cb-v">${S.hp}/${S.maxHp}</div></div>
       <div class="char-block"><div class="cb-k">法力</div><div class="cb-v">${S.mp}/${S.maxMp}</div></div>
       <div class="char-block"><div class="cb-k">金币</div><div class="cb-v">◎ ${S.gold}</div></div>
@@ -10490,7 +10625,7 @@ function renderChar(){
     <div class="stat-grid">
       ${stats.map(k=>`<div class="stat-cell">${statNames[k]}${eb[k]? ` <span style="color:var(--gold)">+${eb[k]}</span>`:''}<b>${statValue(k)}</b></div>`).join('')}
     </div>`;
-  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">装备</div>
+  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px" id="char-sec-equip">装备</div>
     <div class="equip-grid">
       ${['weapon','armor','trinket'].map(slot=>{
         const it = S.equip[slot]? itemById(S.equip[slot]):null;
@@ -10498,7 +10633,7 @@ function renderChar(){
         return `<div class="equip-cell">${slotName}<b>${it? esc(it.name):'空'}</b>${it? `<div class="btn btn-small" data-uneq="${slot}">卸下</div>`:''}</div>`;
       }).join('')}
     </div>`;
-  html += `<div class="mate-sec">
+  html += `<div class="mate-sec" id="char-sec-party">
     <div class="ms-title">队伍 · 上阵 ${S.party.length}/3（点击队友切换上阵 / 后备）</div>
     <div class="mate-grid">`;
   TEAMMATES.forEach(m=>{
@@ -10521,7 +10656,7 @@ function renderChar(){
     }
   });
   html += `</div></div>`;
-  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">技能库 · 携带 ${S.skills.length}/3（点击切换携带）</div>
+  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px" id="char-sec-skills">技能库 · 携带 ${S.skills.length}/3（点击切换携带）</div>
     <div class="skill-edit">`;
   if(!S.skillPool.length) html += `<div class="notice">尚未习得任何技能。选择职业后获得初始技能，升级或完成世界可习得新技能。</div>`;
   S.skillPool.forEach(sid=>{
@@ -10532,7 +10667,7 @@ function renderChar(){
       <span class="sk-desc">${esc(sk.desc)}</span></div>`;
   });
   html += `</div>`;
-  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">背包</div>`;
+  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px" id="char-sec-inv">背包</div>`;
   const groups = [['consumable','消耗品'],['weapon','武器'],['armor','防具'],['trinket','饰品'],['key','任务道具']];
   let hasItem=false;
   groups.forEach(([type,tname])=>{
@@ -10580,6 +10715,17 @@ function renderChar(){
       else if(S.skills.length<3) S.skills.push(sid);
       else S.skills[0]=sid;
       renderChar();
+    };
+  });
+  v.querySelectorAll('.ctab').forEach(t=>{
+    t.onclick=()=>{
+      const sec=t.dataset.sec;
+      if(sec==='tags'){ renderTagWorkshop(); return; }
+      if(sec==='ach'){ renderAchievements(); return; }
+      const el=document.getElementById('char-sec-'+sec);
+      v.querySelectorAll('.ctab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ try{ el.scrollIntoView(); }catch(e2){} } }
     };
   });
   $('char-close').onclick=()=>{ closeChar(); };
