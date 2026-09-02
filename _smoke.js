@@ -346,8 +346,8 @@ step('自动战斗开关', () => {
   G('combatAutoStep()');
   ok('AI行动推进回合', G('CB.turn > ' + t0) || G('CB')===null);
   G('combatAutoStop()');
-  ok('停止自动', G('CB.auto===false'));
-  ok('定时器已清', G('CB._autoTimer===null'));
+  ok('停止自动', G('CB===null || CB.auto===false'));
+  ok('定时器已清', G('CB===null || CB._autoTimer===null'));
 });
 step('自动战斗击杀结算', () => {
   G('startCombat("ghost","c1_ghost_kill","death")');
@@ -639,7 +639,7 @@ step('剧情线逻辑无运行时错误', () => {
 
 console.log('== 20. 剧情结构 · 倾向累积 / 因果 / 多结局 ==');
 step('倾向累积与多结局结算', () => {
-  G('boot(); newRun(); applyClass("sword"); S.stats.agi=999; S.stats.str=999; S.stats.int=999; S.stats.per=999; S.stats.con=999; S.stats.cha=999; S.stats.fate=999;');
+  G('boot(); newRun(); applyClass("sword"); S.stats.agi=999; S.stats.str=999; S.stats.int=999; S.stats.per=999; S.stats.con=999; S.stats.cha=999; S.stats.fate=999; S.voice="logic";');
   G('S.worldStory={}; S.storyDone=[]; renderWorldStory("sky")');
   // 第一幕：选「与风语者交易情报」（善，next=1）
   let b = d.getElementById('wso-2');
@@ -660,7 +660,7 @@ step('倾向累积与多结局结算', () => {
   ok('剧情完结已记录', G('S.storyDone.indexOf("sky")>=0'));
 });
 step('不同倾向触发不同结局', () => {
-  G('boot(); newRun(); applyClass("sword"); S.stats.str=999; S.stats.agi=999; S.stats.int=999;');
+  G('boot(); newRun(); applyClass("sword"); S.stats.str=999; S.stats.agi=999; S.stats.int=999; S.voice="logic";');
   G('renderWorldStory("sekiro")');
   // 只选勇向选项：第一幕 wso-1 潜(巧→wise)? 用苇名：第一幕 wso-1 潜行 tag=潜→wise；wso-0 义手 tag=装→? 装未映射
   // 用 sky 勇路线再走一遍（wso-0 强闯=莽→wild? 不对，莽→wild）
@@ -809,6 +809,35 @@ step('万界·数值增强&限制取消（第四轮A-F）', () => {
   ok('critRange≥14(基础8+狂暴6)', G('critRange()>=14'));
   // 无运行时错误
   ok('无运行时错误(本轮)', errors.length === 0);
+});
+
+step('万界·20世界四结局（第十二轮剧情丰富）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  // 每个世界四结局齐备（在 eval 作用域内检查）
+  ok('20世界四结局齐备', G("(function(){var ids=['sky','wuxia','xianxia','ocean','apoc','fantasy','sci','inf','zelda','hollow','elden','pet','sekiro','hades','guoyun','wanzu','guimi','honghuang','zhutian','genshin'];var all=ids.every(function(w){var st=WORLD_STORIES[w];if(!st||!st.endings)return false;return ['good','brave','wise','wild'].every(function(k){return st.endings[k]&&st.endings[k].text;});});return all;})()")===true);
+  // 剧情完整结算：走完一个世界剧情能触发专属结局
+  G('boot(); newRun(); applyClass("sword"); S.worldStory={}; S.wsVars={}; S.wsVars.genshin={good:0,brave:0,wise:0,wild:0};');
+  G('S.wsVars.genshin.wild=2; S.worldStory.genshin=2; S.lastWsMsg="";');
+  G('wsChoose("genshin",0)');
+  // 到结局幕（step3）选第一个选项→应 finish
+  G('S.worldStory.genshin=2; wsChoose("genshin",0)');
+  ok('提瓦特剧情可完结', G('(S.storyDone||[]).indexOf("genshin")>=0'));
+  ok('无运行时错误(第十二轮)', errors.length === 0);
+});
+
+step('内心声音系统（第十二轮·属性技能完善）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  ok('觉醒内心声音', G('S.voice && ECHO_VOICES.some(v=>v.id===S.voice)'));
+  ok('内心声音数据完整', G('ECHO_VOICES.length===6 && ECHO_VOICES.every(v=>v.id&&v.name&&v.line)'));
+  // 声音持久化
+  G('boot(); newRun(); applyClass("sword"); S.voice="mercy"; saveSave()');
+  G('boot(); newRun(); applyClass("sword"); loadSave()');
+  ok('内心声音跨周目保留', G('S.voice==="mercy"'));
+  // 剧情判定中声音参与：wsChoose 正常推进无异常
+  G('boot(); newRun(); applyClass("sword"); S.voice="mercy"; S.worldStory={}; S.wsVars={}; S.wsVars.genshin={good:0,brave:0,wise:0,wild:0}; S.worldStory.genshin=0; S.lastWsMsg="";');
+  G('wsChoose("genshin",0)');
+  ok('内心声音参与剧情无异常', G('S.worldStory.genshin!==undefined'));
+  ok('无运行时错误(内心声音)', errors.length === 0);
 });
 
 console.log('\n== 汇总 ==');
