@@ -615,7 +615,7 @@ step('世界入场页出现「深入剧情」', () => {
 step('剧情线推进与判定', () => {
   // 直接进入剧情，走第一步的第一个选项
   G('S.stats.agi=999; S.stats.int=999; S.stats.str=999; S.stats.per=999; S.stats.con=999; S.stats.cha=999; S.stats.fate=999;');
-  G('renderWorldStory("sky")');
+  G('S.worldStory={}; S.storyDone=[]; renderWorldStory("sky")');
   ok('渲染第一幕标题', G('(document.getElementById("view-worlds").textContent||"").indexOf("青铜城门")>=0'));
   const b0 = d.getElementById('wso-0');
   ok('第一幕选项已渲染', !!b0);
@@ -632,6 +632,50 @@ step('剧情线推进与判定', () => {
   ok('剧情奖励已发放', G('S.gold>0'));
 });
 step('剧情线逻辑无运行时错误', () => {
+  ok('无运行时错误', errors.length === 0);
+});
+
+
+
+console.log('== 20. 剧情结构 · 倾向累积 / 因果 / 多结局 ==');
+step('倾向累积与多结局结算', () => {
+  G('boot(); newRun(); applyClass("sword"); S.stats.agi=999; S.stats.str=999; S.stats.int=999; S.stats.per=999; S.stats.con=999; S.stats.cha=999; S.stats.fate=999;');
+  G('S.worldStory={}; S.storyDone=[]; renderWorldStory("sky")');
+  // 第一幕：选「与风语者交易情报」（善，next=1）
+  let b = d.getElementById('wso-2');
+  ok('第一幕善选项可点', !!b);
+  if (b) b.click();
+  ok('倾向·善累积', G('S.wsVars["sky"].good===1'));
+  // 第二幕：选「布下风羽诱饵」（谋，next=2）
+  b = d.getElementById('wso-1');
+  ok('第二幕谋选项可点', !!b);
+  ok('中间幕因果句渲染', G('(document.getElementById("view-worlds").textContent||"").indexOf("名声像风一样")>=0 || (document.getElementById("view-worlds").textContent||"").indexOf("筹谋")>=0'));
+  if (b) b.click();
+  ok('倾向·谋累积', G('S.wsVars["sky"].wise===1'));
+  // 第三幕：完成
+  b = d.getElementById('wso-0');
+  if (b) b.click();
+  ok('善结局结算（风起之信）', G('(document.getElementById("view-worlds").textContent||"").indexOf("风起之信")>=0'));
+  ok('结局奖励已发放', G('S.gold>0'));
+  ok('剧情完结已记录', G('S.storyDone.indexOf("sky")>=0'));
+});
+step('不同倾向触发不同结局', () => {
+  G('boot(); newRun(); applyClass("sword"); S.stats.str=999; S.stats.agi=999; S.stats.int=999;');
+  G('renderWorldStory("sekiro")');
+  // 只选勇向选项：第一幕 wso-1 潜(巧→wise)? 用苇名：第一幕 wso-1 潜行 tag=潜→wise；wso-0 义手 tag=装→? 装未映射
+  // 用 sky 勇路线再走一遍（wso-0 强闯=莽→wild? 不对，莽→wild）
+  // 直接测：改走 sky 战向——wso-0 tag=莽→wild
+  G('S.worldStory={}; S.storyDone=[]; renderWorldStory("sky")');
+  let b = d.getElementById('wso-0');
+  if (b) b.click(); // 莽→wild, next 默认 idx+1=1
+  b = d.getElementById('wso-0');
+  if (b) b.click(); // 战→brave, next=2
+  b = d.getElementById('wso-0');
+  if (b) b.click(); // 完成
+  ok('狂/勇路线不出现善结局', G('(document.getElementById("view-worlds").textContent||"").indexOf("风起之信")<0'));
+  ok('狂结局或其他结局已结算', G('S.storyDone.indexOf("sky")>=0'));
+});
+step('剧情结构逻辑无运行时错误', () => {
   ok('无运行时错误', errors.length === 0);
 });
 
