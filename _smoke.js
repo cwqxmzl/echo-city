@@ -1,4 +1,4 @@
-// 回响之城 · 冒烟测试 v4（角色/技能/背包/跨世界搜打撤/队伍）
+// 回响之城 · 冒烟测试 v5（角色/技能/背包/箱庭探索/队伍/自定义剧本/机制优化）
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
 const html = fs.readFileSync('D:/Git_draft/echo-city/index.html', 'utf8');
@@ -48,6 +48,7 @@ step('上阵上限3', () => {
 console.log('== 3. 队伍 · 战斗被动 ==');
 step('战斗开场被动', () => {
   G('S.party=["maomao","tiebi","wuming"]');
+  G('S.stats.agi=999'); // 避免 jsdom 同步 setTimeout 导致敌人先手提前消耗 buff
   G('startCombat("ghost","c1_ghost_kill","death")');
   ok('老猫护盾', G('CB.buff.guard>=1'));
   ok('铁壁开火', G('CB.hp < CB.max'));
@@ -331,6 +332,76 @@ step('敌人先手机制', () => {
   G('startCombat("w_sekiro","c1_ghost_kill","death")');
   ok('sekiro战斗正常开启', active('view-combat'));
   ok('先手需求公式生效', G('50 + Math.round((ENEMIES.w_sekiro.spd-10)*2.5)===63'));
+});
+
+console.log('== 14. 箱庭探索：状态恢复 / 特色产物 / 强制撤离 / 联动 ==');
+step('世界特色产物池', () => {
+  ok('19世界均有特色产物池', G('WORLDS.every(w=>WORLD_TREASURE[w.id] && WORLD_TREASURE[w.id].length>=3)'));
+  ok('产物含装备', G('WORLD_TREASURE.zelda.some(t=>t.kind==="item" && t.id==="mastersword")'));
+  ok('产物含技能', G('WORLD_TREASURE.sky.some(t=>t.kind==="skill" && t.id==="blade")'));
+});
+step('进入世界状态恢复', () => {
+  G('S.stats.agi=999; S.hp=10; S.mp=5');
+  G('startOperation("sky")');
+  ok('生命回满', G('S.hp===S.maxHp'));
+  ok('法力回满', G('S.mp===S.maxMp'));
+  ok('进入探索阶段', G('OP.phase==="explore"'));
+  ok('探索上限按难度（低危8）', G('OP.limit===8'));
+});
+step('高危世界上限', () => {
+  G('startOperation("hades")');
+  ok('高危上限12', G('OP.limit===12'));
+  G('startOperation("sky")');
+});
+step('探索随机收获', () => {
+  G('window.rand = ()=>0');
+  G('OP.steps=0; OP.hot=0; S.gold=0; OP.collected=[]');
+  G('opExploreLoot()');
+  ok('收获并入日志', G('OP.log.length>0'));
+  ok('收集物已记录', G('OP.collected.length>=1'));
+});
+step('探索计数与警觉', () => {
+  G('S.stats.agi=999; startOperation("sky")');
+  G('window.rand = ()=>99'); // 残响线索分支
+  const s0 = G('OP.steps'), h0 = G('OP.hot');
+  G('opExplore()');
+  ok('搜索次数+1', G('OP.steps===' + (s0+1)));
+  ok('警觉度+1', G('OP.hot===' + (h0+1)));
+  ok('残响线索+1', G('OP.found')===1);
+  G('window.rand = (n)=>Math.floor(Math.random()*n)');
+});
+step('达到上限触发强制撤离', () => {
+  G('S.worldsCleared=[]; S.stats.agi=999; startOperation("sky")');
+  G('OP.steps=OP.limit; renderOperation()');
+  ok('按钮切换为强制撤离', d.getElementById('op-search').textContent.includes('强制撤离'));
+  ok('无主动撤离按钮', !d.getElementById('op-withdraw'));
+  G('opForceWithdraw()');
+  ok('强制撤离结算完成', G('OP.phase==="done"'));
+  ok('首通已记录', G('S.worldsCleared.includes("sky")'));
+});
+step('残响线索联动撤离奖励', () => {
+  G('S.worldsCleared=[]; S.stats.agi=999; startOperation("sky")');
+  G('OP.found=3; const g0=S.gold; opWithdrawSuccess(false); S.gold - g0');
+  ok('线索加成进结算日志', G('OP.log.some(l=>String(l).includes("线索"))'));
+  ok('首通sky已记录', G('S.worldsCleared.includes("sky")'));
+});
+step('词条机制（词条流玩法）', () => {
+  G('S.stats.agi=999; startOperation("sky")');
+  ok('初始无词条', G('OP.tags.length===0'));
+  G('OP.tags=["词条·警觉"]');
+  ok('警觉词条压低遭遇率', G('Math.floor((24+OP.hot*2)/2) < (24+OP.hot*2)'));
+  G('OP.tags=[]; window.rand = (n)=> n===100 ? 94 : 0'); // 词条获取分支（rand(100)=94，池选 rand(3)=0）
+  G('opExploreLoot(false)');
+  ok('获得临时词条', G('OP.tags.length===1'));
+  G('window.rand = (n)=>Math.floor(Math.random()*n)');
+});
+step('副本评分撤离（副本流玩法）', () => {
+  G('S.worldsCleared=[]; S.stats.agi=999; startOperation("sky")');
+  G('OP.steps=6; OP.found=2'); // 6>=ceil(8*0.7)=6 → A 级
+  G('opWithdrawSuccess(false)');
+  ok('日志含副本评分', G('OP.log.some(l=>String(l).includes("副本评分"))'));
+  ok('评级为A', G('OP.result.title.includes("A")') || G('OP.log.some(l=>String(l).includes("A 级"))'));
+  ok('首通sky已记录', G('S.worldsCleared.includes("sky")'));
 });
 
 console.log('\n== 汇总 ==');
