@@ -987,6 +987,41 @@ step('第十九轮：多槽存档/日志裁剪/画质档位/容错兜底', () =>
   ok('无运行时错误(第十九轮)', errors.length === 0);
 });
 
+
+step('第二十轮：跨周目态度/词条叙事化/开场独白', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  ok('态度函数就绪', G('typeof npcTouch==="function" && typeof npcTier==="function" && typeof npcName==="function"'));
+  ok('印象/熟悉度初始', G('S.favor && typeof S.favor==="object" && S.trust && typeof S.trust==="object"'));
+  // 初始：1 周目、无熟悉度 → 陌生层，街角 3 选项
+  G('S.run=1; S.trust={}; NODES["c1_e1a"].choices.length=3;');
+  ok('陌生层选项 3 项', G('NODES["c1_e1a"].choices.length===3'));
+  // 高熟悉度 → 熟稔层，解锁名字/真相选项
+  G('S.run=1; S.trust={linwan:15}; patchCorner();');
+  ok('熟稔层解锁新选项', G('NODES["c1_e1a"].choices.length===5 && NODES["c1_e1a"].choices.some(c=>c.tag==="真相")'));
+  // 宿命层（10 周目或更高熟悉度）→ 替她等
+  G('S.trust={linwan:30}; patchCorner();');
+  ok('宿命层解锁替她等', G('NODES["c1_e1a"].choices.length===6 && NODES["c1_e1a"].choices.some(c=>c.tag==="宿命")'));
+  // 双向反馈：敌对印象 → 安抚难度上调
+  G('S.favor={linwan:-15}; S.trust={linwan:5}; S.run=1; patchCorner();');
+  const dch = G('NODES["c1_e1a"].choices[0].dc');
+  ok('敌对印象提高安抚难度', dch > 52);
+  // 友善印象 → 难度下调
+  G('S.favor={linwan:15}; S.trust={linwan:5}; S.run=1; patchCorner();');
+  ok('友善印象降低安抚难度', G('NODES["c1_e1a"].choices[0].dc') < 52);
+  // 行为记入印象（到达钩子）
+  G('S.favor={}; S.trust={}; NODE_ARRIVAL["c1_ghost_peace"](); NODE_ARRIVAL["c1_ghost_kill"]();');
+  ok('安抚+10 击杀-15 已记录', G('S.favor.linwan===-5 && S.trust.linwan===10'));
+  // 词条叙事化
+  ok('全部词条含背景文案', G('TAG_POOL.every(t=>!!t.lore)'));
+  ok('词条卡渲染 lore', G('renderTagWorkshop.toString().indexOf("tag-lore")>=0'));
+  // 开场内心独白（高周目）
+  G('S.run=5; NODE_ARRIVAL["c1_intro"]();');
+  ok('高周目开场独白', G('NODES["c1_intro"].text.indexOf("{mono}")>=0'));
+  // 印象/熟悉度持久化
+  ok('存档含态度数据', G('(function(){ saveSave(); var d=JSON.parse(localStorage.getItem("echo-city-save-v1")); return d.favor && d.trust && d.favor.linwan===-5; })()'));
+  ok('无运行时错误(第二十轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
