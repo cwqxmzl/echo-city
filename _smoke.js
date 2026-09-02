@@ -881,6 +881,27 @@ step('高武式奖励爆炸（打怪/任务/升级奖励给够·第十五轮）'
   ok('无运行时错误(第十五轮)', errors.length === 0);
 });
 
+
+step('体验优化包（新手引导/碎片烙印/轮回纪念·第十六轮）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  ok('引导函数存在', G('typeof showGuide==="function" && typeof closeGuide==="function"'));
+  ok('引导定义4类', G('Object.keys(GUIDES).length===4'));
+  // 引导只弹一次
+  G('S._guides=[]; showGuide("hub"); showGuide("hub"); (S._guides||[]).filter(x=>x==="hub").length');
+  ok('引导每类只触发一次', G('(S._guides||[]).filter(x=>x==="hub").length===1'));
+  // 碎片烙印：20 碎片换全属性+1（permaStat 记录、永久轮回保留）
+  G('S.echoes=50; S.permaStat={}; S.stats.str=0; const before=S.echoes; markPermanent(); S.echoes===before-20 && (S.permaStat.str+S.permaStat.agi+S.permaStat.int+S.permaStat.cha+S.permaStat.con+S.permaStat.per)===1');
+  ok('碎片烙印消耗20换永久+1', G('S.echoes===30 && ((S.permaStat.str||0)+(S.permaStat.agi||0)+(S.permaStat.int||0)+(S.permaStat.cha||0)+(S.permaStat.con||0)+(S.permaStat.per||0))===1'));
+  // newRun 应用 permaStat
+  G('S.permaStat={str:3}; newRun(); S.stats.str');
+  ok('烙印属性轮回继承', G('S.stats.str>=3'));
+  // 轮回里程碑：20 轮回触发全属性+2
+  G('S.totalRuns=20; S._milestones=[]; newRun(); S._milestones.includes("r20")');
+  ok('20轮回里程碑触发', G('S._milestones.includes("r20")'));
+  ok('词条可合成检测函数', G('typeof canSynthTag==="function"'));
+  ok('无运行时错误(第十六轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
