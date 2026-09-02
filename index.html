@@ -3581,12 +3581,11 @@ function renderOperation(){
       ${body}
     </div>`;
   showView('operation');
-  const btn = $('op-search')||$('op-withdraw')||$('op-done');
-  if(btn) btn.onclick = ()=>{
-    if(btn.id==='op-search'){ if(OP.steps>=OP.limit) opForceWithdraw(); else opExplore(); }
-    else if(btn.id==='op-withdraw') opWithdraw();
-    else { OP=null; renderWorlds(); }
-  };
+  // 分别绑定所有按钮，避免「只绑第一个」导致撤离/结算按钮没反应
+  const _bindOp = (id, fn)=>{ const b=$(id); if(b) b.onclick = fn; };
+  _bindOp('op-search', ()=>{ if(OP.steps>=OP.limit) opForceWithdraw(); else opExplore(); });
+  _bindOp('op-withdraw', ()=>opWithdraw());
+  _bindOp('op-done', ()=>{ OP=null; renderWorlds(); });
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
 function opExplore(){
