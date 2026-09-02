@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>回响之城 · 万界骰局</title>
+<title>赢赢赢，骰子中间窜窜窜之文游大冒险</title>
 <style>
 /* ===== 主题令牌 ===== */
 :root{
@@ -580,7 +580,7 @@ h1.title-name{
 
 
 /* ============================================================
-   回响之城 · 万界骰局 —— 数据层
+   赢赢赢，骰子中间窜窜窜之文游大冒险 —— 数据层
    ============================================================ */
 
 /* ---------- 品级 ---------- */
@@ -7317,7 +7317,7 @@ choices:[
 
 
 /* ============================================================
-   回响之城 · 万界骰局 —— 引擎层
+   赢赢赢，骰子中间窜窜窜之文游大冒险 —— 引擎层
    ============================================================ */
 
 /* ---------- 自定义剧本模式（参考 MarkdownGame 多分支文字冒险） ---------- */
@@ -9192,7 +9192,7 @@ async function aiSubmitStr(raw){
 function aiLLMPrompt(){
   const meta=AI_META[S.ai.world]||AI_META.free;
   const w = S.ai.world==='free'?null:worldById(S.ai.world);
-  let sp='你是《回响之城·万界骰局》的 AI 叙事主持（DM），用简体中文、第二人称（你）写 3-5 句沉浸式叙事推进剧情，结尾给 1-3 个建议动作（用【】括起来）。';
+  let sp='你是《赢赢赢，骰子中间窜窜窜之文游大冒险》的 AI 叙事主持（DM），用简体中文、第二人称（你）写 3-5 句沉浸式叙事推进剧情，结尾给 1-3 个建议动作（用【】括起来）。';
   sp+='当前场景：'+meta.name+'（'+meta.style+'），叙事阶段：'+meta.stages[Math.min(S.ai.stage||0,2)]+'。';
   if(w){ sp+='场景特色：'+w.special+'；可能遭遇的敌人：'+(ENEMIES[w.enemy]?ENEMIES[w.enemy].name:w.enemy)+'；当地特产：'+w.loot+'；剧情背景：'+(WORLD_STORIES[w.id]?WORLD_STORIES[w.id].intro:'')+'。'; }
   sp+='玩家状态：生命 '+S.hp+'/'+S.maxHp+'、法力 '+S.mp+'/'+S.maxMp+'、金币 '+S.gold+'、命运点 '+S.fate+'、属性 '+JSON.stringify(S.stats)+'。';
@@ -10437,8 +10437,8 @@ function renderTitle(){
   const v=$('view-title');
   v.innerHTML = `
     <div class="title-mark">文字肉鸽 · 安科骰子 · 天赋构筑 · 跨万界箱庭探索</div>
-    <h1 class="title-name">回响之城</h1>
-    <div class="title-sub">万 界 骰 局</div>
+    <h1 class="title-name">赢赢赢</h1>
+    <div class="title-sub">骰 子 中 间 窜 窜 窜 之 文 游 大 冒 险</div>
     <div class="title-dice">⚄</div>
     <div class="title-worlds"><span>🏝</span><span>🗡</span><span>🧙</span><span>🌊</span><span>☢</span><span>🐲</span><span>🚀</span><span>📚</span><span>🏞</span><span>🕳</span><span>🌳</span><span>⚡</span><span>🍁</span><span>🔥</span><span>🏴</span><span>⚔️</span><span>🕯</span><span>⛰</span><span>🚪</span><span>🌌</span></div>
     <div class="title-desc">你被困进了一款出故障的全息网游。每个周目城市重建、NPC 集体失忆，只有烙在灵魂里的<b class="hlc">天赋</b>跟着你轮回。<br>
