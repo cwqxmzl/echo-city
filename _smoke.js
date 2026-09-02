@@ -599,6 +599,42 @@ step('撤离按钮修复（op-withdraw 点击有反应）', () => {
   ok('点击无运行时错误', errors.length === 0);
 });
 
+
+
+console.log('== 19. 世界剧情线（20 世界完整剧情） ==');
+step('WORLD_STORIES 数据完整', () => {
+  ok('20 个世界均有剧情', G('Object.keys(WORLD_STORIES).length===20'));
+  ok('每个世界至少 3 幕', G('Object.keys(WORLD_STORIES).every(k=>WORLD_STORIES[k].steps.length>=3)'));
+  ok('每幕均有选项', G('Object.keys(WORLD_STORIES).every(k=>WORLD_STORIES[k].steps.every(st=>st.opts&&st.opts.length>=1))'));
+});
+step('世界入场页出现「深入剧情」', () => {
+  G('boot(); newRun(); applyClass("sword"); renderWorldIntro("sky")');
+  ok('剧情按钮渲染', G('!!document.getElementById("ws-story")'));
+  ok('剧情按钮可点', G('typeof document.getElementById("ws-story").onclick==="function"'));
+});
+step('剧情线推进与判定', () => {
+  // 直接进入剧情，走第一步的第一个选项
+  G('S.stats.agi=999; S.stats.int=999; S.stats.str=999; S.stats.per=999; S.stats.con=999; S.stats.cha=999; S.stats.fate=999;');
+  G('renderWorldStory("sky")');
+  ok('渲染第一幕标题', G('(document.getElementById("view-worlds").textContent||"").indexOf("青铜城门")>=0'));
+  const b0 = d.getElementById('wso-0');
+  ok('第一幕选项已渲染', !!b0);
+  if (b0) b0.click();
+  ok('推进到第二幕', G('S.worldStory["sky"]===1'));
+  // 继续点选项
+  const b1 = d.getElementById('wso-0') || d.getElementById('wso-1');
+  if (b1) b1.click();
+  ok('推进到第三幕', G('S.worldStory["sky"]===2'));
+  // 最后一幕点完成
+  const b2 = d.getElementById('wso-0') || d.getElementById('wso-1');
+  if (b2) b2.click();
+  ok('剧情完结已记录', G('S.storyDone.indexOf("sky")>=0'));
+  ok('剧情奖励已发放', G('S.gold>0'));
+});
+step('剧情线逻辑无运行时错误', () => {
+  ok('无运行时错误', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
