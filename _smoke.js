@@ -840,6 +840,29 @@ step('内心声音系统（第十二轮·属性技能完善）', () => {
   ok('无运行时错误(内心声音)', errors.length === 0);
 });
 
+
+step('九条叙事优化+翁法罗斯式剧情（第十四轮）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  // 四档剧情新节点齐备
+  ok('四档剧情节点齐备', G("(function(){var ids=['c1_ghost_peace_crit','c1_ghost_aggro_fumb','c1_per_crit','c1_per_fumb','c1_ghost_give_crit'];return ids.every(function(id){return NODES[id]!==undefined;});})()"));
+  // 安抚选项四档路由字段
+  ok('安抚选项四档路由', G("NODES.c1_e1a.choices.some(function(c){return c.tag==='安抚' && c.succCrit && c.failFumb;})"));
+  // 战斗动作词库 / 难度描述函数存在
+  ok('foeMove动作词库', G('typeof foeMove==="function"'));
+  ok('dcWord难度叙事', G('typeof dcWord==="function" && dcWord(20).indexOf("轻而易举")>=0'));
+  // 判定上下文（无中间步+剧情下方重掷）字段
+  ok('判定叙事化字段', G('S._lastCheck!==undefined && S._rerollPending!==undefined && S._pendingDice!==undefined'));
+  // 开场内心独白
+  ok('开场内心独白', G("NODES.c1_intro.text.indexOf('{mind}')>=0"));
+  // 灰袍既视感对话（翁法罗斯式 NPC 记忆）
+  ok('灰袍既视感对话', G("NODES.c1_e1c.text.indexOf('又见面了')>=0"));
+  // 牺牲者昔音（第三层反转）
+  ok('牺牲者昔音线索', G("NODES.c2_log_read.text.indexOf('昔音')>=0"));
+  // 过渡叙事 transit 字段落在探索点数据
+  ok('过渡叙事transit', G("(function(){var L=null; for(var i=0;i<LOCATIONS.length;i++){ if(LOCATIONS[i].id==='street') L=LOCATIONS[i]; } return L && L.spots.some(function(sp){return sp.transit;}); })()"));
+  ok('无运行时错误(第十四轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
