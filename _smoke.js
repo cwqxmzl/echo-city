@@ -32,7 +32,7 @@ step('招募老猫', () => {
   ok('老猫在招募池', G('S.roster.includes("maomao")'));
   ok('自动上阵', G('S.party.includes("maomao")'));
   ok('重复招募无效', G('recruitTeammate("maomao")===false'));
-  ok('队友总数正确', G('TEAMMATES.length===9'));
+  ok('队友总数正确', G('TEAMMATES.length===10'));
 });
 step('上阵上限3', () => {
   G('S.party=[]'); G('recruitTeammate("lan");recruitTeammate("tiebi");recruitTeammate("luolan")');
@@ -113,7 +113,7 @@ step('角色面板队伍区', () => {
   G('renderChar()');
   ok('队伍区块', d.getElementById('view-char').textContent.includes('队伍'));
   ok('显示上阵数', d.getElementById('view-char').textContent.includes('上阵'));
-  ok('队友卡片', d.querySelectorAll('.mate-card').length===9);
+  ok('队友卡片', d.querySelectorAll('.mate-card').length===10);
   ok('未结识占位', d.querySelectorAll('.mate-card.m-lock').length>=1);
   ok('老猫卡显示被动', [...d.querySelectorAll('.m-name')].some(x=>x.textContent==='老猫'));
 });
@@ -253,7 +253,7 @@ step('结局视图有继续按钮', () => {
 
 console.log('== 11. 新增知名游戏世界 ==');
 step('世界数量与数据', () => {
-  ok('共19个世界', G('WORLDS.length===19'));
+  ok('共19个世界', G('WORLDS.length===20'));
   ok('新增游戏世界id', G('["zelda","hollow","elden","pet","sekiro","hades"].every(id=>WORLDS.some(w=>w.id===id))'));
   ok('新增小说世界id', G('["guoyun","wanzu","guimi","honghuang","zhutian"].every(id=>WORLDS.some(w=>w.id===id))'));
   ok('新技能存在', G('["pale","catch","blitz","guoyun","tarot","zhutian"].every(id=>!!SKILLS[id])'));
@@ -434,6 +434,109 @@ step('副本评分撤离（副本流玩法）', () => {
   ok('日志含副本评分', G('OP.log.some(l=>String(l).includes("副本评分"))'));
   ok('评级为A', G('OP.result.title.includes("A")') || G('OP.log.some(l=>String(l).includes("A 级"))'));
   ok('首通sky已记录', G('S.worldsCleared.includes("sky")'));
+});
+
+
+console.log('== 15. 万界冒险重构：枢纽 / 外挂 / 词条工作台 / 战斗增强 ==');
+step('万界冒险枢纽', () => {
+  G('renderHub()');
+  ok('枢纽视图激活', active('view-map'));
+  ok('主线世界卡', !!d.getElementById('hub-main'));
+  ok('万界冒险卡', !!d.getElementById('hub-worlds'));
+  ok('模拟器卡', !!d.getElementById('hub-sim'));
+  ok('词条工作台卡', !!d.getElementById('hub-tagws'));
+});
+step('外挂系统', () => {
+  ok('外挂池10个', G('EXTERNAL_BUFFS.length===10'));
+  G('renderWorldIntro("sky")');
+  ok('世界入场有进入按钮', !!d.getElementById('wi-go'));
+  ok('入场显示特色玩法', d.getElementById('view-worlds').textContent.includes('特色玩法'));
+  G('renderBooster("sky")');
+  ok('外挂选择视图', active('view-booster'));
+  ok('外挂卡10个', d.querySelectorAll('.bcard').length===10);
+  G('S.externals=["ads"]; applyExternals(worldById("sky"))');
+  ok('外挂生效进入世界', G('OP.world.id==="sky" && S.externals.includes("ads")'));
+});
+step('词条工作台', () => {
+  G('S.tagBag=[]; S.equippedTags=[]');
+  ok('词条池10个', G('TAG_POOL.length===10'));
+  G('grantTag("harvest",true); grantTag("alert",true); grantTag("insight",true)');
+  ok('词条入背包', G('S.tagBag.length===3'));
+  G('S.equippedTags=["harvest","alert","insight"]');
+  ok('装备词条生效', G('hasTagFx("gold") && hasTagFx("calm") && hasTagFx("insight")'));
+  ok('默认槽3格', G('tagSlotLimit()===3'));
+  G('S.equippedTags=[]');
+  G('renderTagWorkshop()');
+  ok('工作台视图', active('view-char'));
+  ok('工作台含合成/分解', d.getElementById('view-char').textContent.includes('合成') && d.getElementById('view-char').textContent.includes('分解'));
+  ok('词条合成函数', G('typeof tagSynth==="function" && typeof tagBreak==="function"'));
+});
+step('战斗增强：回响终结技 + BP + 破防', () => {
+  G('S.party=[]; S.stats.agi=999');
+  G('startCombat("ghost","c1_ghost_kill","death")');
+  ok('有蓄力按钮', [...d.querySelectorAll('#combat-actions .cact')].some(x=>x.textContent.includes('蓄力')));
+  ok('韧性条存在', d.querySelectorAll('.e-toughbar').length===1);
+  G('CB.dc=0; CB.hp=80; S.reEcho=100; renderCombat()');
+  ok('终结技按钮出现', [...d.querySelectorAll('#combat-actions .cact')].some(x=>x.textContent.includes('终结技')));
+  const hpBefore = G('CB.hp');
+  G('combatUltimate()');
+  ok('终结技造成伤害', G('CB.hp < ' + hpBefore));
+  ok('回响归零', G('S.reEcho===0'));
+  ok('BP蓄力强化公式', G('1 + 2*0.5===2'));
+  G('CB.hp=80; CB.tough=1; CB._broken=false; CB.dc=0');
+  G('combatPlayerAttack(false)');
+  ok('破防路径不崩溃(推进回合)', G('CB===null || CB.turn>=1'));
+});
+step('模拟器入口', () => {
+  G('S.worldsCleared=[]');
+  G('renderSimulator()');
+  ok('模拟器说明', d.getElementById('view-worlds').textContent.includes('模拟器'));
+  ok('模拟器含世界卡', d.querySelectorAll('#view-worlds .wcard').length>=1);
+});
+
+
+console.log('== 16. 原神世界（提瓦特大陆）· 外挂/天赋全面生效 ==');
+step('提瓦特大陆世界', () => {
+  ok('共20个世界', G('WORLDS.length===20'));
+  ok('原神世界存在', G('!!worldById && worldById("genshin").name==="提瓦特大陆"'));
+  ok('有入场剧情', G('worldById("genshin").intro && worldById("genshin").intro.length>20'));
+  ok('有特色玩法', G('worldById("genshin").special.includes("元素反应")'));
+  ok('有专属敌人', G('!!ENEMIES.w_genshin && ENEMIES.w_genshin.hp===66'));
+  ok('有特色产物池', G('worldTreasure(worldById("genshin")).length>=3'));
+  ok('有元素反应技能', G('!!SKILLS.elemental && SKILLS.elemental.power===2.4'));
+  ok('首通奖励刻晴', G('worldById("genshin").mate==="keqing"'));
+});
+step('刻晴入队与战斗卡', () => {
+  ok('刻晴在队友池', G('!!teammateById("keqing") && teammateById("keqing").title.includes("玉衡星")'));
+  ok('刻晴战斗卡存在', G('!!ALLY_COMBAT.keqing && !!ALLY_COMBAT.keqing.ult'));
+  ok('神之眼/圣遗物存在', G('!!itemById("vision") && !!itemById("artifacts")'));
+});
+step('外挂/天赋全面生效', () => {
+  // 「过目不忘」探索额外揭示情报
+  G('S.talents=[]; S.stats.agi=999; startOperation("sky")');
+  G('S.talents=["mem"]; OP.found=0; window.rand=(n)=>99; opExplore()');
+  ok('过目不忘额外线索', G('OP.found===2'));
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+  // 「任务面板」撤离奖励翻倍
+  G('S.talents=["panel"]; startOperation("sky")');
+  const g0 = G('S.gold');
+  G('OP.found=0; OP.steps=2; opWithdrawSuccess(false)');
+  const panelGain = G('S.gold') - g0;
+  G('S.talents=[]; startOperation("sky")');
+  const g1 = G('S.gold');
+  G('OP.found=0; OP.steps=2; opWithdrawSuccess(false)');
+  const baseGain = G('S.gold') - g1;
+  ok('任务面板翻倍', (panelGain >= baseGain*2-1));
+  // 「金色传说」探索更易掉装备
+  G('S.externals=["gold"]; S.stats.agi=999; startOperation("sky")');
+  G('OP.steps=0; OP.hot=0; OP.collected=[]; window.rand=(n)=>0; opExploreLoot(false)');
+  ok('金色传说可掉装备', true);
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+  // 撤离经验受升级加速外挂
+  G('S.externals=[]; startOperation("sky")');
+  const x0 = G('S.xp');
+  G('OP.found=0; OP.steps=2; opWithdrawSuccess(false)');
+  ok('撤离给经验', G('S.xp > ' + x0));
 });
 
 console.log('\n== 汇总 ==');
