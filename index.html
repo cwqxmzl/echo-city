@@ -539,6 +539,14 @@ h1.title-name{
 .surv-foot{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .surv-foot button{background:rgba(84,210,192,.15);border:1px solid var(--line);color:#cdeee8;border-radius:8px;padding:7px 12px;cursor:pointer}
 .surv-foot button:hover{background:rgba(84,210,192,.3)}
+
+/* 新手引导气泡 */
+#guide-pop{position:fixed;right:18px;bottom:18px;max-width:340px;z-index:9999;display:none;}
+#guide-pop .guide-card{background:linear-gradient(135deg,#102a3a,#1a3a4a);border:1px solid rgba(127,224,208,.5);border-radius:14px;padding:16px 18px;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+#guide-pop .guide-t{color:#ffd700;font-weight:700;letter-spacing:.1em;margin-bottom:8px;font-size:14px;}
+#guide-pop .guide-h{color:#cfe8e8;font-size:13px;line-height:1.7;margin-bottom:12px;}
+#guide-pop .guide-btn{background:#7fe0d0;color:#08262e;border:none;border-radius:8px;padding:7px 22px;font-weight:700;cursor:pointer;}
+.tag-synth-ready{border-color:#ffd700 !important;color:#ffd700 !important;}
 </style>
 </head>
 <body>
@@ -6576,6 +6584,7 @@ function grantBreakthroughTag(){
   }
   const id = missing[rand(missing.length)];
   S.tagBag = own; S.tagBag.push(id);
+  if(S.tagBag.length===1) showGuide('tag');
   const sl = tagSlotLimit();
   S.equippedTags = S.equippedTags||[];
   if(S.equippedTags.length < sl) S.equippedTags.push(id);
@@ -6585,6 +6594,7 @@ function grantTag(id, silent){
   const t = tagById(id); if(!t) return null;
   if((S.tagBag||[]).length >= TAG_BAG_MAX) return null;
   S.tagBag = S.tagBag||[]; S.tagBag.push(id);
+  if(!silent && S.tagBag.length===1) showGuide('tag');
   if(!silent) updateHUD();
   return t;
 }
@@ -6597,6 +6607,7 @@ function renderTagWorkshop(){
   const bag = tagBagList();
   const eq = equippedTagsList();
   const limit = tagSlotLimit();
+  const synthReady = canSynthTag();
   let html = `<div class="panel">
     <div class="scene-chap">词条流 · 万般词条尽在掌握</div>
     <div class="scene-title" style="color:#ff6b6b">词条工作台 · 红色神器</div>
@@ -6611,7 +6622,7 @@ function renderTagWorkshop(){
       ${bag.length? bag.map(t=>`<div class="tag-card" data-equip="${t.id}" style="border-color:${tagGradeColor(t.g)}"><div class="tag-n">${esc(t.n)}</div><div class="tag-g">${TAG_GRADES[t.g]}级</div><div class="tag-d">${esc(t.desc)}</div><div class="tag-act">点击装备</div></div>`).join('') : '<div class="tag-empty">背包空空如也——去万界冒险或世界模拟器里搜刮词条吧。</div>'}
     </div>
     <div class="choices">
-      <div class="choice" id="tw-synth"><span class="c-tag">【合成】</span>3 个同品级词条 + 30 经验 → 合成更高品级</div>
+      <div class="choice ${synthReady?'tag-synth-ready':''}" id="tw-synth"><span class="c-tag">【合成】</span>3 个同品级词条 + 30 经验 → 合成更高品级${synthReady?' 🔥 可合成！':''}</div>
       <div class="choice" id="tw-break"><span class="c-tag">【分解】</span>分解全部「普通 D 级」词条 → 每个 +30 经验</div>
       <div class="choice" id="tw-back"><span class="c-tag">【返回】</span>返回角色面板</div>
     </div></div>`;
@@ -7550,6 +7561,45 @@ function weightedPick(weightArr){
   for(const [v,w] of weightArr){ if((r-=w)<0) return v; }
   return weightArr[weightArr.length-1][0];
 }
+
+/* ---------- 新手引导气泡（渐进解锁 · 每类一次 · 可关闭） ---------- */
+const GUIDES = {
+  tag:{t:'词条觉醒', h:'你觉醒了第一条永久词条——增益永久留存，越堆越强！去【角色】→【词条工作台】看看：合成、分解、装备，把词条铸成你的力量。'},
+  hub:{t:'万界枢纽', h:'欢迎来到万界枢纽——你的冒险大本营！接取万界任务、装配外挂金手指、打理词条、招募队友、自定义剧本……想怎么玩就怎么玩！'},
+  mate:{t:'队友入队', h:'队友入队！他们会用【战技】和【终结技】帮你作战——记得在【角色→队伍】里安排出战，三人小队，所向披靡！'},
+  die:{t:'轮回不死', h:'第一轮结束？轮回不是失败，是重来一次的机会——金币、天赋、词条、回响碎片全部带进下一轮，越轮回越强！'},
+};
+function showGuide(id){
+  const g = GUIDES[id]; if(!g) return;
+  S._guides = S._guides||[];
+  if(S._guides.includes(id)) return;
+  S._guides.push(id); saveSave();
+  let el = document.getElementById('guide-pop');
+  if(!el){ el=document.createElement('div'); el.id='guide-pop'; document.body.appendChild(el); }
+  el.innerHTML = '<div class="guide-card"><div class="guide-t">📌 '+g.t+'</div><div class="guide-h">'+g.h+'</div><button class="guide-btn" onclick="closeGuide()">知道了</button></div>';
+  el.style.display = 'block';
+}
+function closeGuide(){ const el=document.getElementById('guide-pop'); if(el) el.style.display='none'; }
+
+/* ---------- 碎片烙印 · 永久强化 ---------- */
+function markLevel(){ let n=0; if(S.permaStat) for(const k in S.permaStat) n+=S.permaStat[k]; return n; }
+function markPermanent(){
+  if(S.echoes < 20){ alert('回响碎片不足：需要 20 枚（当前 '+S.echoes+' 枚）。通关世界、击杀敌人、以及每一轮轮回都会攒下碎片。'); return; }
+  S.echoes -= 20;
+  S.permaStat = S.permaStat||{};
+  const keys=['str','agi','int','cha','con','per'];
+  const k=keys[rand(keys.length)];
+  S.permaStat[k]=(S.permaStat[k]||0)+1;
+  saveSave(); renderHub(); updateHUD();
+  alert('灵魂烙印加深——'+({str:'力量',agi:'敏捷',int:'智力',cha:'魅力',con:'体质',per:'感知'}[k])+' 永久 +1（轮回不灭）！');
+}
+function canSynthTag(){ const bag=tagBagList(); return TAG_ORDER.some(g=>bag.filter(t=>t.g===g).length>=3); }
+function milestoneText(){
+  const n=S.totalRuns||0;
+  const left=[5,10,20].filter(x=>n<x);
+  return left.length? ('下个里程碑 · 轮回 '+left[0]+' 次（命运点/金币/全属性）') : '轮回满级 · 感谢你的坚持';
+}
+
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 /* ---------- 内心声音（Echo Voice · 借鉴《极乐迪斯科》思维内阁） ---------- */
@@ -7577,15 +7627,15 @@ const S = {
   hp:0, maxHp:0, mp:0, maxMp:0, gold:0, fate:0, items:[], talents:[],
   level:1, xp:0, cls:null, skills:[], skillPool:[], equip:{weapon:null,armor:null,trinket:null},
   roster:[], party:[],
-  shards:0, _locDone:{},
+  shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null,
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[]})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -7704,6 +7754,7 @@ function recruitTeammate(id){
   const m = teammateById(id); if(!m) return false;
   if(S.roster.includes(id)) return false;
   S.roster.push(id);
+  showGuide('mate');
   if(S.party.length<3 && !S.party.includes(id)) S.party.push(id);
   updateHUD();
   return true;
@@ -7808,8 +7859,12 @@ function talentByGrade(g){
 /* ---------- 每局初始化 ---------- */
 function newRun(){
   S.stats = newStats();
-  S.gold = 40 + (S._keepGold||0); S._keepGold = 0;  // 「存档作弊」外挂可把上一局一半金币带进下一轮
-  S.fate = 4 + Math.floor(S.echoes/2);  // 灵魂烙印越深，降世的底气越足
+  if(S.permaStat) for(const k in S.permaStat) S.stats[k]+=(S.permaStat[k]||0);
+  if((S.totalRuns||0)>=20 && !(S._milestones||[]).includes('r20')){ S._milestones=S._milestones||[]; S._milestones.push('r20'); for(const k in S.stats) S.stats[k]+=2; }
+  S.gold = 40 + (S._keepGold||0); S._keepGold = 0;
+  if((S.totalRuns||0)>=10 && !(S._milestones||[]).includes('r10')){ S._milestones=S._milestones||[]; S._milestones.push('r10'); S.gold+=20; }  // 「存档作弊」外挂可把上一局一半金币带进下一轮
+  S.fate = 4 + Math.floor(S.echoes/2);
+  if((S.totalRuns||0)>=5 && !(S._milestones||[]).includes('r5')){ S._milestones=S._milestones||[]; S._milestones.push('r5'); S.fate+=1; }  // 灵魂烙印越深，降世的底气越足
   S.items = [];
   S.talents = [];
   S.flag = {};
@@ -10126,6 +10181,7 @@ function renderHub(){
   updateHUD();
   const v=$('view-map');
   const done = S.worldsCleared.length;
+  showGuide('hub');
   v.innerHTML = `
     <div class="panel">
       <div class="scene-chap">万界冒险 · 第 ${S.run} 周目</div>
@@ -10136,6 +10192,7 @@ function renderHub(){
         <div class="hub-card" id="hub-worlds"><div class="hc-icon">🌏</div><div class="hc-name">万界冒险</div><div class="hc-desc">20 个小说 / 游戏世界，每个世界都有专属剧情与特色玩法。进入前挑 1-3 个外挂（金手指），去征服它们。</div><div class="hc-meta">已征服 ${done}/20 个世界</div></div>
         <div class="hub-card" id="hub-sim"><div class="hc-icon">🎮</div><div class="hc-name">世界模拟器</div><div class="hc-desc">搜打撤训练场：不演剧情、不选外挂，进去就搜、搜完就撤。练手、刷金币、刷特色产物的好去处。</div><div class="hc-meta">反复进入 · 刷资源</div></div>
         <div class="hub-card" id="hub-char"><div class="hc-icon">👤</div><div class="hc-name">角色 / 背包 / 队伍 / 技能</div><div class="hc-desc">装备、药剂、技能携带、队友上阵切换，都在这里。</div><div class="hc-meta">Lv.${S.level} · ${esc(S.cls? classById(S.cls).name : '未入世')}</div></div>
+        <div class="hub-card" id="hub-mark"><div class="hc-icon">🔮</div><div class="hc-name">碎片烙印 · 永久强化</div><div class="hc-desc">把回响碎片刻进灵魂：每 20 枚换随机全属性 +1，永久保留、轮回不灭。已轮回 ${S.totalRuns||0} 次 · ${milestoneText()}</div><div class="hc-meta">碎片 ${S.echoes} · 烙印 +${markLevel()}</div></div>
         <div class="hub-card" id="hub-save"><div class="hc-icon">💾</div><div class="hc-name">存档 / 读档</div><div class="hc-desc">1 个自动存档 + 3 个手动槽位，冒险随时可存。</div><div class="hc-meta">随时保存进度</div></div>
         <div class="hub-card" id="hub-tagws"><div class="hc-icon">🔖</div><div class="hc-name">词条工作台</div><div class="hc-desc">红色神器：词条背包（死亡不掉落）/ 词条合成 / 词条分解 / 插槽解除。把搜刮到的词条，铸成你的力量。</div><div class="hc-meta">词条 ${(S.tagBag||[]).length} 个 · 生效 ${(S.equippedTags||[]).length} 个</div></div>
         <div class="hub-card" id="hub-custom"><div class="hc-icon">✍</div><div class="hc-name">自定义剧本</div><div class="hc-desc">用简单 JSON 写一段你自己的多分支剧情，导入即玩。</div><div class="hc-meta">人人都能当编剧</div></div>
@@ -10148,6 +10205,7 @@ function renderHub(){
   $('hub-worlds').onclick=()=>renderWorlds();
   $('hub-sim').onclick=()=>renderSimulator();
   $('hub-char').onclick=()=>renderChar();
+  $('hub-mark').onclick=()=>markPermanent();
   $('hub-save').onclick=()=>renderSave();
   $('hub-tagws').onclick=()=>renderTagWorkshop();
   $('hub-custom').onclick=()=>renderCustomEditor();
@@ -10469,6 +10527,7 @@ function closeChar(){
 
 /* ---------- 死亡与轮回 ---------- */
 function renderDeath(){
+  showGuide('die');
   combatAutoStop();
   S._keepGold = S.gold;  // 取消限制：死亡不再清空金币，全部带进下一轮
   if(hasBooster('cheat')){ S._keepGold += Math.floor(S.gold*0.5); }  // 「存档作弊」升级：再偷偷多带 50%
@@ -10483,6 +10542,7 @@ function renderDeath(){
         <div class="stat-card"><div class="k">轮回周目</div><div class="v">${S.run}</div></div>
         <div class="stat-card"><div class="k">累计回响碎片</div><div class="v">+1 → ${S.echoes+1}</div></div>
         <div class="stat-card"><div class="k">本局金币</div><div class="v">${S.gold}</div></div>
+        <div class="stat-card"><div class="k">已轮回</div><div class="v">${S.totalRuns||0} 次</div></div>
       </div>
       <div class="notice">死亡不意味着终结——金币护住了，碎片也留着，下一世更猛。回响之城，永远有人替你留着一盏灯。</div>
       <div class="choices">
