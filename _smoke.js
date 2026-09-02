@@ -925,6 +925,42 @@ step('UI交互优化（快捷键/按钮态/过渡/骰子动画/存档提示·第
   ok('无运行时错误(第十七轮)', errors.length === 0);
 });
 
+
+step('第十八轮：面板标签导航/骰子彩蛋/战斗倍速/成就图鉴', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  ok('成就定义10项', G('ACHIEVEMENTS.length===10'));
+  ok('成就面板函数', G('typeof renderAchievements==="function"'));
+  // 面板标签导航
+  G('renderChar();');
+  ok('面板标签条7项', G('document.querySelectorAll("#char-tabs .ctab").length===7'));
+  ok('词条标签入口', G('!!document.querySelector(".ctab[data-sec=tags]")'));
+  ok('成就标签入口', G('!!document.querySelector(".ctab[data-sec=ach]")'));
+  // 骰子彩蛋：三连大成功 → 天选之人
+  G('S._critStreak=0; S._runCrits=0; S.tagBag=S.tagBag||[]; var _before=S.tagBag.length; diceEaster("crit"); diceEaster("crit"); diceEaster("crit");');
+  ok('三连大成功解锁天选之人', G('S.tagBag.length>_before'));
+  ok('欧皇附体成就解锁', G('S.achievements.includes("crit-3")'));
+  // 三连大失败 → 非酋的慰藉
+  G('S._fumbStreak=0; S._consolation=false; diceEaster("fumb"); diceEaster("fumb"); diceEaster("fumb");');
+  ok('三连大失败得非酋慰藉', G('S._consolation===true'));
+  // 安慰生效：下次判定必成大成功
+  G('S._consolation=true; var _r=runCheck("str",999,"test");');
+  ok('慰藉判定必成大成功', G('_r.success===true && _r.crit===true && S._consolation===false'));
+  // 战斗倍速
+  ok('倍速函数存在', G('typeof combatSpeedToggle==="function"'));
+  // 成就：首胜 / 世界 / 词条 / 万贯
+  G('S.achievements=[]; S._wins=1; checkAchievements();');
+  ok('首胜成就解锁', G('S.achievements.includes("first-blood")'));
+  G('S.gold=600; checkAchievements();');
+  ok('万贯家财成就解锁', G('S.achievements.includes("gold-500")'));
+  // 成就面板
+  G('renderAchievements();');
+  ok('成就面板10卡', G('document.querySelectorAll(".ach-card").length===10'));
+  // 枢纽成就入口
+  G('renderHub();');
+  ok('枢纽成就卡', G('!!document.getElementById("hub-ach")'));
+  ok('无运行时错误(第十八轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
