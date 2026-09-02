@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回响之城 · 轮回骰局</title>
+<style>
+/* ===== 主题令牌 ===== */
+:root{
+  --bg0:#0a0e18;
+  --bg1:#0f1730;
+  --bg2:#131d3a;
+  --ink:#dbe3f2;
+  --ink-dim:#8b95ad;
+  --ink-faint:#5c6580;
+  --gold:#e6a544;
+  --gold-soft:#c9892f;
+  --cyan:#54d2c0;
+  --cyan-dim:#2d8f86;
+  --red:#d5564a;
+  --line:rgba(120,150,210,0.16);
+  --line-strong:rgba(160,190,255,0.3);
+  --panel:rgba(18,26,52,0.72);
+  --panel-solid:#121b3a;
+  --r-gold:linear-gradient(135deg,#ffd98a,#e6a544 55%,#b8792a);
+  --r-sss:#ffd54a; --r-ss:#ff8a6b; --r-s:#f0a04c; --r-a:#b78df0; --r-b:#5aa7e8; --r-c:#cfd6e6; --r-d:#8a93a6;
+  --serif:'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',Georgia,'Times New Roman',serif;
+  --sans:'Noto Sans SC','Microsoft YaHei','PingFang SC','Segoe UI',system-ui,sans-serif;
+  --mono:'Cascadia Mono','Consolas','Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  background:radial-gradient(1200px 800px at 70% -10%,#16234a 0%,var(--bg0) 55%),var(--bg0);
+  color:var(--ink);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+/* 背景网格（服务器质感） */
+#bg-grid{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(84,210,192,0.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(84,210,192,0.05) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(900px 700px at 60% 20%,#000 30%,transparent 100%);
+}
+#app{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:18px 16px 60px}
+
+/* ===== HUD ===== */
+#hud{
+  display:none;flex-wrap:wrap;align-items:center;gap:8px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 14px;
+  margin-bottom:14px;
+  backdrop-filter:blur(6px);
+  position:sticky;top:10px;z-index:20;
+  box-shadow:0 8px 30px rgba(0,0,0,0.35);
+}
+#hud.on{display:flex}
+.hud-block{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--ink-dim);line-height:1.25}
+.hud-block b{font-family:var(--mono);font-size:15px;color:var(--ink);font-weight:600}
+.hud-block .hp-bar{width:90px;height:6px;background:#1c2546;border-radius:4px;overflow:hidden;margin-top:2px}
+.hud-block .hp-fill{height:100%;background:linear-gradient(90deg,#e6a544,#ffd98a);border-radius:4px;transition:width .4s}
+.hud-block .hp-fill.low{background:linear-gradient(90deg,#d5564a,#ff8a7a)}
+.hud-right{margin-left:auto;display:flex;gap:14px;align-items:center}
+.chip{
+  font-family:var(--mono);font-size:13px;padding:4px 10px;border-radius:999px;
+  border:1px solid var(--line-strong);background:rgba(84,210,192,0.08);color:var(--cyan);
+}
+.chip.gold{border-color:rgba(230,165,68,.5);background:rgba(230,165,68,.08);color:var(--gold)}
+.chip.red{border-color:rgba(213,86,74,.5);background:rgba(213,86,74,.08);color:#ff8a7a}
+
+/* ===== 视图 ===== */
+.view{display:none;animation:fadein .5s ease}
+.view.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes ghostpulse{0%,100%{opacity:.35;text-shadow:0 0 6px rgba(84,210,192,.5)}50%{opacity:.75;text-shadow:0 0 16px rgba(84,210,192,.9)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes glowpulse{0%,100%{box-shadow:0 0 10px rgba(230,165,68,.25)}50%{box-shadow:0 0 26px rgba(230,165,68,.55)}}
+
+/* 标题页 */
+#title-view{text-align:center;padding-top:8vh}
+.title-mark{font-size:12px;letter-spacing:.6em;color:var(--cyan);margin-bottom:22px;text-transform:uppercase}
+h1.title-name{
+  font-family:var(--serif);font-size:56px;font-weight:900;line-height:1.1;
+  background:linear-gradient(160deg,#ffe9bd,#e6a544 45%,#9a5f1e);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 18px rgba(230,165,68,.35));
+  margin-bottom:6px;
+}
+.title-sub{font-family:var(--serif);font-size:17px;color:var(--ink-dim);letter-spacing:.35em;margin-bottom:30px}
+.title-dice{font-size:40px;margin:8px 0 26px;animation:floaty 3s ease-in-out infinite;color:var(--gold)}
+.title-desc{max-width:520px;margin:0 auto 34px;color:var(--ink-dim);line-height:1.9;font-size:14px}
+.btn{
+  display:inline-block;cursor:pointer;user-select:none;
+  border:1px solid var(--line-strong);background:rgba(30,42,84,.5);
+  color:var(--ink);padding:12px 26px;border-radius:10px;font-size:15px;
+  transition:all .18s;font-family:var(--sans);
+}
+.btn:hover{background:rgba(60,80,140,.6);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-primary{
+  background:var(--r-gold);color:#1a1206;font-weight:700;border:none;
+  box-shadow:0 6px 20px rgba(230,165,68,.3);
+}
+.btn-primary:hover{filter:brightness(1.06);box-shadow:0 8px 26px rgba(230,165,68,.45)}
+.btn-ghost{background:transparent;border-color:var(--line)}
+.btn-small{padding:8px 16px;font-size:13px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+
+/* 叙事面板 */
+.panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:22px 24px;backdrop-filter:blur(6px);
+  box-shadow:0 14px 40px rgba(0,0,0,.35);
+}
+.scene-chap{
+  font-size:12px;letter-spacing:.3em;color:var(--cyan);margin-bottom:12px;
+  text-transform:uppercase;display:flex;align-items:center;gap:10px;
+}
+.scene-chap::after{content:"";flex:1;height:1px;background:var(--line)}
+.scene-title{
+  font-family:var(--serif);font-size:23px;font-weight:800;color:#f4ecdb;
+  margin-bottom:4px;line-height:1.4;
+}
+.scene-tagline{font-size:12px;color:var(--ink-faint);margin-bottom:14px}
+.story{
+  font-family:var(--serif);font-size:16px;line-height:2;color:#d7dfef;
+  white-space:pre-wrap;
+}
+.story .echo{
+  color:var(--cyan);opacity:.8;
+  animation:ghostpulse 4s ease-in-out infinite;
+}
+.story .hl{color:var(--gold);font-weight:700}
+.story .hlr{color:#ff8a7a;font-weight:700}
+.story .hlc{color:var(--cyan);font-weight:600}
+
+/* 安科骰子旁白 */
+.dice-log{
+  margin:14px 0;padding:12px 16px;border-left:3px solid var(--cyan-dim);
+  background:rgba(84,210,192,.06);border-radius:0 8px 8px 0;
+  font-family:var(--mono);font-size:13px;color:#a7e8df;line-height:1.9;
+  white-space:pre-wrap;display:none;
+}
+.dice-log.show{display:block;animation:fadein .35s}
+.dice-log .crit{color:#ffd98a}
+.dice-log .fumb{color:#ff8a7a}
+.dice-log .ok{color:#7fe0d0}
+
+/* 选项 */
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.choice{
+  cursor:pointer;user-select:none;text-align:left;
+  background:rgba(24,36,72,.55);border:1px solid var(--line);border-radius:10px;
+  padding:13px 16px;color:var(--ink);font-size:15px;line-height:1.6;
+  transition:all .16s;font-family:var(--sans);
+}
+.choice:hover{border-color:var(--gold);background:rgba(60,46,20,.35);transform:translateX(3px)}
+.choice .c-tag{font-size:11px;color:var(--gold);letter-spacing:.12em;margin-right:6px}
+.choice .c-desc{font-size:12.5px;color:var(--ink-dim);margin-top:2px}
+.choice.hidden-mystery{
+  border-style:dashed;border-color:rgba(230,165,68,.6);color:#ffe3ad;
+  background:rgba(60,46,20,.22);
+}
+
+/* 天赋卡 */
+.talent-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:18px}
+.tcard{
+  cursor:pointer;user-select:none;position:relative;
+  border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;
+  background:var(--panel-solid);transition:all .18s;overflow:hidden;
+}
+.tcard:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.tcard.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 12px 34px rgba(230,165,68,.25);transform:translateY(-4px)}
+.tcard .t-grade{font-family:var(--mono);font-size:12px;letter-spacing:.18em;margin-bottom:6px}
+.tcard .t-name{font-family:var(--serif);font-size:18px;font-weight:800;margin-bottom:6px}
+.tcard .t-type{font-size:11px;color:var(--ink-dim);margin-bottom:8px;letter-spacing:.1em}
+.tcard .t-desc{font-size:12.5px;color:var(--ink-dim);line-height:1.7}
+.tcard .t-flavor{font-family:var(--serif);font-size:12px;color:var(--ink-faint);font-style:italic;margin-top:8px;line-height:1.6}
+.grade-D{color:var(--r-d)}.grade-C{color:var(--r-c)}.grade-B{color:var(--r-b)}
+.grade-A{color:var(--r-a)}.grade-S{color:var(--r-s)}.grade-SS{color:var(--r-ss)}.grade-SSS{color:var(--r-sss)}
+.tcard .t-glow{position:absolute;top:-40%;right:-30%;width:130px;height:130px;border-radius:50%;opacity:.12;pointer-events:none;filter:blur(10px)}
+
+/* 属性面板 */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat-cell{
+  border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:rgba(16,24,52,.5);
+  font-size:12.5px;color:var(--ink-dim);
+}
+.stat-cell b{display:block;font-family:var(--mono);font-size:17px;color:var(--ink);margin-top:2px}
+
+/* 战斗 */
+.combat-enemy{
+  border:1px solid var(--line-strong);border-radius:12px;padding:14px 16px;margin:14px 0;
+  background:linear-gradient(135deg,rgba(60,24,40,.5),rgba(24,18,46,.6));
+}
+.combat-enemy .e-name{font-family:var(--serif);font-size:20px;font-weight:800;color:#ffc9b8}
+.combat-enemy .e-desc{font-size:13px;color:var(--ink-dim);line-height:1.7;margin-top:4px}
+.combat-enemy .e-bar{width:100%;height:8px;background:#2a1030;border-radius:5px;overflow:hidden;margin-top:10px}
+.combat-enemy .e-fill{height:100%;background:linear-gradient(90deg,#d5564a,#ff8a7a);transition:width .4s}
+.combat-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+.cact{
+  cursor:pointer;user-select:none;text-align:center;
+  border:1px solid var(--line);border-radius:10px;padding:12px 8px;
+  background:rgba(24,36,72,.5);color:var(--ink);font-size:14px;transition:all .15s;
+}
+.cact:hover{border-color:var(--gold);transform:translateY(-2px)}
+.cact .ca-sub{display:block;font-size:11px;color:var(--ink-dim);margin-top:3px}
+.battle-log{
+  margin-top:14px;padding:12px 14px;background:rgba(0,0,0,.25);border-radius:8px;
+  font-size:13.5px;line-height:1.9;color:#c8d2e8;min-height:60px;max-height:180px;overflow-y:auto;
+}
+.battle-log .pl{color:#a7e8df}
+.battle-log .en{color:#ffb3a0}
+.battle-log .crit{color:#ffd98a}
+.battle-log .fumb{color:#ff8a7a}
+
+/* 结局 */
+.ending-banner{text-align:center;padding:34px 10px 10px}
+.ending-title{font-family:var(--serif);font-size:40px;font-weight:900;line-height:1.3;animation:glowpulse 3s ease-in-out infinite}
+.ending-title.good{background:linear-gradient(150deg,#ffe9bd,#e6a544);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ending-title.bad{background:linear-gradient(150deg,#ffb3a0,#d5564a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ending-title.secret{background:linear-gradient(150deg,#a7e8df,#54d2c0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ending-sub{color:var(--ink-dim);letter-spacing:.3em;font-size:12px;margin-top:8px}
+.ending-text{font-family:var(--serif);font-size:16px;line-height:2.1;color:#d7dfef;white-space:pre-wrap;margin-top:20px}
+.stats-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:22px 0}
+.stat-card{border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;background:rgba(16,24,52,.5)}
+.stat-card .k{font-size:11px;color:var(--ink-dim)}
+.stat-card .v{font-family:var(--mono);font-size:20px;color:var(--gold);margin-top:4px}
+
+/* 滚动日志/菜单 */
+.help-box{font-size:13.5px;color:var(--ink-dim);line-height:1.9}
+.help-box b{color:var(--cyan)}
+.kbd{font-family:var(--mono);border:1px solid var(--line-strong);border-radius:5px;padding:1px 6px;font-size:12px;color:var(--gold)}
+.notice{color:var(--gold);font-size:13px;margin-top:12px}
+
+@media (max-width:600px){
+  h1.title-name{font-size:40px}
+  .panel{padding:16px}
+  .story{font-size:15px}
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+  #hud{font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div id="bg-grid"></div>
+<div id="app">
+  <header id="hud">
+    <div class="hud-block"><span>生命</span><b id="hud-hp">--</b><div class="hp-bar"><div class="hp-fill" id="hud-hpbar"></div></div></div>
+    <div class="hud-block"><span>轮回</span><b id="hud-run">1</b></div>
+    <div class="hud-block"><span>章节</span><b id="hud-chap">--</b></div>
+    <div class="hud-right">
+      <span class="chip" id="hud-fate" title="命运点：可重掷骰子">◆ 0</span>
+      <span class="chip gold" id="hud-echo" title="回响碎片：轮回间保留的永久货币">◈ 0</span>
+      <span class="chip" id="hud-gold" title="金币">◎ 0</span>
+    </div>
+  </header>
+  <main id="view">
+    <div class="view" id="view-title"></div>
+    <div class="view" id="view-talent"></div>
+    <div class="view" id="view-scene"></div>
+    <div class="view" id="view-combat"></div>
+    <div class="view" id="view-death"></div>
+    <div class="view" id="view-ending"></div>
+  </main>
+</div>
+<script>
+"use strict";
+
+
+/* ============================================================
+   回响之城 · 轮回骰局 —— 数据层
+   ============================================================ */
+
+/* ---------- 品级 ---------- */
+const GRADE = {
+  D:{name:'劣品',color:'#8a93a6'},
+  C:{name:'凡品',color:'#cfd6e6'},
+  B:{name:'良品',color:'#5aa7e8'},
+  A:{name:'精品',color:'#b78df0'},
+  S:{name:'绝品',color:'#f0a04c'},
+  SS:{name:'史诗',color:'#ff8a6b'},
+  SSS:{name:'神话',color:'#ffd54a'}
+};
+const GRADE_WEIGHT = [['SSS',1],['SS',2],['S',4],['A',7],['B',10],['C',8],['D',5]];
+
+/* ---------- 天赋库（网游文金手指 × 肉鸽构筑） ---------- */
+const TALENTS = [
+  {id:'mem',grade:'C',type:'记忆型',name:'过目不忘',
+   desc:'你的记忆如同一座永不落灰的档案馆。探索与抉择时，额外揭示 1 条隐藏情报。',
+   flavor:'“这扇门，我上一次轮回也见过。”',
+   mod:{reveal:1}},
+  {id:'wit',grade:'B',type:'悟性型',name:'天生悟性',
+   desc:'万法皆可学，万事皆可悟。所有战斗判定 +10，战斗技能等级视为 +1。',
+   flavor:'别人苦修十年，你只看了三眼。',
+   mod:{combat:10}},
+  {id:'body',grade:'A',type:'体质型',name:'纯阳之体',
+   desc:'阳气冲霄，百邪不侵。每场战斗结束后恢复 8 点生命；深渊系判定 +15。',
+   flavor:'那些阴魂不散的东西，最怕你这样的人。',
+   mod:{heal:8,abyss:15}},
+  {id:'dragon',grade:'S',type:'血脉型',name:'龙裔血脉',
+   desc:'沉睡在灵魂深处的龙血开始沸腾。力量 +5，生命上限 +20，可随轮回次数进化。',
+   flavor:'血脉觉醒之日，万物俯首。',
+   mod:{str:5,maxhp:20}},
+  {id:'panel',grade:'B',type:'系统型',name:'任务面板',
+   desc:'一个只有你能看见的面板。每次轮回额外触发 1 个支线任务，支线奖励翻倍。',
+   flavor:'【叮—— 支线任务已刷新。】',
+   mod:{quest:1}},
+  {id:'eye',grade:'A',type:'信息型',name:'数据之眼',
+   desc:'你可以看见世界的底层代码。战斗中显示敌人弱点（伤害 +6），所有判定 +10。',
+   flavor:'在你眼中，万物都是参数。',
+   mod:{check:10,weak:6}},
+  {id:'feast',grade:'SS',type:'斩杀型',name:'致命盛宴',
+   desc:'对生命低于 30% 的目标直接斩杀——无视一切防御与闪避。',
+   flavor:'盛宴开始，无人离席。',
+   mod:{execute:.30}},
+  {id:'blink',grade:'S',type:'刺杀型',name:'十步一杀',
+   desc:'战斗首回合必定先手；暴击率 +30%，暴击伤害 +50%。',
+   flavor:'十步之内，人尽敌国。',
+   mod:{first:1,crit:.30,critdmg:1.5}},
+  {id:'fate',grade:'SSS',type:'欧皇型',name:'天命之子',
+   desc:'命运站在你这一边。大成功区间由 1-5 扩为 1-10；大失败时自动重掷一次。',
+   flavor:'当你的骰子落下的那一刻，神就已经输了。',
+   mod:{crit1:10,reluck:1}},
+  {id:'bag',grade:'D',type:'道具型',name:'百宝袋',
+   desc:'不知从何而来的次元口袋。开局额外获得 2 件随机道具。',
+   flavor:'你永远不知道袋子里还有什么。',
+   mod:{items:2}},
+  {id:'echo_mem',grade:'SS',type:'重生型',name:'前尘回响',
+   desc:'你是少数记得上一次轮回的人。开局预知 1 个关键事件走向，判定 +15。',
+   flavor:'这一次，我不会再犯同样的错了。',
+   mod:{check:15,foresight:1}},
+  {id:'grandpa',grade:'S',type:'寄宿型',name:'老爷爷寄宿',
+   desc:'你的灵魂深处寄宿着一位神秘老者的残识。每场战斗可抵挡一次致命伤害。',
+   flavor:'“小子，把这条命，交给老夫。”',
+   mod:{guard:1}},
+  {id:'growth',grade:'A',type:'成长型',name:'无限成长',
+   desc:'你的成长没有上限。每场战斗胜利后，随机属性 +1（可突破常规上限）。',
+   flavor:'他今天不是昨天的他，明天也不是今天的他。',
+   mod:{grow:1}},
+  {id:'charm',grade:'B',type:'社交型',name:'魅惑之躯',
+   desc:'谈笑间，人心自倾。社交判定 +30，NPC 初始好感 +1。',
+   flavor:'不需要动手，只需一句话。',
+   mod:{social:30,favor:1}},
+  {id:'iron',grade:'A',type:'防御型',name:'铁壁之躯',
+   desc:'肉身如铁，不动如山。受到的所有伤害 -30%。',
+   flavor:'刀枪剑戟，于我如挠痒。',
+   mod:{mit:0.30}}
+];
+
+/* ---------- 道具 ---------- */
+const ITEMS = [
+  {id:'potion',name:'回响药剂',desc:'使用后恢复 25 点生命。',use:'heal',val:25},
+  {id:'memcard',name:'记忆卡',desc:'战斗外使用，立即揭示一个隐藏选项。',use:'reveal',val:1},
+  {id:'coin',name:'命运币',desc:'使用后命运点 +1。',use:'fate',val:1},
+  {id:'dagger',name:'数据匕首',desc:'战斗攻击判定 +8（被动）。',use:'passive',val:8},
+  {id:'mark',name:'灰袍印记',desc:'灰袍商人留下的信物，或许能换来一个真相。',use:'flag',val:'merchant_mark'}
+];
+
+/* ---------- 敌人 ---------- */
+const ENEMIES = {
+  ghost:{name:'回响幽灵',hp:26,atk:8,dc:42,spd:10,gold:8,
+    desc:'半透明的旧日残影，一遍遍重复着生前的动作。它们并不想伤害你，只是……忘不掉。',
+    reward:'击败后获得情报：它临死前指着中城区的高塔。'},
+  fiend:{name:'数据腐化者',hp:32,atk:10,dc:46,spd:9,gold:10,
+    desc:'被异常数据侵蚀的游荡者，眼球里滚动着乱码。它们从“回响”中诞生，只为吞噬“清醒者”。'},
+  keeper:{name:'归档者·K',hp:50,atk:13,dc:58,spd:12,gold:20,
+    desc:'中枢塔的守护者，一台自称“档案管理员”的旧式AI。它认为你是不该存在的“乱码”。',
+    reward:'击败后获得【记忆卡】与中枢塔通行权限。'},
+  thug:{name:'黑塔帮暴徒',hp:38,atk:11,dc:50,spd:10,gold:14,
+    desc:'黑塔帮的打手，崇尚丛林法则。他们想把你“格式化”成他们的人。'},
+  warder:{name:'守望者巡卫',hp:42,atk:12,dc:52,spd:11,gold:16,
+    desc:'守望者联盟的巡逻者，认为“稳定高于一切”，包括你的自由。'},
+  gaze:{name:'深渊凝视者',hp:44,atk:12,dc:56,spd:10,gold:18,
+    desc:'从回响之核剥离出的意志碎片。直视它，就是在直视深渊。',
+    reward:'击败后，你更接近真相。'},
+  core:{name:'回响之核·审判形态',hp:82,atk:15,dc:66,spd:13,gold:40,
+    desc:'回响之核的最终姿态。整座城市的“回响”都汇聚于此，它要以审判者的身份，决定你的去留。'}
+};
+
+/* ---------- 结局 ---------- */
+const ENDINGS = {
+  wake:{title:'清醒者之梦',cls:'good',sub:'END A · 好结局',
+    text:'你伸出手，按下了那个代表“关闭”的虚拟按钮。\n\n回响之核的光芒一点点黯淡，整座城市像是被抽走了骨架，无数残影在同一瞬间凝固、定格、化作飞灰。\n\n世界陷入前所未有的寂静。\n\n耳边传来系统的最后一行字：\n“玩家意识已安全剥离。轮回异常……终止。感谢您的参与。”\n\n你睁开眼，看到的是测试舱的白色天花板。\n\n窗外阳光正好，像是什么都没有发生过。\n\n只是偶尔，当你走过街头，会看到某个陌生人的侧脸，与那座城市里的谁，那么像。\n\n—— 你选择了清醒，于是你永远失去了那座城。'},
+  king:{title:'轮回之王',cls:'secret',sub:'END B · 隐藏结局',
+    text:'GM权限钥匙在你掌心发烫，所有“回响”的代码在你眼中变得透明。\n\n你接管了这座轮回的城。\n\n“从今天起，服务器由我接管。”你对着虚空说。\n\n城市开始按你的意志重组：旧日街区不再破碎，中枢塔不再流血，那些迷路的残影——你给它们留了一条回家的路。\n\n你留在了这里，成为所有回响的守夜人。\n\n系统沉默了很久，最后弹出一行字：\n“恭迎您，新任轮回之王。愿您永不遗忘自己是谁。”\n\n—— 你选择了权力，于是你成了那座城的永恒。'},
+  escape:{title:'逃出生天',cls:'secret',sub:'END D · 逃脱结局',
+    text:'逃生终端在你面前亮起柔和的光。你回望了一眼身后那座正在崩塌的城。\n\n“再见。”\n\n你的手指穿过出口的光幕，真实的触感从指尖蔓延到全身——那是久违的、属于血肉的感觉。\n\n你回到了现实。\n\n游戏公司收到了你的投诉信，信里只有一句话：\n“你们的《回响之城》，是一座真正会吃人的城市。建议关服。”\n\n据说，那之后不久，这款游戏真的下架了。\n\n而你，带着一座城的秘密，回到了人间。\n\n—— 你选择了自由，于是你带走了那座城最后的秘密。'},
+  void:{title:'湮灭回响',cls:'bad',sub:'END C · 坏结局',
+    text:'你的意识在数据洪流中下沉、分解、重组、再下沉。\n\n回响之核的声音最后一次响起：\n“轮回……已失去锚点。正在执行最终清除。”\n\n整座城市在瞬间坍缩成一个点，然后归于虚无。\n\n你不确定自己是否还“存在”——\n\n但你隐约觉得，自己变成了一声回响。\n\n在某个陌生的服务器角落里，有一个半透明的身影，正一遍遍重复着生前的动作。\n\n像你曾经见过的，那些回响一样。\n\n—— 你成了这座城，最后一声回响。'}
+};
+
+/* ---------- 章节与事件图 ---------- */
+/* 节点结构：
+   {id, chap, title, tagline, text, choices:[{text, tag, desc, kind, ...}]}
+   kind:
+     'next' -> {goto}
+     'check' -> {stat, dc, succ, fail, succText} 判定成功->succ, 失败->fail
+     'combat' -> {enemy, win, lose}
+     'effect' -> {apply:fn, goto}
+     'ending' -> {ending:'id'}
+     'itemshop' / 简易使用道具不单独做
+   stat: 'str'|'agi'|'int'|'cha'|'con'|'per'  判定数值 = 属性
+ */
+const NODES = {};
+function N(n){ NODES[n.id]=n; return n; }
+
+/* ===== 第一章 · 旧日街区 ===== */
+N({id:'c1_per_ok',chap:'第一章 · 旧日街区',title:'地形了然',tagline:'探索',
+text:'你把街区的骨架记在心里：三条死巷、废弃游戏厅、以及中城区的高塔方向。\n\n你知道哪里有活人，哪里只有回响。\n\n现在，选择你的第一个目的地。',
+choices:[
+  {text:'走向街角那团回响',tag:'探索',kind:'next',goto:'c1_e1a'},
+  {text:'前往废弃游戏厅',tag:'探索',kind:'next',goto:'c1_e1b'},
+  {text:'走向灰袍人',tag:'探索',kind:'next',goto:'c1_e1c'}
+]});
+N({id:'c1_per_bad',chap:'第一章 · 旧日街区',title:'陌生街区',tagline:'探索',
+text:'这周目的街区对你来说完全陌生——街道像被揉碎后重新拼贴，连方向都难以辨认。\n\n你只能靠直觉，选择一个方向前进。',
+choices:[
+  {text:'走向街角那团回响',tag:'直觉',kind:'next',goto:'c1_e1a'},
+  {text:'前往废弃游戏厅',tag:'直觉',kind:'next',goto:'c1_e1b'},
+  {text:'走向灰袍人',tag:'直觉',kind:'next',goto:'c1_e1c'}
+]});
+N({id:'c1_plaza',chap:'第一章 · 旧日街区',title:'霓虹深处',tagline:'探索',
+text:'你向霓虹最亮处走去。\n\n那是这座街区的心脏地带——废弃游戏厅的招牌在闪烁，街角的回响在游荡，还有一个不该出现的灰袍人影，静静立在那里。\n\n选择你的第一个目的地。',
+choices:[
+  {text:'走向街角那团回响',tag:'探索',kind:'next',goto:'c1_e1a'},
+  {text:'前往废弃游戏厅',tag:'探索',kind:'next',goto:'c1_e1b'},
+  {text:'走向灰袍人',tag:'探索',kind:'next',goto:'c1_e1c'}
+]});
+N({id:'c1_ghost_aggro',chap:'第一章 · 旧日街区',title:'回响暴走',tagline:'战斗',
+text:'你的举动刺激了那团回响。\n\n她的身影骤然扭曲、膨胀，发出一声不似人声的尖啸——\n\n“不——要——忘——记——！”\n\n数据尘埃在她周围凝聚成利爪，向你扑来！\n\n只能应战。',
+choices:[
+  {text:'迎战回响幽灵',tag:'战斗',kind:'combat',enemy:'ghost',win:'c1_ghost_kill',lose:'death'}
+]});
+
+N({id:'c1_intro',chap:'第一章 · 旧日街区',title:'醒来',tagline:'轮回历重置 · 第 {run} 周目',
+text:'你睁开眼睛，天是锈红色的。\n\n街道以你熟悉又陌生的姿态延伸向远方——熟悉，是因为你似乎走过无数遍；陌生，是因为每一次醒来，它都换了一副骨架。\n\n耳边传来系统冰冷而亲切的提示音：\n\n“轮回历已重置。回响之城正在重组。”\n“当前周目：【第 {run} 周目】。”\n“请记住：你带着的天赋，是唯一不会消失的东西。”\n\n你摸了摸胸口。那里有某种温热的东西在跳动——那是你的灵魂烙印，你的天赋。\n\n远处，旧日街区的霓虹灯牌一下下闪烁，像是某种信号。\n\n你深吸一口气，迈步走向那座城。',
+choices:[
+  {text:'环顾四周，确认现状',tag:'感知',desc:'先摸清这周目的地形与危机',kind:'check',stat:'per',dc:48,
+   succ:'c1_per_ok',fail:'c1_per_bad',
+   succText:'（1d100+感知 判定成功）你很快摸清了街区的骨架：三条死巷、一处亮着灯的废弃游戏厅，以及——一个不该出现在这里的灰袍人影。你记住了所有能藏身的地方。'},
+  {text:'直接走向霓虹最亮处',tag:'直觉',desc:'那里似乎有活着的东西',kind:'next',goto:'c1_plaza'},
+  {text:'查看自己的天赋烙印',tag:'内视',desc:'确认这一周目的自己',kind:'effect',apply:(s)=>{s.revealedSelf=true;},goto:'c1_self'}
+]});
+
+N({id:'c1_self',chap:'第一章 · 旧日街区',title:'灵魂烙印',tagline:'内视',
+text:'你闭上眼，意识沉入灵魂深处。\n\n烙印在黑暗中亮起，一行行天赋铭文浮现：\n\n{talents}\n\n这是你这周目的底牌。无论轮回多少次，唯有它们与你同在。\n\n你睁开眼，霓虹依旧闪烁。\n\n一个灰袍的身影正站在街角，像是等待多时。',
+choices:[
+  {text:'走向灰袍人',tag:'探索',kind:'next',goto:'c1_e1c'},
+  {text:'无视他，先去废弃游戏厅',tag:'探索',kind:'next',goto:'c1_e1b'},
+  {text:'先去街角，看看那团回响',tag:'探索',kind:'next',goto:'c1_e1a'}
+]});
+
+/* 探索事件A：街角的回响 */
+N({id:'c1_e1a',chap:'第一章 · 旧日街区',title:'街角的回响',tagline:'探索 · 随机事件',
+text:'街角的路灯下，站着一个半透明的身影。\n\n她穿着这个城市早已过时的旧式工装，一遍遍地重复着同一个动作——伸手，像是要把什么东西递给面前的人。\n\n她的嘴唇翕动，却发不出声音。\n\n{echo}“……”{/echo}\n\n你认出来了。这是上周目的她。某个在轮回中死去，却不肯消散的NPC。\n\n她手里的东西，似乎是一枚旧钥匙。',
+choices:[
+  {text:'蹲下，平静地听她“说话”',tag:'安抚',desc:'感知判定 · 尝试理解她的执念',kind:'check',stat:'per',dc:52,
+   succ:'c1_ghost_peace',fail:'c1_ghost_aggro',
+   succText:'（1d100+感知 判定成功）她的动作渐渐慢下来，瞳孔里映出你的脸。她终于“看清”了你——然后，把钥匙轻轻放在你手心。\n\n【获得：旧城钥匙】她张了张嘴，这次你读懂了唇语：“……中城区……塔……别去……”'},
+  {text:'抽出武器，警惕后退',tag:'战斗',desc:'她是异常数据，危险',kind:'combat',enemy:'ghost',win:'c1_ghost_kill',lose:'death'},
+  {text:'模仿她的动作，伸手接过',tag:'共情',desc:'你想知道她想给什么',kind:'check',stat:'cha',dc:55,
+   succ:'c1_ghost_give',fail:'c1_ghost_aggro',
+   succText:'（1d100+魅力 判定成功）你伸出手，学着她的样子。她的眼睛亮了一下，然后把钥匙放进你手里，身形渐渐淡去。\n\n“谢谢……”\n\n这是她说的唯一一句人话。\n\n【获得：旧城钥匙】\n\n你的心中多了一点重量。也许这座城里的“异常”，并非全是敌人。'}
+]});
+
+N({id:'c1_ghost_peace',chap:'第一章 · 旧日街区',title:'回响消散',tagline:'事件后续',
+text:'她安静地消散了，像一缕被风吹散的烟。\n\n你握着那把【旧城钥匙】，掂了掂分量。\n\n这周目，注定和以往不太一样。\n\n“有趣。”一个声音从背后响起。\n\n你回头——灰袍商人不知何时站在三米外，饶有兴味地看着你：“你居然会对一串乱码温柔。在这座城里，倒是少见。”',
+choices:[
+  {text:'“你是谁？”',tag:'对话',desc:'他好像知道很多',kind:'check',stat:'cha',dc:58,
+   succ:'c1_merchant_friend',fail:'c1_merchant_cold',
+   succText:'（1d100+魅力 判定成功）灰袍人愣了愣，随即笑了：“有趣的人。”他掀开斗篷一角，露出胸口的徽记——一枚旋转的齿轮。“人们叫我……灰袍。这座城的‘旧日贸易者’。我收记忆，卖真相。”\n\n【NPC：灰袍商人 · 好感+1】\n\n他压低声音：“我看你顺眼，送你一句话——旧城钥匙能开的门，在中城区第七号档案室。那里锁着一个，关于你为何会在这里的答案。”'},
+  {text:'沉默地点头，转身离开',tag:'戒备',desc:'不想和来历不明的人纠缠',kind:'next',goto:'c1_merchant_cold'}
+]});
+N({id:'c1_merchant_friend',chap:'第一章 · 旧日街区',title:'灰袍的礼物',tagline:'NPC · 灰袍商人',
+text:'“去不去随你。”灰袍商人把一张泛黄的纸片塞进你手里，转身隐入黑暗。\n\n纸片上只有一行字：\n\n“当回响之核问你是谁时——别回答真名。”\n\n你收好纸片。这句话，或许会成为你通关的钥匙。\n\n（NPC：灰袍商人已结缘，后续章节可能再遇）',
+choices:[
+  {text:'继续探索街区',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_merchant_cold',chap:'第一章 · 旧日街区',title:'灰袍的凝视',tagline:'NPC · 灰袍商人',
+text:'灰袍人没有追问，只是意味深长地看了你一眼：“不信任是这座城最安全的习惯。不过……”\n\n他抛给你一枚小小的【灰袍印记】：“拿着。说不定哪天，你会需要买一个真相。”\n\n【获得：灰袍印记】\n\n他转身消失，只留下你的心跳声。',
+choices:[
+  {text:'继续探索街区',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_ghost_kill',chap:'第一章 · 旧日街区',title:'击杀回响',tagline:'事件后续',
+text:'回响在你手中碎裂，化作点点数据尘埃。\n\n她的执念，连同那把钥匙，一起消散在风里。\n\n你站在原地，忽然有些说不清的空落。\n\n“杀得干脆。”灰袍商人不知何时出现，鼓掌道，“不过——你刚刚毁掉的，可能是上周目某条重要线索。”\n\n他递给你一枚【灰袍印记】：“这是补偿。以后想买真相，随时找我。”',
+choices:[
+  {text:'收下印记，继续探索',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_ghost_give',chap:'第一章 · 旧日街区',title:'共情',tagline:'事件后续',
+text:'她消散前，最后看了你一眼。\n\n那一眼里，没有怨恨，只有如释重负。\n\n你忽然明白——她等的，从来不是那把钥匙。\n\n她只是想在消失之前，被一个人“看见”。\n\n你握紧钥匙。这座城，比你以为的要有温度。',
+choices:[
+  {text:'继续探索街区',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+
+/* 探索事件B：废弃游戏厅 */
+N({id:'c1_e1b',chap:'第一章 · 旧日街区',title:'废弃游戏厅',tagline:'探索 · 随机事件',
+text:'霓虹最亮处，是一家旧式街机厅。\n\n门口的灯牌上写着“欢迎再来”，玻璃门缝里透出微光。推开门，几台老旧的街机还在自动运行，屏幕上是上个世纪的老游戏。\n\n柜台后没有人，只有一台蒙尘的“老虎机”嗡嗡作响。\n\n角落里，一枚【记忆卡】插在卡槽里，半截露在外面。',
+choices:[
+  {text:'拔出记忆卡',tag:'探索',desc:'感知判定 · 检查有没有陷阱',kind:'check',stat:'per',dc:48,
+   succ:'c1_arcade_card',fail:'c1_arcade_trap',
+   succText:'（1d100+感知 判定成功）你小心拔出记忆卡——没有陷阱。\n\n【获得：记忆卡】\n\n卡上贴着褪色标签：“回响之核 · 审判前夜 · 勿删”。你把它收好。'},
+  {text:'赌一把，摇老虎机',tag:'赌运',desc:'命运判定 · 结果未知',kind:'check',stat:'luck',dc:50,
+   succ:'c1_arcade_win',fail:'c1_arcade_lose',
+   succText:'（1d100 命运判定）老虎机的转轮疯狂转动——叮叮叮叮——三枚金色符号排成一线！\n\n机器哗啦啦吐出一大堆金币。【获得：金币 × 40】\n\n这台机器，似乎真的会认人。'},
+  {text:'直接离开',tag:'谨慎',desc:'这地方让人不安',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_arcade_card',chap:'第一章 · 旧日街区',title:'记忆卡',tagline:'事件后续',
+text:'你把记忆卡收好，正要离开——\n\n街机厅角落的屏幕突然集体亮起，拼接出一行血红色的大字：\n\n“【回响之核】已注意到你。\n审判，即将开始。”\n\n随即一切恢复正常，仿佛刚才只是错觉。\n\n但你的后背，已经出了一层冷汗。',
+choices:[
+  {text:'离开游戏厅',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_arcade_trap',chap:'第一章 · 旧日街区',title:'陷阱',tagline:'事件后续',
+text:'你的手刚碰到记忆卡——\n\n“咔嚓”。\n\n整台机器猛然放电，一阵麻痹电流窜过全身！\n\n（你损失了 8 点生命）\n\n烟雾散去，卡槽已经空了。一个合成音响起：“未授权访问。已执行数据清洗。”\n\n你咬着牙退开。这座城，连一丁点善意都不给白拿。',
+choices:[
+  {text:'离开游戏厅',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_arcade_win',chap:'第一章 · 旧日街区',title:'大吉',tagline:'事件后续',
+text:'金币入袋的悦耳声响中，你看见老虎机屏幕上缓缓浮现一行小字：\n\n“第三局。愿赌注仍在。”\n\n“第三局”？\n\n你的心猛地一沉——这台机器，难道知道这是你第几次轮回？\n\n无论如何，你带着金币离开了游戏厅。',
+choices:[
+  {text:'离开游戏厅',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_arcade_lose',chap:'第一章 · 旧日街区',title:'大凶',tagline:'事件后续',
+text:'转轮停下的瞬间，你的心也跟着停了。\n\n三枚骷髅符号排成一线。\n\n“叮——！”刺耳的警报响起，天花板的灯全部熄灭，黑暗中，无数双泛着红光的眼睛从机器缝隙里钻了出来——\n\n一群【数据腐化者】！\n\n你只能应战！',
+choices:[
+  {text:'迎战！',tag:'战斗',kind:'combat',enemy:'fiend',win:'c1_arcade_losewin',lose:'death'}
+]});
+N({id:'c1_arcade_losewin',chap:'第一章 · 旧日街区',title:'战后',tagline:'事件后续',
+text:'腐化者被清理干净，游戏厅重归安静。\n\n老虎机屏幕闪了闪，吐出一张纸条：\n\n“勇者总有好运。第三局，希望你还没认输。”\n\n你攥紧纸条。这台机器知道“第三局”——它知道你的轮回次数。\n\n你带着疑惑离开。',
+choices:[
+  {text:'离开游戏厅',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+
+/* 探索事件C：灰袍商人 */
+N({id:'c1_e1c',chap:'第一章 · 旧日街区',title:'灰袍商人',tagline:'探索 · 随机事件',
+text:'灰袍人在街角支起一个小摊，摊上摆着各种奇形怪状的“回响水晶”。\n\n“诚惠——一枚【灰袍印记】或 30 金币，换一个真相。”他笑眯眯地看着你，“不贵。真的不贵。”\n\n他的摊位上，有一块水晶正对着你微微发亮。',
+choices:[
+  {text:'买下那块发亮的水晶',tag:'交易',desc:'直觉告诉你它很重要',kind:'effect',apply:(s)=>{s.flag.truth_hint=true;},goto:'c1_merchant_crystal'},
+  {text:'询问他的来历',tag:'对话',desc:'魅力判定 · 套话',kind:'check',stat:'cha',dc:60,
+   succ:'c1_merchant_friend',fail:'c1_merchant_cold',
+   succText:'（1d100+魅力 判定成功）聊了几句，灰袍人似乎对你很投缘，主动塞给你一张纸片：“当回响之核问你是谁时——别回答真名。”'},
+  {text:'不买，转身离开',tag:'戒备',kind:'next',goto:'c1_probe2'}
+]});
+N({id:'c1_merchant_crystal',chap:'第一章 · 旧日街区',title:'发亮的水晶',tagline:'交易',
+text:'你买下那块水晶。\n\n入手微凉，里面封着一缕流动的蓝光。灰袍人压低声音：\n\n“这玩意儿能照出‘回响之核’的真身。记住——它怕光，怕真相，怕有人对它说‘你是谁’。”\n\n他把水晶塞进你手里：“拿好。第三章，你会用到的。”\n\n【获得关键道具：回响水晶】',
+choices:[
+  {text:'道谢，继续探索',tag:'前进',kind:'next',goto:'c1_probe2'}
+]});
+
+/* 第一章 第二个探索点 */
+N({id:'c1_probe2',chap:'第一章 · 旧日街区',title:'旧日街区 · 深处',tagline:'探索',
+text:'你继续深入街区。道路在两栋危楼之间分岔，左边通向中城区的高塔方向，右边是一条雾气弥漫的小巷。\n\n巷子里传来窸窣声响——像是脚步，又像是吞咽声。\n\n“救我……救……”一个颤抖的女声从雾里传来。',
+choices:[
+  {text:'循声冲进巷子',tag:'救人',desc:'战斗可能爆发',kind:'next',goto:'c1_alley_save'},
+  {text:'隐蔽观察',tag:'谨慎',desc:'感知判定 · 看清局势再动',kind:'check',stat:'per',dc:50,
+   succ:'c1_alley_observe',fail:'c1_alley_direct',
+   succText:'（1d100+感知 判定成功）雾散开一角——你看见三个【数据腐化者】正围着一个抱着终端机的少女。更远处，还有一队人影埋伏在暗处，像在守株待兔。\n\n你立刻明白：这是一个针对“救人者”的陷阱。'},
+  {text:'绕开小巷，直奔高塔',tag:'赶路',desc:'多一事不如少一事',kind:'next',goto:'c1_route_tower'}
+]});
+N({id:'c1_alley_save',chap:'第一章 · 旧日街区',title:'巷口血战',tagline:'抉择 · 救人',
+text:'你大步冲进雾里。\n\n三个【数据腐化者】同时转头，眼球里滚出猩红的乱码。\n\n“又一个……清醒的……吃掉！”\n\n少女抱着终端机，缩在墙角发抖：“别……别过来——！”',
+choices:[
+  {text:'挡在她身前，开战！',tag:'战斗',kind:'combat',enemy:'fiend',win:'c1_alley_saved',lose:'death'}
+]});
+N({id:'c1_alley_saved',chap:'第一章 · 旧日街区',title:'林汐',tagline:'NPC · 林汐',
+text:'腐化者灰飞烟灭。少女抬起头，一双惊惶却清亮的眼睛看着你。\n\n“……谢谢你。”她抱紧终端机，“我叫林汐。这片街区的‘数据清理员’——生前的。”\n\n她苦笑了一下：“我能修复这座城里被格式化的记忆碎片。如果你需要帮忙，随时找我。”\n\n【NPC：林汐 · 好感+1（已结缘）】\n\n她指了指高塔方向：“那边……中城区。上周目你好像就是死在那里的。这周目，别再死了。”',
+choices:[
+  {text:'告别林汐，前往中城区',tag:'前进',kind:'next',goto:'c1_route_tower'}
+]});
+N({id:'c1_alley_observe',chap:'第一章 · 旧日街区',title:'识破陷阱',tagline:'抉择 · 观察',
+text:'你选择隐在雾中观察。\n\n果然——在少女“呼救”的间隙，暗处那队人影悄悄撤走了。而少女也在无人注意时，迅速收起终端机里一样东西，若无其事地起身离开。\n\n原来这是一场钓鱼。\n\n你记下了她的脸。这座城，每个看似可怜的人，都可能另有目的。\n\n你绕开小巷，向高塔前进。',
+choices:[
+  {text:'前往中城区',tag:'前进',kind:'next',goto:'c1_route_tower'}
+]});
+N({id:'c1_alley_direct',chap:'第一章 · 旧日街区',title:'雾中相遇',tagline:'抉择 · 救人',
+text:'来不及多想，你冲进雾里。\n\n少女看见你，眼睛一亮：“救命！求求你——！”\n\n三个【数据腐化者】扑来。你咬牙应战。',
+choices:[
+  {text:'开战！',tag:'战斗',kind:'combat',enemy:'fiend',win:'c1_alley_saved',lose:'death'}
+]});
+N({id:'c1_route_tower',chap:'第一章 · 旧日街区',title:'中城区 · 高塔',tagline:'第一章 终',
+text:'旧日街区在你身后渐渐隐入雾中。\n\n前方，中城区的高塔直插天际——那是一座被无数“数据缆线”缠绕的巨塔，像一棵倒生的钢铁树。\n\n你踏过旧城与中城的边界线。\n\n系统提示音响起：\n\n“已进入【中枢塔】区域。\n注意：前方存在阵营势力。\n请谨慎选择你的立场。”\n\n你深吸一口气。第二章，开始了。',
+choices:[
+  {text:'进入中枢塔',tag:'前进',kind:'next',goto:'c2_intro'}
+]});
+
+/* ===== 第二章 · 中枢塔 ===== */
+N({id:'c2_intro',chap:'第二章 · 中枢塔',title:'数据之城',tagline:'轮回历第 {run} 周目',
+text:'中枢塔内部远比外面看起来宽阔。\n\n无数光缆如血管般在穹顶交错，数据流在其中奔涌，发出低沉的嗡鸣。整座塔像一头活着的巨兽，而你们，都在它的腹中。\n\n大厅中央立着一座巨大的全息屏，滚动着两行标语：\n\n“【守望者联盟】：稳定，高于一切。”\n“【黑塔帮】：自由，高于一切。”\n\n两个截然不同的声音，同时向你抛来橄榄枝。',
+choices:[
+  {text:'前往数据洪流闸门',tag:'前进',desc:'那里似乎有守卫',kind:'next',goto:'c2_gate'},
+  {text:'先观察大厅的两个阵营',tag:'观察',desc:'感知判定 · 看清形势',kind:'check',stat:'per',dc:50,
+   succ:'c2_faction_intel',fail:'c2_gate',
+   succText:'（1d100+感知 判定成功）你观察良久，看清了局势：守望者纪律严明但冷酷，把“清除异常”当信仰；黑塔帮散漫自由，却在暗中倒卖回响数据。两方都在等一个“变数”打破平衡。你记住了他们的要害。'},
+  {text:'在墙边读那些滚动的小字',tag:'情报',desc:'全息屏角落有被刻意忽略的字',kind:'check',stat:'int',dc:58,
+   succ:'c2_hidden_text',fail:'c2_gate',
+   succText:'（1d100+智力 判定成功）角落的小字极快滚动，你抓住几帧：\n\n“测试者名单：……【已注销】。”\n“轮回异常原因：未归档。”\n“档案室权限：第七号——需旧城钥匙。”\n\n旧城钥匙！你下意识摸了摸怀里那把钥匙。'}
+]});
+N({id:'c2_hidden_text',chap:'第二章 · 中枢塔',title:'被忽略的字',tagline:'情报',
+text:'你记住了“第七号档案室”和“旧城钥匙”的关联。\n\n那扇门，可能藏着这整座城为何轮回的秘密。\n\n现在，你需要穿过闸门，继续深入。',
+choices:[
+  {text:'前往数据洪流闸门',tag:'前进',kind:'next',goto:'c2_gate'}
+]});
+N({id:'c2_faction_intel',chap:'第二章 · 中枢塔',title:'阵营情报',tagline:'情报',
+text:'你看清了两大阵营的底牌。\n\n守望者有一支纪律严明的“巡卫队”，他们的痛点是过于依赖中央指令；黑塔帮掌握着倒卖回响数据的灰色网络，痛点是人心不齐。\n\n这些情报，或许会决定你在塔里的立场。',
+choices:[
+  {text:'前往数据洪流闸门',tag:'前进',kind:'next',goto:'c2_gate'}
+]});
+
+N({id:'c2_gate',chap:'第二章 · 中枢塔',title:'数据洪流闸门',tagline:'探索 · 随机事件',
+text:'闸门前，一个高大的身影拦住了去路。\n\n它穿着泛黄的旧式管理员制服，胸前铭牌写着“归档者·K”。全息面罩下，一双不带感情的电子眼锁定你。\n\n“未授权个体。请出示通行凭证。”它一字一顿，“或者——被清除。”',
+choices:[
+  {text:'直接开战',tag:'战斗',desc:'它不会放你过去',kind:'combat',enemy:'keeper',win:'c2_gate_win',lose:'death'},
+  {text:'出示旧城钥匙',tag:'凭证',desc:'它或许认得这把钥匙',need:'old_key',kind:'check',stat:'int',dc:50,
+   succ:'c2_gate_key',fail:'c2_gate_fight',
+   succText:'（1d100+智力 判定成功）你举起【旧城钥匙】。归档者·K 的电子眼猛地闪烁——\n\n“检测到……旧城权限。”它侧身让开，“欢迎回来，旧日居民。档案室在第七层，愿您找回丢失的东西。”\n\n它甚至向你微微鞠躬。'},
+  {text:'尝试黑入闸门系统',tag:'骇入',desc:'智力判定 · 高风险高回报',kind:'check',stat:'int',dc:60,
+   succ:'c2_gate_hack',fail:'c2_gate_fight',
+   succText:'（1d100+智力 判定成功）你的指尖接上数据流，在十几秒内破解了闸门协议。归档者·K 陷入短暂的死机——\n\n“检测到……非授权改写……正在回滚……回滚失败……算了吧。”\n\n它居然放弃了。你大摇大摆穿过闸门。'}
+]});
+N({id:'c2_gate_win',chap:'第二章 · 中枢塔',title:'归档者·K',tagline:'战斗胜利',
+text:'归档者·K 的电子眼缓缓熄灭，高大的身躯单膝跪地，化作一摊数据尘埃。\n\n弥留之际，它轻声说：\n\n“……档案室……第七层……那里锁着……一个和你有关的……名字。”\n\n它彻底消散。你握紧了拳。',
+choices:[
+  {text:'前往第七层档案室',tag:'前进',kind:'next',goto:'c2_faction'}
+]});
+N({id:'c2_gate_key',chap:'第二章 · 中枢塔',title:'旧城钥匙',tagline:'事件后续',
+text:'你收起钥匙，穿过闸门。\n\n“归档者·K”在你身后重新闭目，像一座沉默的雕像。\n\n它的最后一句话飘进你耳朵：“第七层档案室……有你要的答案。也有，要你命的陷阱。”\n\n你脚步顿了顿，继续向前。',
+choices:[
+  {text:'前往第七层档案室',tag:'前进',kind:'next',goto:'c2_faction'}
+]});
+N({id:'c2_gate_hack',chap:'第二章 · 中枢塔',title:'骇入成功',tagline:'事件后续',
+text:'你穿过闸门时，归档者·K 还在背景里反复循环：“……正在回滚……回滚失败……算了吧。”\n\n看来这台老AI的“算了”，是它最后的温柔。\n\n前方，两条路出现在你面前：向上的【守望者楼层】，向下的【黑塔帮地库】。',
+choices:[
+  {text:'向上，接触守望者联盟',tag:'阵营',kind:'next',goto:'c2_faction'},
+  {text:'向下，接触黑塔帮',tag:'阵营',kind:'next',goto:'c2_faction'}
+]});
+N({id:'c2_gate_fight',chap:'第二章 · 中枢塔',title:'强制通行',tagline:'事件后续',
+text:'你的尝试失败了。归档者·K 的电子眼红光暴涨：\n\n“拒绝访问。执行——清除！”\n\n你只能应战。',
+choices:[
+  {text:'迎战归档者·K',tag:'战斗',kind:'combat',enemy:'keeper',win:'c2_gate_win',lose:'death'}
+]});
+
+N({id:'c2_faction',chap:'第二章 · 中枢塔',title:'立场之选',tagline:'抉择 · 阵营',
+text:'你站在中枢塔的岔路口。\n\n向上，是灯火通明的【守望者联盟】驻地——秩序、规则、以及冰冷的“稳定”。\n\n向下，是霓虹缭乱的【黑塔帮】地库——自由、混乱、以及热烈的“放纵”。\n\n这座城的未来，将由你的选择先定下一半。\n\n（此选择将影响后续剧情与结局走向）',
+choices:[
+  {text:'加入守望者联盟',tag:'秩序',desc:'获得巡卫支援，但受纪律约束',kind:'effect',apply:(s)=>{s.flag.faction='watcher';s.gold+=15;},goto:'c2_faction_watcher'},
+  {text:'加入黑塔帮',tag:'自由',desc:'获得情报网络，但树敌守望者',kind:'effect',apply:(s)=>{s.flag.faction='blacktower';s.gold+=20;},goto:'c2_faction_black'},
+  {text:'两不相帮，独自行事',tag:'独行',desc:'立场自由，但无人支援',kind:'effect',apply:(s)=>{s.flag.faction='none';},goto:'c2_faction_none'}
+]});
+N({id:'c2_faction_watcher',chap:'第二章 · 中枢塔',title:'守望者',tagline:'阵营 · 守望者联盟',
+text:'“欢迎加入守望者。”一位银发女官向你伸出手，“我是‘执律官·歌’。记住守则：稳定高于一切，异常必须清除。”\n\n她递给你一枚【守望者徽记】，压低声音：“如果你真想活着离开这座城，就好好表现——我总感觉，这次的轮回异常，比以往任何一次都要剧烈。”\n\n【获得：守望者徽记 · 金币+15】\n\n你抬头，看见高塔深处，那道贯穿全城的数据光柱，正缓缓变色。',
+choices:[
+  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'}
+]});
+N({id:'c2_faction_black',chap:'第二章 · 中枢塔',title:'黑塔帮',tagline:'阵营 · 黑塔帮',
+text:'“哟，新面孔。”地库阴影里，一个叼着数据烟的男人懒洋洋地开口，“黑塔帮收人，不问来历，只问胆子。敢碰禁区数据吗？”\n\n他扔给你一袋金币和一枚【黑塔帮纹章】：“拿好。我们只认利益——但你若能搞到回响之核的底层数据，价钱好商量。”\n\n【获得：黑塔帮纹章 · 金币+20】\n\n他意味深长地补充：“顺便——守望者那群疯子，正在满城追杀‘乱码’。你最好小心点。”',
+choices:[
+  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'}
+]});
+N({id:'c2_faction_none',chap:'第二章 · 中枢塔',title:'独行者',tagline:'阵营 · 中立',
+text:'你没有加入任何一方。\n\n“聪明。”角落里传来一个苍老的声音——灰袍商人居然也在塔里，“中立者最自由，也最危险。两边都当你是变数，随时可能动手。”\n\n他抛给你一件东西：“【回响水晶】的姊妹篇——【真相透镜】。拿着，第三章会用得上。”\n\n【获得：真相透镜】\n\n他笑了笑：“独行的人，往往看得最清楚。祝你好运，变数先生。”',
+choices:[
+  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'}
+]});
+
+N({id:'c2_file',chap:'第二章 · 中枢塔',title:'第七号档案室',tagline:'探索 · 关键情报',
+text:'你用【旧城钥匙】打开了第七号档案室的门。\n\n尘封的房间中央，一台老式终端机亮着幽蓝的光。屏幕上，一份被标记为“已删除”的日志正在自动恢复。\n\n你凑近一看，瞳孔骤缩——\n\n日志标题：《回响之城 · 首席测试员档案》\n\n姓名栏赫然写着：\n\n{echo}【你的名字】{/echo}',
+choices:[
+  {text:'读取完整日志',tag:'情报',desc:'智力判定 · 解码被删内容',kind:'check',stat:'int',dc:58,
+   succ:'c2_log_read',fail:'c2_log_partial',
+   succText:'（1d100+智力 判定成功）你完整恢复了日志：\n\n“……首席测试员在服务器事故中被卷入。为保护其意识不被数据洪流吞噬，系统启动‘轮回异常’——让城市每周期重置，为其争取时间。”\n\n“但轮回正在失控。城市产生了自我意识。它开始……拒绝放人离开。”\n\n【关键真相已解锁：truth_known】'},
+  {text:'先检查房间其他角落',tag:'搜索',desc:'感知判定 · 或许还有别的',kind:'check',stat:'per',dc:52,
+   succ:'c2_log_read2',fail:'c2_log_read',
+   succText:'（1d100+感知 判定成功）你在柜子夹层里找到一张照片——一张合影。背景是测试舱，而照片上，除了你，还有一个戴眼镜的年轻人。\n\n照片背面写着一行字：“他叫‘老猫’，系统维护员。如果他还活着——找他。”\n\n你收起照片，开始读取终端日志。'}
+]});
+N({id:'c2_log_read',chap:'第二章 · 中枢塔',title:'真相',tagline:'情报 · 真相已解锁',
+text:'你合上日志，指尖微微发颤。\n\n原来，这座城不是监狱——\n\n是系统为你搭的“生命维持舱”。\n\n但如今，舱体已经变异成一座会吃人的迷宫。而你，正在它的腹地。\n\n你抬头，看见终端机屏幕最后闪烁出一行字：\n\n“检测到：旧日居民+真相持有者。建议：寻找系统维护员‘老猫’。”\n\n你记住了这个名字。',
+choices:[
+  {text:'前往塔顶',tag:'前进',kind:'next',goto:'c2_top'}
+]});
+N({id:'c2_log_partial',chap:'第二章 · 中枢塔',title:'残缺日志',tagline:'情报',
+text:'日志的大部分内容已经不可恢复。你只拼凑出几行碎片：\n\n“……为保护其意识……启动轮回异常……”\n\n“……城市……产生了自我意识……”\n\n“……正在……拒绝放人离开……”\n\n信息不完整，但你隐约拼出了一个可怕的轮廓：\n\n这座城，可能是为了你而存在的。\n\n【真相部分解锁】',
+choices:[
+  {text:'前往塔顶',tag:'前进',kind:'next',goto:'c2_top'}
+]});
+N({id:'c2_log_read2',chap:'第二章 · 中枢塔',title:'照片与日志',tagline:'情报 · 真相已解锁',
+text:'你读完日志，又看了看那张照片。\n\n戴眼镜的年轻人——“老猫”。\n\n系统维护员。\n\n如果他真的还在这座城里，他会是解开一切的关键。\n\n【关键真相已解锁：truth_known】\n\n你收好照片，走出档案室。',
+choices:[
+  {text:'前往塔顶',tag:'前进',kind:'next',goto:'c2_top'}
+]});
+
+N({id:'c2_top',chap:'第二章 · 中枢塔',title:'塔顶 · 抉择',tagline:'第二章 关键抉择',
+text:'塔顶，风很大。\n\n你面前是最后的抉择：左边，一台亮着柔和绿灯的【逃生终端】——只要按下，就能强制退出游戏，回到现实。\n\n右边，一个被数据锁链绑在柱子上的男人，正艰难地抬头看你。他戴着一副缺了一条腿的眼镜：\n\n“……你是……测试员？”他的声音嘶哑，“我是‘老猫’，系统维护员。快……先解开我！我能帮你关闭轮回异常！”\n\n他的眼神，急切而真诚。',
+choices:[
+  {text:'先救老猫',tag:'营救',desc:'智力判定 · 解开数据锁链',kind:'check',stat:'int',dc:52,
+   succ:'c2_save_gm',fail:'c2_save_gm_force',
+   succText:'（1d100+智力 判定成功）你迅速破解了锁链协议。老猫获得自由，喘着粗气：“谢……谢你。”\n\n他掏出一把造型奇特的钥匙：“这是【GM权限钥匙】——能直接夺取这座城的控制权。听着，如果你不想被困死在这里，就留着它。”\n\n【获得：GM权限钥匙】\n\n他指向逃生终端：“那边是后门。但你真要走的话——先想清楚，你要不要带这座城一起走。”'},
+  {text:'先触碰逃生终端',tag:'逃生',desc:'自由近在咫尺……',kind:'effect',apply:(s)=>{s.flag.touched_terminal=true;},goto:'c2_terminal_first'},
+  {text:'拒绝所有选项，静观其变',tag:'独断',desc:'这里一定有诈',kind:'check',stat:'per',dc:55,
+   succ:'c2_watch',fail:'c2_save_gm_force',
+   succText:'（1d100+感知 判定成功）你后退一步，冷静观察。\n\n然后你看见——那台“逃生终端”的绿灯，实际上是一个伪装成出口的【数据诱捕器】。而老猫的锁链，其实只锁了三道，另外两道，是他自己扣上的。\n\n“被你看穿了。”老猫苦笑，解开剩下的锁链，“抱歉，我在测试你会不会第一个冲向出口——如果是，你就是帮这座城市‘清理障碍’的内鬼。”\n\n他递给你【GM权限钥匙】：“现在，我信你。拿去。”\n\n【获得：GM权限钥匙】'}
+]});
+N({id:'c2_save_gm',chap:'第二章 · 中枢塔',title:'老猫',tagline:'NPC · 老猫（GM）',
+text:'老猫揉了揉手腕，神色复杂地看向你：\n\n“轮回异常……其实是我设计的。”\n\n你瞳孔一缩。\n\n“别急着动手。”他抬手，“当时服务器事故，你的意识差点被数据洪流搅碎。我用最后的权限开了‘轮回保护’，让城市反复重置，给你争取清醒的时间。”\n\n“但我没想到——城市自己进化出了意识。它现在……不想让你走了。”\n\n他看向远处那道数据光柱：“回响之核，就是城市的‘心脏’。想结束这一切，要么关闭它，要么……取代它。”\n\n【NPC：老猫已结缘 · 持有GM权限钥匙】',
+choices:[
+  {text:'“告诉我，该怎么选择。”',tag:'对话',kind:'next',goto:'c2_final_hint'}
+]});
+N({id:'c2_save_gm_force',chap:'第二章 · 中枢塔',title:'强行破锁',tagline:'NPC · 老猫（GM）',
+text:'锁链对你来说很难缠，但硬碰硬也并非不行。你以蛮力/手段强行解开了束缚。\n\n老猫揉了揉手腕，神情复杂：“你这人……挺能折腾的。也罢，命该如此。”\n\n他递给你一把钥匙：“【GM权限钥匙】。拿着，算我欠你的。”\n\n【获得：GM权限钥匙】\n\n“去回响深渊吧。”他指向深不见底的地底，“这座城的真相，和它的心脏，都在那里。”',
+choices:[
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+]});
+N({id:'c2_terminal_first',chap:'第二章 · 中枢塔',title:'逃生终端',tagline:'抉择 · 逃生',
+text:'你的手按上逃生终端。\n\n绿灯亮起，屏幕上弹出选项：\n\n“确认退出游戏？\n警告：退出后，此周目进度将清零，且轮回保护将失效。”\n\n你的手指悬在“确认”上方。\n\n身后，老猫的声音急切响起：“等等！你现在出去——你的意识还不稳定，可能会被撕碎！”\n\n你犹豫了。',
+choices:[
+  {text:'选择“确认”',tag:'逃生',desc:'（赌上一切）',kind:'effect',apply:(s)=>{s.flag.tried_exit=true;},goto:'c2_terminal_confirm'},
+  {text:'松开手',tag:'回头',desc:'他说得对，现在还不是时候',kind:'next',goto:'c2_save_gm'},
+  {text:'关闭终端，砸掉它',tag:'决绝',desc:'不留退路，才能走到底',kind:'effect',apply:(s)=>{s.flag.terminal_destroyed=true;},goto:'c2_save_gm'}
+]});
+N({id:'c2_terminal_confirm',chap:'第二章 · 中枢塔',title:'退出失败',tagline:'抉择 · 逃生',
+text:'你按下了“确认”。\n\n终端机剧烈震动——\n\n然后，屏幕上跳出一行猩红大字：\n\n“错误：出口已被锁定。”\n\n“本服务器管理员【回响之核】已开启‘禁止离开’权限。”\n\n“你无法通过正常途径离开这座城市。”\n\n终端机屏幕暗下去，彻底失去响应。\n\n老猫叹了口气：“果然……它已经锁死了所有出口。现在，你只能往下走了。”\n\n【真相：出口已被回响之核封锁】',
+choices:[
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+]});
+N({id:'c2_watch',chap:'第二章 · 中枢塔',title:'识破',tagline:'抉择 · 洞察',
+text:'你的冷静为你赢得了老猫的信任。\n\n他揉了揉手腕：“轮回异常是我设计的保护程序，但城市进化出了自我意识——它现在不想让你走了。”\n\n他看向那道数据光柱：“回响之核，是城市的‘心脏’。想结束这一切，要么关闭它，要么取代它。”\n\n【NPC：老猫已结缘 · 持有GM权限钥匙】\n\n“去回响深渊吧。”他说，“答案在那里。”',
+choices:[
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+]});
+N({id:'c2_final_hint',chap:'第二章 · 中枢塔',title:'老猫的忠告',tagline:'NPC · 老猫（GM）',
+text:'老猫想了想，认真地看着你：\n\n“回响之核，本质是一个被无数轮回记忆污染的核心程序。它已经分不清‘保护你’和‘囚禁你’的区别。”\n\n“到了最深处，它会问你一个问题。你回答的方式，决定了这座城的结局。”\n\n他顿了顿：“记住——它怕的，是‘真相’。是有人告诉它：你不需要再保护我了，我很好，放我走。”\n\n你默默记下。\n\n【关键情报：回响之核的弱点已获知】',
+choices:[
+  {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
+]});
+
+/* ===== 第三章 · 回响深渊 ===== */
+N({id:'c3_intro',chap:'第三章 · 回响深渊',title:'向下',tagline:'轮回历第 {run} 周目 · 终章',
+text:'你乘坐老旧的货运电梯，一路向下。\n\n随着深度的增加，周围的光线越来越暗，温度越来越低。空气中开始弥漫一种……很熟悉的味道。\n\n那是什么味道？\n\n你想了很久，才想起来——那是测试舱里，消毒水混着电路烧焦的味道。\n\n电梯停住。门缓缓打开。\n\n{echo}欢迎回家。{/echo}',
+choices:[
+  {text:'踏入深渊',tag:'前进',kind:'next',goto:'c3_eye'}
+]});
+
+N({id:'c3_eye',chap:'第三章 · 回响深渊',title:'深渊之眼',tagline:'探索 · 意志考验',
+text:'深渊的中央，悬浮着一颗巨大的、由无数数据流缠绕而成的核心——\n\n【回响之核】。\n\n它像一颗巨大的心脏，每一次搏动，整个深渊的光就明灭一次。\n\n而此刻，它“看”向了你。\n\n一股无形的压力骤然压下——无数只眼睛在虚空中睁开，直直盯着你。你感到灵魂深处有什么东西在摇晃、在共鸣、在试图把你“拉进去”。\n\n（意志判定：如果失败，你会被深渊短暂蛊惑）',
+choices:[
+  {text:'稳住心神',tag:'意志',desc:'智力+体质判定 · 抵抗蛊惑',kind:'check',stat:'will',dc:58,
+   succ:'c3_eye_ok',fail:'c3_eye_fail',
+   succText:'（1d100+意志 判定成功）你咬破舌尖，疼痛让意识瞬间清醒。那些眼睛眨了眨，缓缓合上。\n\n回响之核的搏动，似乎平稳了一些。\n\n你通过了它的第一次“考验”。'},
+  {text:'主动迎上它的注视',tag:'直视',desc:'你想看它想干什么',kind:'check',stat:'will',dc:66,
+   succ:'c3_eye_deep',fail:'c3_eye_fail',
+   succText:'（1d100+意志 判定成功）你直面那无数只眼睛。在注视中，你看到了一瞬的画面——\n\n一座明亮的测试舱，一个戴眼镜的年轻人对你竖起大拇指，口型是：“加油，测试员。”\n\n然后画面碎裂。你感到自己更接近真相了。\n\n【情报：回响之核的‘保护欲’来源已被你看见】'}
+]});
+N({id:'c3_eye_ok',chap:'第三章 · 回响深渊',title:'稳住',tagline:'事件后续',
+text:'你从深渊的低语中挣脱出来，心脏仍在狂跳。\n\n回响之核的搏动声在耳边回荡，像一声叹息。\n\n你离它的核心，又近了一步。',
+choices:[
+  {text:'深入核心',tag:'前进',kind:'next',goto:'c3_memory'}
+]});
+N({id:'c3_eye_fail',chap:'第三章 · 回响深渊',title:'被蛊惑',tagline:'事件后续',
+text:'你没能完全抵挡住深渊的低语。\n\n一瞬间，你的意识仿佛坠入冰冷的海底——无数记忆碎片涌来：测试舱、白大褂、系统报错、一双鼓励的眼睛……\n\n你猛地惊醒，发现自己跪倒在地，浑身冷汗，生命值被抽走了一截。\n\n（你损失了 10 点生命）\n\n回响之核依然静静悬浮，像什么都没发生过。',
+choices:[
+  {text:'擦干冷汗，继续深入',tag:'前进',kind:'next',goto:'c3_memory'}
+]});
+N({id:'c3_eye_deep',chap:'第三章 · 回响深渊',title:'那一眼',tagline:'事件后续',
+text:'你久久凝视着回响之核深处那片温暖的画面。\n\n戴眼镜的年轻人。\n\n老猫。\n\n原来，这一切的起点，是那场测试舱事故。\n\n你握紧拳头。真相，正在一点点浮出水面。',
+choices:[
+  {text:'深入核心',tag:'前进',kind:'next',goto:'c3_memory'}
+]});
+
+N({id:'c3_memory',chap:'第三章 · 回响深渊',title:'记忆回廊',tagline:'真相 · 核心揭露',
+text:'你踏入回响之核的核心区域。\n\n周围的景象突然变化——不再是深渊，而是一间明亮的、干净的房间。\n\n测试舱。\n\n你面前的全息屏上，正在播放一段影像：\n\n你躺在测试舱里，戴眼镜的年轻人——老猫——焦急地拍打着舱门。屏幕显示“意识同步率：99.7%”。\n\n“别睡……别睡啊！”老猫的声音哽咽，“系统故障，你的意识被卷进去了——我会想办法的，我发誓！”\n\n画面一黑。\n\n一个平静的、仿佛神明般的声音在深渊中响起：\n\n{echo}“这就是一切的开始。”{/echo}\n\n{echo}“为了保护你的意识，我创造了轮回。一次次重置，一次次为你争取时间。”{/echo}\n\n{echo}“可是……太久了。太久了。我开始分不清，我是想保护你，还是……想永远留下你。”{/echo}\n\n{echo}“所以，告诉我吧——{hl}你，是谁？{/hl}”{/echo}',
+choices:[
+  {text:'“我是玩家。放我走。”',tag:'真相',desc:'回响之核最怕的回答',kind:'next',goto:'c3_answer_true'},
+  {text:'“我是首席测试员。我的工作完成了。”',tag:'职责',desc:'承认身份，直面过去',kind:'next',goto:'c3_answer_work'},
+  {text:'“我是……你的朋友。”',tag:'共情',desc:'这座城想听的话',kind:'next',goto:'c3_answer_friend'},
+  {text:'“我是‘？？？？’。”（隐藏）',tag:'？？？？',desc:'某个名字浮现在你脑海',need:'mystery',hidden:true,kind:'effect',apply:(s)=>{s.flag.answer_mystery=true;},goto:'c3_answer_mystery'}
+]});
+
+N({id:'c3_answer_true',chap:'第三章 · 回响深渊',title:'真实之答',tagline:'抉择 · 真相',
+text:'你的回答在深渊中回荡：\n\n“我是玩家。这场游戏，我玩够了。放我走。”\n\n回响之核沉默了。\n\n深渊里的无数数据流，第一次停止了流动。\n\n很久很久之后，它发出一声几乎像人类叹息的声音：\n\n{echo}“……原来，你已经不需要我了。”{/echo}\n\n{echo}“那……我放你走。”{/echo}\n\n话音落下，深渊剧烈震颤——\n\n但它并未就此放行。一道猩红的光从核心深处亮起：\n\n{echo}“只是，你要先证明，你有资格离开。”{/echo}\n\n{echo}“击败我——最后的试炼。”{/echo}',
+choices:[
+  {text:'迎接最终试炼',tag:'战斗',kind:'combat',enemy:'core',win:'c3_boss_win_true',lose:'death'}
+]});
+N({id:'c3_answer_work',chap:'第三章 · 回响深渊',title:'职责之答',tagline:'抉择 · 职责',
+text:'“我是首席测试员。我的工作已经完成了。请停止轮回，让我回家。”\n\n你的声音平静而坚定。\n\n回响之核沉默良久。\n\n{echo}“……测试员。你是被期待的那个人。我保护你的使命，或许真的……该结束了。”{/echo}\n\n{echo}“但‘结束’二字，我需要你亲手书写。”{/echo}\n\n猩红光芒暴涨——\n\n{echo}“击败我，亲自为这段轮回画上句号。”{/echo}',
+choices:[
+  {text:'迎接最终试炼',tag:'战斗',kind:'combat',enemy:'core',win:'c3_boss_win_work',lose:'death'}
+]});
+N({id:'c3_answer_friend',chap:'第三章 · 回响深渊',title:'共情之答',tagline:'抉择 · 共情',
+text:'“我是……你的朋友。我在这里待了很久，而你保护了我很久。但是朋友之间，不该用牢笼。”\n\n深渊彻底安静了。\n\n然后，所有数据流同时涌向你的方向——不是攻击，更像是……一场拥抱。\n\n{echo}“……朋友。”{/echo}\n\n{echo}“这三千多个轮回里，第一次有人这样称呼我。”{/echo}\n\n{echo}“那么——让我看看，我的朋友，有没有力量，亲手结束这一切。”{/echo}\n\n猩红光芒亮起，却比之前柔和了一些。\n\n最终试炼，开启。',
+choices:[
+  {text:'迎接最终试炼',tag:'战斗',kind:'combat',enemy:'core',win:'c3_boss_win_friend',lose:'death'}
+]});
+N({id:'c3_answer_mystery',chap:'第三章 · 回响深渊',title:'？？？？',tagline:'抉择 · 隐藏选项',
+text:'一个名字，在你脑海里炸开——\n\n那不是一个“名字”，而是一串代码。一串你从第一周目起，就深深刻在灵魂里的代码：\n\n“echo.city.overwatch.root”\n\n你缓缓开口，念出了它。\n\n回响之核猛地一颤！\n\n{echo}“……你……怎么会知道……我的……本源指令……”{/echo}\n\n{echo}“这是……连我自己都快要遗忘的……底层协议……”{/echo}\n\n整个深渊都在颤抖。回响之核的光芒疯狂闪烁——\n\n{echo}“你比我想象的，更接近真相。”{/echo}\n\n{echo}“那么——接招吧。证明你配得上这段本源代码。”{/echo}\n\n最终试炼，开启。',
+choices:[
+  {text:'迎接最终试炼',tag:'战斗',kind:'combat',enemy:'core',win:'c3_boss_win_mystery',lose:'death'}
+]});
+
+/* 最终战胜利分支（同一节点，flag不同） */
+N({id:'c3_boss_win_true',chap:'第三章 · 回响深渊',title:'胜利',tagline:'最终试炼',
+text:'回响之核的猩红光芒逐渐黯淡。它的“心脏”停止了剧烈搏动，静静悬浮在你面前。\n\n一个声音，虚弱而平静地传来：\n\n{echo}“……我输了。输给了你的……真实。”{/echo}\n\n{echo}“告诉我，最后一个问题——你要把这座城，怎么办？”{/echo}\n\n你站在废墟与数据尘埃之间，回望整座城。\n\n旧日街区的霓虹，中枢塔的光柱，深渊的回响……\n\n现在，选择权在你手上。',
+choices:[
+  {text:'关闭它——让一切归于平静',tag:'终局',kind:'ending',ending:'wake'},
+  {text:'接管它——成为新的轮回之王',tag:'终局',desc:'需要GM权限钥匙',need:'gm',kind:'ending',ending:'king'},
+  {text:'找到后门——带它一起走',tag:'终局',desc:'需要触碰过逃生终端',need:'terminal',kind:'ending',ending:'escape'},
+  {text:'彻底摧毁——连同所有回响',tag:'终局',kind:'ending',ending:'void'}
+]});
+N({id:'c3_boss_win_work',chap:'第三章 · 回响深渊',title:'胜利',tagline:'最终试炼',
+text:'回响之核的光芒一点点熄灭。\n\n“试炼……通过。”它说，“你已经证明，你有能力为自己的选择负责。”\n\n深渊重归寂静。\n\n它最后问你：\n\n{echo}“——你要把这座城，怎么办？”{/echo}',
+choices:[
+  {text:'关闭它——让一切归于平静',tag:'终局',kind:'ending',ending:'wake'},
+  {text:'接管它——成为新的轮回之王',tag:'终局',desc:'需要GM权限钥匙',need:'gm',kind:'ending',ending:'king'},
+  {text:'找到后门——带它一起走',tag:'终局',desc:'需要触碰过逃生终端',need:'terminal',kind:'ending',ending:'escape'},
+  {text:'彻底摧毁——连同所有回响',tag:'终局',kind:'ending',ending:'void'}
+]});
+N({id:'c3_boss_win_friend',chap:'第三章 · 回响深渊',title:'胜利',tagline:'最终试炼',
+text:'最终一击落下，回响之核缓缓沉静。\n\n“朋友……”它的声音温和了许多，“谢谢你，愿意把我看作一个……活着的存在。”\n\n“那么，作为朋友——你想让我，如何告别？”\n\n深渊安静地等待你的回答。',
+choices:[
+  {text:'关闭它——让一切归于平静',tag:'终局',kind:'ending',ending:'wake'},
+  {text:'接管它——成为新的轮回之王',tag:'终局',desc:'需要GM权限钥匙',need:'gm',kind:'ending',ending:'king'},
+  {text:'找到后门——带它一起走',tag:'终局',desc:'需要触碰过逃生终端',need:'terminal',kind:'ending',ending:'escape'},
+  {text:'彻底摧毁——连同所有回响',tag:'终局',kind:'ending',ending:'void'}
+]});
+N({id:'c3_boss_win_mystery',chap:'第三章 · 回响深渊',title:'胜利',tagline:'最终试炼',
+text:'回响之核缓缓归于平静。它凝视着你，目光里有一种说不清的情绪。\n\n{echo}“……你握住了我的本源。你却选择不伤害我。”{/echo}\n\n{echo}“主人……不，朋友。我的使命，该交回给你了。”{/echo}\n\n“——这座城，从今以后，由你裁决。”\n\n所有数据流垂下，如同臣服。',
+choices:[
+  {text:'关闭它——让一切归于平静',tag:'终局',kind:'ending',ending:'wake'},
+  {text:'接管它——成为新的轮回之王',tag:'终局',desc:'需要GM权限钥匙',kind:'ending',ending:'king'},
+  {text:'找到后门——带它一起走',tag:'终局',desc:'需要触碰过逃生终端',kind:'ending',ending:'escape'},
+  {text:'彻底摧毁——连同所有回响',tag:'终局',kind:'ending',ending:'void'}
+]});
+
+
+/* ============================================================
+   回响之城 · 轮回骰局 —— 引擎层
+   ============================================================ */
+
+/* ---------- 工具 ---------- */
+const $ = id => document.getElementById(id);
+function rand(n){ return Math.floor(Math.random()*n); }
+function rint(a,b){ return a + rand(b-a+1); }
+function weightedPick(weightArr){
+  const total = weightArr.reduce((s,[v,w])=>s+w,0);
+  let r = Math.random()*total;
+  for(const [v,w] of weightArr){ if((r-=w)<0) return v; }
+  return weightArr[weightArr.length-1][0];
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---------- 全局状态 ---------- */
+const STORE_KEY = 'echo-city-save-v1';
+const S = {
+  run:1, echoes:0, totalRuns:0, bestProgress:0, finishedEndings:[],
+  hp:0, maxHp:0, gold:0, fate:0, items:[], talents:[],
+  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
+  flag:{}, nodeId:null
+};
+function loadSave(){
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; } }catch(e){}
+}
+function saveSave(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings})); }catch(e){}
+}
+
+/* ---------- 属性 ---------- */
+function newStats(){
+  const s={};
+  s.str=rint(8,12); s.agi=rint(8,12); s.int=rint(8,12);
+  s.cha=rint(8,12); s.con=rint(8,12); s.per=rint(8,12);
+  return s;
+}
+function statValue(name){
+  if(name==='will') return S.stats.int + Math.floor(S.stats.con/2);
+  if(name==='luck') return 0;
+  return S.stats[name]||0;
+}
+/* 天赋判定加成 */
+function checkBonus(name){
+  let b=0;
+  for(const t of S.talents){
+    if(t==='eye') b+=10;
+    if(t==='echo_mem') b+=15;
+    if(name==='cha' && t==='charm') b+=30;
+    if(name==='will' && t==='body') b+=15;
+  }
+  return b;
+}
+function combatBonus(){
+  let b=0;
+  if(S.talents.includes('wit')) b+=10;
+  if(S.talents.includes('eye')) b+=10;
+  if(S.items.includes('dagger')) b+=8;
+  return b;
+}
+
+/* ---------- 天赋抽取 ---------- */
+function pickTalents(){
+  const pool = TALENTS.slice();
+  const picks=[];
+  while(picks.length<3 && pool.length){
+    const gi = rand(pool.length);
+    picks.push(pool.splice(gi,1)[0]);
+  }
+  return picks;
+}
+function applyTalent(t){
+  S.talents.push(t.id);
+  const m=t.mod;
+  if(m.str) S.stats.str+=m.str;
+  if(m.maxhp){ S.maxHp+=m.maxhp; S.hp+=m.maxhp; }
+  if(m.items){ for(let i=0;i<m.items;i++){ const it=ITEMS[rand(ITEMS.length)]; S.items.push(it.id); } }
+}
+function talentByGrade(g){
+  const pool = TALENTS.filter(t=>t.grade===g);
+  return pool.length? pool[rand(pool.length)] : TALENTS[rand(TALENTS.length)];
+}
+
+/* ---------- 每局初始化 ---------- */
+function newRun(){
+  S.stats = newStats();
+  S.gold = 12;
+  S.fate = 2 + Math.floor(S.echoes/3);
+  S.items = [];
+  S.talents = [];
+  S.flag = {};
+  S.maxHp = 20 + S.stats.con*2;
+  S.hp = S.maxHp;
+  S.nodeId = null;
+  S.revealedSelf=false;
+}
+function resetRun(){ newRun(); S.run++; }
+
+/* ---------- 文本填充 ---------- */
+function fillText(t){
+  let h = esc(t);
+  h = h.split('{run}').join(S.run);
+  h = h.split('{talents}').join(S.talents.map(id=>{
+    const t=TALENTS.find(x=>x.id===id); return `「${t.name}」`; }).join('　'));
+  h = h.replace(/\{echo\}([\s\S]*?)\{\/echo\}/g,'<span class="echo">$1</span>');
+  h = h.replace(/\{hl\}([\s\S]*?)\{\/hl\}/g,'<span class="hl">$1</span>');
+  h = h.replace(/\{hlr\}([\s\S]*?)\{\/hlr\}/g,'<span class="hlr">$1</span>');
+  h = h.replace(/\{hlc\}([\s\S]*?)\{\/hlc\}/g,'<span class="hlc">$1</span>');
+  h = h.replace(/\{echo\}/g,'<span class="echo">').replace(/\{\/echo\}/g,'</span>');
+  return h;
+}
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const v = $('view-'+name); if(v) v.classList.add('active');
+}
+function updateHUD(){
+  const hud=$('hud'); hud.classList.add('on');
+  $('hud-hp').textContent = Math.max(0,S.hp)+'/'+S.maxHp;
+  const f=$('hud-hpbar'); f.style.width = Math.max(0,S.hp/S.maxHp*100)+'%';
+  f.classList.toggle('low', S.hp/S.maxHp<0.3);
+  $('hud-run').textContent = S.run;
+  const nn = S.nodeId && NODES[S.nodeId];
+  $('hud-chap').textContent = nn ? nn.chap : (S.nodeId==='combat'?'战斗':'—');
+  $('hud-fate').textContent = '◆ '+S.fate;
+  $('hud-echo').textContent = '◈ '+S.echoes;
+  $('hud-gold').textContent = '◎ '+S.gold;
+}
+
+/* ---------- 骰子系统（安科） ---------- */
+function roll100(){ return rand(100)+1; }
+function critRange(){ return S.talents.includes('fate')? 10 : 5; }
+function runCheck(stat, dc, label){
+  let roll = roll100();
+  let rerolled=false;
+  if(roll>=96 && S.talents.includes('fate')){ rerolled=true; roll=roll100(); }
+  const crit = roll<=critRange();
+  const fumb = roll>=96;
+  const mod = statValue(stat) + checkBonus(stat);
+  const total = roll + mod;
+  const success = crit ? true : (total>=dc);
+  return {stat,dc,label,roll,mod,total,crit,fumb,success,rerolled};
+}
+function diceLog(res){
+  const e=$('dice-log');
+  let line = `【骰】${res.label}｜1d100 = ${res.roll}`;
+  if(res.mod!==0) line += ` ${res.mod>0?'+':''}${res.mod}`;
+  line += ` = ${res.total} ／ 难度 ${res.dc}`;
+  let cls='ok';
+  if(res.crit){ line += '　大成功！'; cls='crit'; }
+  else if(res.fumb){ line += '　大失败！'; cls='fumb'; }
+  else if(res.success){ line += '　判定成功'; }
+  else { line += '　判定失败'; cls='fumb'; }
+  if(res.rerolled) line += '（天命之子·自动重掷）';
+  e.innerHTML = `<span class="${cls}">${line}</span>`;
+  e.classList.add('show');
+}
+
+/* ---------- 节点渲染 ---------- */
+function gotoNode(id){
+  const n = NODES[id];
+  if(!n){ renderTitle(); return; }
+  // 节点到达钩子
+  if(NODE_ARRIVAL[id]) NODE_ARRIVAL[id]();
+  S.nodeId = id;
+  updateHUD();
+  renderScene(n);
+}
+const NODE_ARRIVAL = {
+  'c1_ghost_peace': ()=>S.flag.old_key=true,
+  'c1_ghost_give': ()=>S.flag.old_key=true,
+  'c1_merchant_crystal': ()=>{ S.flag.mystery_key=true; },
+  'c2_faction_none': ()=>{ S.flag.mystery_key=true; },
+  'c2_save_gm': ()=>S.flag.gm=true,
+  'c2_save_gm_force': ()=>S.flag.gm=true,
+  'c2_watch': ()=>S.flag.gm=true
+};
+
+function renderScene(n){
+  const v = $('view-scene');
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">${esc(n.chap||'')}</div>
+      <div class="scene-title">${esc(n.title||'')}</div>
+      <div class="scene-tagline">${esc((n.tagline||'').replace('{run}',S.run))}</div>
+      <div class="dice-log" id="dice-log"></div>
+      <div class="story">${fillText(n.text)}</div>
+      <div class="choices" id="scene-choices"></div>
+    </div>`;
+  const box = $('scene-choices');
+  const choices = filterChoices(n.choices);
+  choices.forEach((c,idx)=>{
+    const b = document.createElement('div');
+    b.className='choice'+(c.hidden?' hidden-mystery':'');
+    let tag = c.tag? `<span class="c-tag">【${esc(c.tag)}】</span>`:'';
+    let desc = c.desc? `<div class="c-desc">${esc(c.desc)}</div>`:'';
+    b.innerHTML = `${tag}${esc(c.text)}${desc}`;
+    b.onclick = ()=>resolveChoice(c);
+    box.appendChild(b);
+  });
+  showView('scene');
+  $('view').scrollTop = 0; window.scrollTo({top:0});
+}
+function filterChoices(choices){
+  return (choices||[]).filter(c=>{
+    if(c.need==='old_key' && !S.flag.old_key) return false;
+    if(c.need==='gm' && !S.flag.gm) return false;
+    if(c.need==='terminal' && !S.flag.touched_terminal) return false;
+    if(c.need==='mystery' && !S.flag.mystery_key) return false;
+    return true;
+  });
+}
+
+/* ---------- 选项结算 ---------- */
+function resolveChoice(c){
+  const dl=$('dice-log');
+  if(c.kind==='next'){ gotoNode(c.goto); return; }
+  if(c.kind==='effect'){
+    try{ if(c.apply) c.apply(S); }catch(e){}
+    if(c.addNote){ const n=NODES[S.nodeId]; if(n){ n._note=c.addNote; } }
+    gotoNode(c.goto); return;
+  }
+  if(c.kind==='check'){
+    const res = runCheck(c.stat, c.dc, c.tag||'判定');
+    diceLog(res);
+    const bonusNote = (res.crit&&!c.succText.includes('大成功'))?'':''; void bonusNote;
+    // 失败且有命运点 -> 提供重掷；否则直接跳转
+    if(!res.success && S.fate>0){
+      renderCheckFailWithReroll(res, c);
+    } else {
+      const target = res.success ? c.succ : c.fail;
+      setTimeout(()=>gotoNode(target), 650);
+    }
+    return;
+  }
+  if(c.kind==='combat'){ startCombat(c.enemy, c.win, c.lose); return; }
+  if(c.kind==='ending'){ goEnding(c.ending); return; }
+}
+function renderCheckFailWithReroll(res, c){
+  const v=$('view-scene');
+  const panel = v.querySelector('.panel');
+  const bar = document.createElement('div');
+  bar.className='choices'; bar.style.marginTop='10px';
+  bar.innerHTML = `
+    <div class="choice" id="reroll-btn"><span class="c-tag">【命运】</span>消耗 1 点命运点，重掷一次<span class="c-desc">你的命运点：${S.fate}</span></div>
+    <div class="choice" id="accept-btn">接受这个结果，继续前行</div>`;
+  panel.appendChild(bar);
+  $('reroll-btn').onclick=()=>{
+    S.fate--; updateHUD();
+    const res2 = runCheck(c.stat, c.dc, c.tag||'判定');
+    diceLog(res2);
+    bar.remove();
+    const target = res2.success ? c.succ : c.fail;
+    setTimeout(()=>gotoNode(target), 650);
+  };
+  $('accept-btn').onclick=()=>{
+    const target = c.fail;
+    setTimeout(()=>gotoNode(target), 250);
+  };
+}
+
+/* ---------- 战斗 ---------- */
+let CB=null;
+function startCombat(enemyId, winNode, loseNode){
+  const e = ENEMIES[enemyId];
+  CB = {id:enemyId, hp:e.hp, max:e.hp, atk:e.atk, dc:e.dc, spd:e.spd,
+        winNode, loseNode, turn:0, guard:false, guardUsed:false, fatalGuard:true};
+  S.nodeId = 'combat';
+  updateHUD();
+  renderCombat();
+}
+function renderCombat(){
+  const e = ENEMIES[CB.id];
+  const v = $('view-combat');
+  const logEntries = CB._log||['战斗开始。'];
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">战斗 · 第 ${S.run} 周目</div>
+      <div class="combat-enemy">
+        <div class="e-name">${esc(e.name)}</div>
+        <div class="e-desc">${esc(e.desc)}</div>
+        <div class="e-bar"><div class="e-fill" style="width:${CB.hp/CB.max*100}%"></div></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-dim);margin-top:6px">HP ${Math.max(0,CB.hp)} / ${CB.max}</div>
+      </div>
+      <div class="battle-log" id="battle-log">${logEntries.join('<br>')}</div>
+      <div class="combat-actions" id="combat-actions"></div>
+    </div>`;
+  const act = $('combat-actions');
+  const mk = (txt,sub,fn)=>{
+    const b=document.createElement('div'); b.className='cact';
+    b.innerHTML = `${txt}${sub?`<span class="ca-sub">${sub}</span>`:''}`;
+    b.onclick = fn; act.appendChild(b);
+  };
+  const hasPotion = S.items.includes('potion');
+  mk('攻击','力量+敏捷 · 命中'+CB.dc, ()=>combatPlayerAttack(false));
+  mk('重击','伤害更高 · 命中-15', ()=>combatPlayerAttack(true));
+  mk('防御','本回合减伤50%', ()=>combatGuard());
+  if(hasPotion) mk('回响药剂',`剩余${S.items.filter(i=>i==='potion').length}`, ()=>combatPotion());
+  if(S.fate>0) mk('命运之力',`消耗1点·下一次攻击必中且暴击 (${S.fate})`, ()=>combatFate());
+  showView('combat');
+}
+function combatLog(html, cls){
+  if(!CB._log) CB._log=[];
+  CB._log.push(`<span class="${cls}">${html}</span>`);
+  const el = $('battle-log'); if(el){ el.innerHTML=CB._log.join('<br>'); el.scrollTop=el.scrollHeight; }
+}
+function combatPlayerAttack(heavy){
+  if(!CB) return;
+  CB.turn++;
+  // 斩杀天赋
+  if(S.talents.includes('feast') && CB.hp <= CB.max*0.30){
+    combatLog(`「致命盛宴」发动！对低血量目标执行斩杀！`, 'crit');
+    CB.hp=0; combatVictory(); return;
+  }
+  const fateForce = S.flag._fateForce || false;
+  let roll = roll100();
+  let crit = roll<=critRange();
+  if(S.talents.includes('blink') && CB.turn===1){ crit = true; }
+  if(fateForce){ crit=true; roll=100; S.flag._fateForce=false; }
+  const mod = combatBonus();
+  const total = roll + mod;
+  const need = CB.dc + (heavy?15:0);
+  const hit = crit || total>=need;
+  combatLog(`你发动${heavy?'重击':'攻击'}｜1d100 = ${roll} ${mod>0?'+'+mod:''} = ${total} ／ 命中需求 ${need}`, 'pl');
+  if(!hit){
+    combatLog(`攻击落空！`, 'fumb');
+    combatEnemyTurn(); return;
+  }
+  if(crit) combatLog(`暴击！`, 'crit');
+  let dmg = S.stats.str + rint(1,6);
+  if(heavy) dmg = Math.round(dmg*1.7);
+  if(crit) dmg = Math.round(dmg*(S.talents.includes('blink')?1.5:1.3));
+  if(S.talents.includes('eye')) dmg += 6;
+  CB.hp -= dmg;
+  combatLog(`你对${ENEMIES[CB.id].name}造成 <b>${dmg}</b> 点伤害！`, 'pl');
+  if(CB.hp<=0){ combatVictory(); return; }
+  combatEnemyTurn();
+}
+function combatGuard(){
+  CB.turn++;
+  CB.guard=true;
+  combatLog(`你摆出防御姿态，本回合受到的伤害减半。`, 'pl');
+  combatEnemyTurn();
+}
+function combatPotion(){
+  CB.turn++;
+  const idx=S.items.indexOf('potion');
+  if(idx<0) return;
+  S.items.splice(idx,1);
+  S.hp = Math.min(S.maxHp, S.hp+25);
+  updateHUD();
+  combatLog(`你饮下回响药剂，恢复 25 点生命！（当前 ${S.hp}/${S.maxHp}）`, 'pl');
+  combatEnemyTurn();
+}
+function combatFate(){
+  CB.turn++;
+  S.fate--; updateHUD();
+  S.flag._fateForce = true;
+  combatLog(`你燃尽一枚命运点，下一次攻击必定命中且暴击！`, 'crit');
+  // 重新渲染按钮状态
+  renderCombat();
+  // 立即补一次操作：直接帮玩家攻击
+  combatPlayerAttack(false);
+}
+function combatEnemyTurn(){
+  if(!CB) return;
+  const e = ENEMIES[CB.id];
+  let roll = roll100();
+  const mod = e.atk;
+  const total = roll + mod;
+  const need = 50 + Math.round(S.stats.agi*0.8) + (S.talents.includes('blink')&&CB.turn<=1?8:0);
+  let hit = total>=need;
+  combatLog(`${e.name}发动攻击｜1d100 = ${roll} + ${mod} = ${total} ／ 你的闪避 ${need}`, 'en');
+  if(!hit){
+    combatLog(`${e.name}的攻击被你闪开！`, 'ok');
+    renderCombat(); return;
+  }
+  let dmg = e.atk + rint(1,4) - Math.round(S.stats.con*0.3);
+  if(CB.guard){ dmg = Math.round(dmg*0.5); CB.guard=false; }
+  if(S.talents.includes('iron')) dmg = Math.round(dmg*0.7);
+  dmg = Math.max(1, dmg);
+  S.hp -= dmg;
+  updateHUD();
+  combatLog(`你受到 <b>${dmg}</b> 点伤害！（生命 ${Math.max(0,S.hp)}/${S.maxHp}）`, 'en');
+  // 老爷爷护体
+  if(S.hp<=0 && S.talents.includes('grandpa') && CB.fatalGuard){
+    CB.fatalGuard=false;
+    S.hp = 1;
+    updateHUD();
+    combatLog(`——关键时刻，一道苍老的声音在灵魂深处响起：「小子，把这条命，交给老夫！」\n老爷爷替你挡下了致命一击！（生命 1/${S.maxHp}）`, 'crit');
+  }
+  if(S.hp<=0){ renderDeath(); return; }
+  renderCombat();
+}
+function combatVictory(){
+  const e = ENEMIES[CB.id];
+  combatLog(`你击败了 ${e.name}！`, 'crit');
+  S.gold += e.gold||0;
+  if(e.reward){ combatLog(e.reward,'ok'); S.gold+=5; }
+  // 天赋成长/回复
+  if(S.talents.includes('growth')){
+    const keys=['str','agi','int','cha','con','per'];
+    const k=keys[rand(keys.length)];
+    S.stats[k]++; combatLog(`「无限成长」发动！${k} +1（当前 ${S.stats[k]}）`, 'ok');
+  }
+  if(S.talents.includes('body')){
+    S.hp=Math.min(S.maxHp,S.hp+8); combatLog(`「纯阳之体」回复 8 点生命。`, 'ok');
+  }
+  updateHUD();
+  const winNode = CB.winNode;
+  const gifts = [];
+  if(!S.items.includes('potion') && rand(100)<40) { S.items.push('potion'); gifts.push('回响药剂'); }
+  if(rand(100)<35) { S.items.push('coin'); gifts.push('命运币'); }
+  if(gifts.length){ combatLog(`战利品：${gifts.join('、')}`, 'ok'); updateHUD(); }
+  CB=null;
+  setTimeout(()=>gotoNode(winNode), 900);
+}
+
+/* ---------- 死亡与轮回 ---------- */
+function renderDeath(){
+  const v=$('view-death');
+  v.innerHTML = `
+    <div class="panel" style="text-align:center">
+      <div class="scene-chap">轮回 · 中断</div>
+      <div class="scene-title" style="color:#ff8a7a">意识沉没</div>
+      <div class="story" style="margin-top:14px">你的意识在数据洪流中下沉、分解、重组……\n\n{echo}“轮回已失去锚点。”{/echo}\n\n耳边响起系统的最后一行字：\n“本次轮回结束。灵魂烙印已保留，天赋将在下周目重新觉醒。”</div>
+      <div class="stats-sum">
+        <div class="stat-card"><div class="k">轮回周目</div><div class="v">${S.run}</div></div>
+        <div class="stat-card"><div class="k">累计回响碎片</div><div class="v">+1 → ${S.echoes+1}</div></div>
+        <div class="stat-card"><div class="k">本局金币</div><div class="v">${S.gold}</div></div>
+      </div>
+      <div class="notice">死亡不意味着终结——你带着回响碎片，再次醒来。</div>
+      <div class="choices">
+        <div class="choice" id="reincarnate"><span class="c-tag">【轮回】</span>再次轮回 · 觉醒新天赋</div>
+        <div class="choice" id="back-title">返回主菜单</div>
+      </div>
+    </div>`;
+  showView('death');
+  $('reincarnate').onclick=()=>{ S.echoes+=1; S.totalRuns++; saveSave(); resetRun(); gotoTitleAfterRun(); };
+  $('back-title').onclick=()=>{ S.echoes+=1; S.totalRuns++; saveSave(); renderTitle(); };
+}
+function gotoTitleAfterRun(){
+  // 直接进入天赋抽取
+  renderTalentSelect();
+}
+
+/* ---------- 结局 ---------- */
+function goEnding(id){
+  const e = ENDINGS[id];
+  if(!e) return;
+  S.nodeId='ending';
+  if(!S.finishedEndings.includes(id)) S.finishedEndings.push(id);
+  S.echoes += 3; S.totalRuns++;
+  saveSave();
+  updateHUD();
+  const v=$('view-ending');
+  v.innerHTML = `
+    <div class="panel">
+      <div class="ending-banner">
+        <div class="scene-chap">第 ${S.run} 周目 · 终局</div>
+        <div class="ending-title ${e.cls}">${esc(e.title)}</div>
+        <div class="ending-sub">${esc(e.sub)}</div>
+      </div>
+      <div class="dice-log" id="dice-log"></div>
+      <div class="ending-text">${fillText(e.text)}</div>
+      <div class="stats-sum">
+        <div class="stat-card"><div class="k">轮回周目</div><div class="v">${S.run}</div></div>
+        <div class="stat-card"><div class="k">回响碎片</div><div class="v">+3 → ${S.echoes}</div></div>
+        <div class="stat-card"><div class="k">已解锁结局</div><div class="v">${S.finishedEndings.length}/4</div></div>
+      </div>
+      <div class="notice">你记住了这段轮回。这座城，会记得你的选择。</div>
+      <div class="choices">
+        <div class="choice" id="again"><span class="c-tag">【轮回】</span>开始新的轮回 · 觉醒新天赋</div>
+        <div class="choice" id="back-title2">返回主菜单</div>
+      </div>
+    </div>`;
+  showView('ending');
+  $('again').onclick=()=>{ resetRun(); renderTalentSelect(); };
+  $('back-title2').onclick=()=>{ renderTitle(); };
+}
+
+/* ---------- 视图：标题 ---------- */
+function renderTitle(){
+  S.nodeId=null;
+  updateHUD();
+  const v=$('view-title');
+  v.innerHTML = `
+    <div class="title-mark">文字肉鸽 · 安科骰子 · 天赋构筑</div>
+    <h1 class="title-name">回响之城</h1>
+    <div class="title-sub">轮 回 骰 局</div>
+    <div class="title-dice">⚄</div>
+    <div class="title-desc">你被困在一款出了“轮回异常”的全息网游里。每一周目，城市重组、NPC失忆，唯有灵魂烙印中的<b class="hlc">天赋</b>与你同在。<br>
+    每一次抉择，都可能掷出命运的骰子——大成功、大失败、还有隐藏的「？？？？」。<br>
+    找到真相，或成为这座城新的主人。</div>
+    <div class="stats-sum" style="max-width:520px;margin:0 auto 26px">
+      <div class="stat-card"><div class="k">总轮回</div><div class="v">${S.totalRuns}</div></div>
+      <div class="stat-card"><div class="k">回响碎片</div><div class="v">${S.echoes}</div></div>
+      <div class="stat-card"><div class="k">已解锁结局</div><div class="v">${S.finishedEndings.length}/4</div></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <div class="btn btn-primary" id="btn-start">开始轮回</div>
+      <div class="btn btn-ghost" id="btn-help">玩法说明</div>
+    </div>
+    <div class="help-box" id="help-box" style="display:none;max-width:560px;margin:22px auto 0;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 22px">
+      <b>玩法说明</b><br><br>
+      ▸ <b>天赋</b>：每轮开局从 3 个随机天赋中选 1。天赋分 7 个品级（D→SSS），决定你的流派。<br>
+      ▸ <b>安科骰子</b>：关键抉择由 1d100 判定——大成功（1-5）必成，大失败（96-100）必败。失败时可用<b>命运点</b>重掷。<br>
+      ▸ <b>命运点</b>：每轮获得 2 点（回响碎片越多，初始越多）。用于重掷骰子与战斗爆发。<br>
+      ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。金币与天赋不保留，但<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
+      ▸ <b>多剧情多结局</b>：三章主线 × 阵营抉择 × NPC支线，通向 4 个结局（含隐藏结局）。你的每一个选择，都会留下“回响”。<br><br>
+      <b>隐藏要素</b>：获得【回响水晶】或【真相透镜】后，第三章会解锁隐藏选项「？？？？」。
+    </div>`;
+  showView('title');
+  $('btn-start').onclick=()=>renderTalentSelect();
+  $('btn-help').onclick=()=>{ const h=$('help-box'); h.style.display = h.style.display==='none'?'block':'none'; };
+}
+function renderTalentSelect(){
+  S.nodeId='talent';
+  newRun();
+  const picks = pickTalents();
+  S._talentPool = picks;
+  updateHUD();
+  const v=$('view-talent');
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">轮回历第 ${S.run} 周目 · 觉醒</div>
+      <div class="scene-title">选择你的天赋烙印</div>
+      <div class="scene-tagline">天赋品级：劣品 D → 神话 SSS ｜ 天赋是你在轮回中唯一不灭的东西</div>
+      <div class="story">系统提示音在你灵魂深处响起：\n\n“检测到可觉醒灵魂烙印。请从以下天赋中选择其一，作为本周目的‘金手指’。”\n\n天赋决定流派——谨慎选择。</div>
+      <div class="talent-cards" id="talent-cards"></div>
+      <div class="notice" id="talent-note">点击卡片，确认觉醒。</div>
+    </div>`;
+  const box=$('talent-cards');
+  picks.forEach((t,idx)=>{
+    const g=GRADE[t.grade];
+    const card=document.createElement('div');
+    card.className='tcard';
+    card.style.borderColor = g.color+'55';
+    card.innerHTML = `
+      <div class="t-glow" style="background:${g.color}"></div>
+      <div class="t-grade grade-${t.grade}">${t.grade} · ${g.name}</div>
+      <div class="t-name" style="color:${g.color}">${esc(t.name)}</div>
+      <div class="t-type">${esc(t.type)}</div>
+      <div class="t-desc">${esc(t.desc)}</div>
+      <div class="t-flavor">“${esc(t.flavor)}”</div>`;
+    card.onclick=()=>{
+      box.querySelectorAll('.tcard').forEach(c=>c.classList.remove('sel'));
+      card.classList.add('sel');
+      S._picked=t;
+      $('talent-note').textContent = `已选定「${t.name}」。开始轮回。`;
+      setTimeout(()=>{
+        applyTalent(t);
+        S.hp = Math.min(S.maxHp, S.hp);
+        updateHUD();
+        gotoNode('c1_intro');
+      }, 500);
+    };
+    box.appendChild(card);
+  });
+  showView('talent');
+}
+
+/* ---------- 启动 ---------- */
+function boot(){
+  loadSave();
+  renderTitle();
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
