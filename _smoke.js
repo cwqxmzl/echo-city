@@ -54,7 +54,39 @@ step('战斗开场被动', () => {
   ok('铁壁开火', G('CB.hp < CB.max'));
   ok('无名狂暴', G('CB.buff.rage===2'));
   ok('无名减伤', G('S.flag._allyMit===0.1'));
-  ok('战斗队友栏', d.querySelectorAll('.ally-chip').length===3);
+  ok('星铁式队友卡', d.querySelectorAll('.ally-card').length===3);
+  ok('战技+终结技按钮', d.querySelectorAll('.ally-btn').length===6);
+  ok('队友独立HP', G('CB.team.filter(t=>t.kind==="ally").every(t=>t.hp>0 && t.maxHp>0)'));
+  ok('能量初始0', G('CB.team.filter(t=>t.kind==="ally").every(t=>t.en===0)'));
+});
+step('星铁式队友战斗', () => {
+  G('S.party=["maomao","tiebi","wuming"]');
+  G('S.stats.agi=999');
+  G('startCombat("ghost","c1_ghost_kill","death")');
+  G('CB.hp=100'); G('CB.dc=0'); G('CB.spd=0'); G('CB.max=999');
+  // 受击回能 + 掉血
+  const hp0 = G('CB.team.find(t=>t.id==="tiebi").hp');
+  G('allyTakeDamage("tiebi",10)');
+  ok('队友受击掉血', G('CB.team.find(t=>t.id==="tiebi").hp === ' + hp0 + ' - 10'));
+  ok('受击回能', G('CB.team.find(t=>t.id==="tiebi").en > 0'));
+  // 能量不足拦截
+  const cb1 = G('CB.hp');
+  G('combatAllySkill("tiebi","skill")');
+  ok('能量不足不施放', G('CB.hp === ' + cb1));
+  // 战技施放
+  G('CB.team.find(t=>t.id==="tiebi").en=30');
+  const cb2 = G('CB.hp');
+  G('combatAllySkill("tiebi","skill")');
+  ok('战技造成伤害', G('CB.hp < ' + cb2));
+  ok('战技消耗能量', G('CB.team.find(t=>t.id==="tiebi").en < 30'));
+  // 终结技
+  G('CB.team.find(t=>t.id==="wuming").en=100');
+  const cb3 = G('CB.hp');
+  G('combatAllySkill("wuming","ult")');
+  ok('终结技高伤', G('CB.hp < ' + cb3 + ' - 5'));
+  // 倒地
+  G('allyTakeDamage("maomao",9999)');
+  ok('队友倒地', G('CB.team.find(t=>t.id==="maomao").down===true'));
 });
 step('战斗每回合被动', () => {
   G('S.party=["maomao","tiebi","wuming"]');
