@@ -326,6 +326,24 @@ h1.title-name{
 .levelup .lu-sub{font-size:13px;color:var(--ink-dim);line-height:1.8}
 .levelup .lu-skill{font-size:13px;color:#a7e8df;margin-top:6px;line-height:1.7}
 
+/* ===== 队伍 / 队友 ===== */
+.ally-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.ally-chip{border:1px solid var(--line);background:rgba(167,232,223,.06);border-radius:8px;padding:5px 10px;font-size:11.5px;color:#a7e8df;line-height:1.5}
+.ally-chip b{color:var(--gold)}
+.mate-sec{margin-top:16px}
+.mate-sec .ms-title{font-size:12px;letter-spacing:.15em;color:var(--cyan);margin-bottom:8px}
+.mate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.mate-card{border:1px solid var(--line);border-radius:10px;padding:10px;background:rgba(167,232,223,.05);text-align:left}
+.mate-card .m-name{font-family:var(--serif);font-size:15px;font-weight:700;color:#a7e8df}
+.mate-card .m-title{font-size:11px;color:var(--gold);letter-spacing:.08em;margin:2px 0 6px}
+.mate-card .m-desc{font-size:11px;color:var(--ink-dim);line-height:1.6;margin-bottom:6px}
+.mate-card .m-pass{font-size:11px;color:#ffd98a;line-height:1.6}
+.mate-card .m-btn{margin-top:8px;font-size:11.5px}
+.mate-card .m-btn.on{color:var(--cyan);border-color:var(--cyan)}
+.mate-card.m-lock{opacity:.5;filter:grayscale(.7);border-style:dashed}
+.mate-card.m-lock .m-where{font-size:11px;color:var(--ink-dim);margin-top:6px;line-height:1.5}
+.ally{color:#a7e8df}
+
 @media (max-width:600px){
   h1.title-name{font-size:40px}
   .panel{padding:16px}
@@ -602,6 +620,7 @@ const WORLDS = [
    combat:'深渊海妖从水草丛中现身，歌声直刺灵魂：“留下来……陪我说说话……”',
    loot:'你在沉船的宝箱里，发现一件珊瑚鳞甲，还带着海水的咸味。',
    reward:{type:'equip',id:'coral_armor',name:'珊瑚鳞甲'},
+   mate:'lan',
    base:30},
   {id:'apoc', name:'辐射废墟', style:'末世世界', diff:2, unlock:2,
    desc:'焦土与报废的战车之间，感染者成群游荡。文明在这里只剩残骸。',
@@ -610,6 +629,7 @@ const WORLDS = [
    combat:'变异感染者撞开铁门，猩红的眼睛锁定了你。它的嘶吼在废墟里回荡。',
    loot:'你从避难所的应急箱里，搜出一份军用能量模块的配方。',
    reward:{type:'skill',id:'energy',name:'能量爆发'},
+   mate:'tiebi',
    base:32},
   {id:'fantasy', name:'巨龙巢穴', style:'西幻世界', diff:2, unlock:4,
    desc:'黑暗森林深处，一座堆满金银的巢穴。龙的呼吸声，让地面微微震颤。',
@@ -618,6 +638,7 @@ const WORLDS = [
    combat:'地底恶龙展开双翼，龙息在喉间翻涌：“凡人，你觊觎我的财宝——还有我的命。”',
    loot:'你从恶龙的战利品中，扒下一件龙鳞甲。鳞片温热，坚不可摧。',
    reward:{type:'equip',id:'dragon_scale',name:'龙鳞甲'},
+   mate:'luolan',
    base:34},
   {id:'sci', name:'深空站', style:'科幻世界', diff:2, unlock:4,
    desc:'失重漂浮的深空实验站，警报灯一闪一灭，舷窗外是永恒的星海。',
@@ -626,6 +647,7 @@ const WORLDS = [
    combat:'失控异形从通风管道钻出，纳米装甲在灯光下流动。它发出金属摩擦般的尖啸。',
    loot:'你在实验站的服务器里，下载了一段“黑客协议”的底层代码。',
    reward:{type:'skill',id:'hack',name:'黑客协议'},
+   mate:'lingzi',
    base:34},
   {id:'inf', name:'副本中枢', style:'无限流世界', diff:3, unlock:6,
    desc:'所有世界的中转站，无数光门通往不同的故事。这里是“残响”的源头。',
@@ -634,7 +656,44 @@ const WORLDS = [
    combat:'副本仲裁者从虚空中凝聚成型：“你收集了太多故事。现在，把它们都交出来。”',
    loot:'你从仲裁者的核心中，抠出一枚融汇所有世界之力的残片。',
    reward:{type:'equip',id:'core_shard',name:'核心残片'},
+   mate:'wuming',
    base:38}
+];
+
+/* ---------- 强力队友 ---------- */
+const TEAMMATES = [
+  {id:'maomao', name:'老猫', title:'系统维护员',
+   desc:'被困在塔顶的系统维护员，轮回保护程序的设计者。他说他欠这座城市一个交代——也欠你一条命。',
+   pass:'战斗开始获得 1 层护盾；每回合恢复 2 点法力',
+   where:'第二章 · 在塔顶救下老猫后加入',
+   onStart:()=>{ CB.buff.guard = Math.max(CB.buff.guard,1); combatLog('老猫调用【系统权限】，为你布下一层数据护盾。','ally'); },
+   perTurn:()=>{ if(S.mp<S.maxMp){ S.mp=Math.min(S.maxMp,S.mp+2); combatLog('老猫在后台调试数据流，法力 +2。','ally'); } }},
+  {id:'lan', name:'澜', title:'潮汐歌者',
+   desc:'深渊海沟的守护者。她的歌声能让海面平息，也能让最凶悍的敌人沉入梦乡。',
+   pass:'战斗开始回复 20% 生命；每回合恢复 3 点法力',
+   where:'首通「深渊海沟」后加入',
+   onStart:()=>{ const hv=Math.round(S.maxHp*0.2); if(S.hp<S.maxHp){ S.hp=Math.min(S.maxHp,S.hp+hv); combatLog(`澜轻唱潮汐歌，你恢复了 ${hv} 点生命。`,'ally'); } },
+   perTurn:()=>{ if(S.mp<S.maxMp){ S.mp=Math.min(S.maxMp,S.mp+3); combatLog('澜的潮汐之息环绕着你，法力 +3。','ally'); } }},
+  {id:'tiebi', name:'铁壁', title:'幸存者佣兵',
+   desc:'末世废土上活下来的硬汉，扛着一挺改装能量炮。他说他的命是捡来的，所以拿来帮你也无所谓。',
+   pass:'战斗开始对敌人造成 12 点伤害',
+   where:'首通「辐射废墟」后加入',
+   onStart:()=>{ CB.hp=Math.max(1,CB.hp-12); combatLog('铁壁扣下扳机，能量炮轰中目标——造成 12 点伤害！','ally'); }},
+  {id:'luolan', name:'罗兰', title:'圣骑士',
+   desc:'西幻大陆的守护骑士，誓言守护所有踏入黑暗的旅人。他的盾，从不为敌人而举。',
+   pass:'战斗开始获得 2 层护盾（抵挡两次伤害）',
+   where:'首通「巨龙巢穴」后加入',
+   onStart:()=>{ CB.buff.guard = Math.max(CB.buff.guard,2); combatLog('罗兰举起圣盾，为你加持【圣光守护】×2。','ally'); }},
+  {id:'lingzi', name:'灵子', title:'觉醒AI',
+   desc:'深空站核心程序中诞生的觉醒 AI，代号 0x7F。它说人类的直觉，比任何算法都有趣。',
+   pass:'普通攻击回蓝翻倍（+16）',
+   where:'首通「深空站」后加入',
+   onStart:()=>{ S.flag._allyDoubleMp=true; combatLog('灵子接入你的武器回路：普通攻击回蓝翻倍。','ally'); }},
+  {id:'wuming', name:'无名', title:'故事终章',
+   desc:'副本中枢的迷之强者。没人知道他的来历，他只说：“你已经集齐了所有世界的故事，我来见证你的终章。”',
+   pass:'战斗开始进入狂暴（暴击率+50%，持续2回合）；受击伤害 -10%',
+   where:'首通「副本中枢」后加入',
+   onStart:()=>{ CB.buff.rage=2; S.flag._allyMit=0.1; combatLog('无名缓缓睁眼——【终局注视】降临，你进入狂暴状态！','ally'); }}
 ];
 
 /* ---------- 结局 ---------- */
@@ -1120,6 +1179,7 @@ const S = {
   run:1, echoes:0, totalRuns:0, bestProgress:0, finishedEndings:[],
   hp:0, maxHp:0, mp:0, maxMp:0, gold:0, fate:0, items:[], talents:[],
   level:1, xp:0, cls:null, skills:[], skillPool:[], equip:{weapon:null,armor:null,trinket:null},
+  roster:[], party:[],
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
   flag:{}, nodeId:null, worldsCleared:[]
 };
@@ -1133,7 +1193,45 @@ const itemById = id => ITEMS.find(i=>i.id===id);
 const skillById = id => SKILLS[id];
 const classById = id => CLASSES.find(c=>c.id===id);
 const worldById = id => WORLDS.find(w=>w.id===id);
+const teammateById = id => TEAMMATES.find(m=>m.id===id);
 function xpNeed(level){ return 60 + level*40; }
+
+/* 队伍：招募 / 上阵切换 */
+function recruitTeammate(id){
+  const m = teammateById(id); if(!m) return false;
+  if(S.roster.includes(id)) return false;
+  S.roster.push(id);
+  if(S.party.length<3 && !S.party.includes(id)) S.party.push(id);
+  updateHUD();
+  return true;
+}
+function toggleParty(id){
+  const m = teammateById(id); if(!m || !S.roster.includes(id)) return;
+  const i = S.party.indexOf(id);
+  if(i>=0) S.party.splice(i,1);
+  else if(S.party.length<3) S.party.push(id);
+  updateHUD();
+}
+/* 队友战斗效果：开场被动（startCombat 调用） */
+function applyAllyPassives(){
+  S.flag._allyDoubleMp=false; S.flag._allyMit=0;
+  if(!S.party.length) return;
+  S.party.forEach(id=>{
+    const m = teammateById(id); if(!m || !m.onStart) return;
+    m.onStart();
+  });
+  updateHUD();
+}
+/* 队友每回合效果（endEnemyTurn 调用） */
+function allyPerTurn(){
+  if(!S.party.length) return;
+  let changed=false;
+  S.party.forEach(id=>{
+    const m = teammateById(id); if(!m || !m.perTurn) return;
+    const mpBefore=S.mp; m.perTurn(); if(S.mp!==mpBefore) changed=true;
+  });
+  if(changed) updateHUD();
+}
 
 /* 装备属性合计 */
 function equipBonus(){
@@ -1214,6 +1312,7 @@ function newRun(){
   S.skills = []; S.skillPool = [];
   S.equip = {weapon:null,armor:null,trinket:null};
   S.worldsCleared = [];
+  S.roster = []; S.party = [];
   S.maxHp = 20 + S.stats.con*2;
   S.maxMp = 30 + S.stats.int*2;
   S.hp = S.maxHp; S.mp = S.maxMp;
@@ -1436,9 +1535,9 @@ const NODE_ARRIVAL = {
   'c1_ghost_give': ()=>S.flag.old_key=true,
   'c1_merchant_crystal': ()=>{ S.flag.mystery_key=true; },
   'c2_faction_none': ()=>{ S.flag.mystery_key=true; },
-  'c2_save_gm': ()=>S.flag.gm=true,
-  'c2_save_gm_force': ()=>S.flag.gm=true,
-  'c2_watch': ()=>S.flag.gm=true
+  'c2_save_gm': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
+  'c2_save_gm_force': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
+  'c2_watch': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); }
 };
 
 function renderScene(n){
@@ -1535,6 +1634,7 @@ function startCombat(enemyId, winNode, loseNode, opts){
         buff:{guard:0,atkup:0,rage:0,aim:false,haste:false,taunt:false}, frozen:false};
   S.nodeId = 'combat';
   updateHUD();
+  applyAllyPassives();
   renderCombat();
 }
 function renderCombat(){
@@ -1560,6 +1660,7 @@ function renderCombat(){
           <span>你的法力 ${Math.max(0,S.mp)} / ${S.maxMp}${buffTxt.length?' · '+buffTxt.join(' '):''}</span>
         </div>
       </div>
+      ${S.party.length? `<div class="ally-bar">${S.party.map(id=>{const m=teammateById(id);return m?`<span class="ally-chip">⚔ <b>${esc(m.name)}</b> · ${esc(m.title)}</span>`:''}).join('')}</div>`:''}
       <div class="battle-log" id="battle-log">${logEntries.join('<br>')}</div>
       <div class="skill-slot">
         <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em">技能 · 携带 ${S.skills.length}/3</div>
@@ -1631,8 +1732,10 @@ function combatPlayerAttack(heavy){
   if(S.talents.includes('eye')) dmg += 6;
   CB.hp -= dmg;
   combatLog(`你对${ENEMIES[CB.id].name}造成 <b>${dmg}</b> 点伤害！`, 'pl');
-  // 普通攻击回蓝
-  S.mp = Math.min(S.maxMp, S.mp+8); updateHUD();
+  // 普通攻击回蓝（灵子：数据洪流翻倍）
+  const mpGain = S.flag._allyDoubleMp ? 16 : 8;
+  S.mp = Math.min(S.maxMp, S.mp+mpGain); updateHUD();
+  if(S.flag._allyDoubleMp && mpGain===16) combatLog('灵子将攻击数据回路化——法力 +16！','ally');
   if(CB.hp<=0){ combatVictory(); return; }
   combatEnemyTurn();
 }
@@ -1748,6 +1851,7 @@ function combatEnemyTurn(){
   if(CB.buff.taunt){ dmg = Math.round(dmg*0.6); CB.buff.taunt=false; }
   const eb=equipBonus();
   if(eb.mit>0) dmg = Math.round(dmg*(1-eb.mit));
+  if(S.flag._allyMit) dmg = Math.round(dmg*(1-S.flag._allyMit));
   if(S.talents.includes('iron')) dmg = Math.round(dmg*0.7);
   dmg = Math.max(1, dmg);
   S.hp -= dmg;
@@ -1769,6 +1873,7 @@ function endEnemyTurn(){
   if(CB.buff.atkup>0) CB.buff.atkup--;
   if(CB.buff.rage>0) CB.buff.rage--;
   CB.buff.haste=false;
+  allyPerTurn();
   renderCombat();
 }
 function combatVictory(){
@@ -1839,7 +1944,7 @@ function renderWorlds(){
       <div class="w-style">${esc(w.style)}</div>
       <div class="w-name">${esc(w.name)}</div>
       <div class="w-desc">${esc(w.desc)}</div>
-      <div class="w-reward">${locked? '🔒 需先完成 '+w.unlock+' 个世界':'首次奖励：'+esc(w.reward.name)+' ｜ 金币 ≈'+w.base}</div>
+      <div class="w-reward">${locked? '🔒 需先完成 '+w.unlock+' 个世界':'首次奖励：'+esc(w.reward.name)+(w.mate? ' + 强力队友「'+esc((teammateById(w.mate)||{}).name||w.mate)+'」':'')+' ｜ 金币 ≈'+w.base}</div>
     </div>`;
   });
   html += `</div>
@@ -1952,6 +2057,10 @@ function opWorldReward(){
   } else if(w.reward.type==='equip'){
     if(!S.items.includes(w.reward.id)){ S.items.push(w.reward.id); got.push(`装备「${w.reward.name}」`); }
   }
+  if(w.mate && first && recruitTeammate(w.mate)){
+    const m = teammateById(w.mate);
+    got.push(`强力队友「${m? m.name : w.mate}」`);
+  }
   return {got, first};
 }
 function opWithdrawFromCombat(){
@@ -2054,6 +2163,29 @@ function renderChar(){
         return `<div class="equip-cell">${slotName}<b>${it? esc(it.name):'空'}</b>${it? `<div class="btn btn-small" data-uneq="${slot}">卸下</div>`:''}</div>`;
       }).join('')}
     </div>`;
+  html += `<div class="mate-sec">
+    <div class="ms-title">队伍 · 上阵 ${S.party.length}/3（点击队友切换上阵 / 后备）</div>
+    <div class="mate-grid">`;
+  TEAMMATES.forEach(m=>{
+    const rec = S.roster.includes(m.id);
+    const on = S.party.includes(m.id);
+    if(rec){
+      html += `<div class="mate-card${on?' m-on':''}">
+        <div class="m-name">${esc(m.name)}</div>
+        <div class="m-title">${esc(m.title)}</div>
+        <div class="m-desc">${esc(m.desc)}</div>
+        <div class="m-pass">被动：${esc(m.pass)}</div>
+        <div class="btn btn-small m-btn ${on?'on':''}" data-mate="${m.id}">${on?'⚔ 上阵中 · 点击转后备':'后备 · 点击上阵'}</div>
+      </div>`;
+    } else {
+      html += `<div class="mate-card m-lock">
+        <div class="m-name">？？？</div>
+        <div class="m-title">未结识</div>
+        <div class="m-where">${esc(m.where)}</div>
+      </div>`;
+    }
+  });
+  html += `</div></div>`;
   html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">技能库 · 携带 ${S.skills.length}/3（点击切换携带）</div>
     <div class="skill-edit">`;
   if(!S.skillPool.length) html += `<div class="notice">尚未习得任何技能。选择职业后获得初始技能，升级或完成世界可习得新技能。</div>`;
@@ -2101,6 +2233,9 @@ function renderChar(){
   });
   v.querySelectorAll('[data-uneq]').forEach(b=>{
     b.onclick=()=>{ unequipSlot(b.dataset.uneq); renderChar(); };
+  });
+  v.querySelectorAll('[data-mate]').forEach(b=>{
+    b.onclick=()=>{ toggleParty(b.dataset.mate); renderChar(); };
   });
   v.querySelectorAll('[data-skill]').forEach(b=>{
     b.onclick=()=>{
@@ -2199,7 +2334,7 @@ function renderTitle(){
     <div class="title-dice">⚄</div>
     <div class="title-desc">你被困在一款出了“轮回异常”的全息网游里。每一周目，城市重组、NPC失忆，唯有灵魂烙印中的<b class="hlc">天赋</b>与你同在。<br>
     每一次抉择，都可能掷出命运的骰子——大成功、大失败、还有隐藏的「？？？？」。<br>
-    这一次，你还能选择<b class="hlc">职业</b>、构筑<b class="hlc">三技能</b>、穿戴<b class="hlc">装备</b>，并通过<b class="hlc">跨世界搜打撤</b>，闯进空岛、仙山、江湖、海沟……<br>
+    这一次，你还能选择<b class="hlc">职业</b>、构筑<b class="hlc">三技能</b>、穿戴<b class="hlc">装备</b>、招募<b class="hlc">强力队友</b>，并通过<b class="hlc">跨世界搜打撤</b>，闯进空岛、仙山、江湖、海沟……<br>
     找到真相，或成为这座城新的主人。</div>
     <div class="stats-sum" style="max-width:520px;margin:0 auto 26px">
       <div class="stat-card"><div class="k">总轮回</div><div class="v">${S.totalRuns}</div></div>
@@ -2216,9 +2351,10 @@ function renderTitle(){
       ▸ <b>职业</b>：选完天赋后再选职业（剑客/术师/刺客/医修）。职业决定属性偏向、初始装备与可习技能。<br>
       ▸ <b>技能</b>：职业自带 3 个技能。战斗每回合从携带的 <b>3 个技能</b>中选 1 个发动，消耗<b>法力</b>；普通攻击回蓝 8 点。升级/完成世界可习得新技能，在「角色」面板更换携带。<br>
       ▸ <b>装备与背包</b>：点 HUD 的「◫ 角色」打开背包——装备武器/防具/饰品、使用药剂、配置技能。装备提升属性与减伤。<br>
+      ▸ <b>队伍与强力队友</b>：第二章塔顶救下<b>老猫</b>可获首位队友；首通海洋/末世/西幻/科幻/无限流世界各招募一位强力队友（共 6 名）。队伍上限 <b>3 人</b>，上阵队友在战斗开场与每回合提供被动支援，可在「角色」面板切换上阵/后备。<br>
       ▸ <b>安科骰子</b>：关键抉择由 1d100 判定——大成功（1-5）必成，大失败（96-100）必败。失败时可用<b>命运点</b>重掷。<br>
       ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。金币/装备/等级不保留，但<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
-      ▸ <b>跨世界搜打撤</b>：第二章加入阵营后，可接黑塔帮任务——在 8 个小说世界（空岛/武侠/仙侠/海洋/末世/西幻/科幻/无限流）里执行「搜→打→撤」。每个世界有专属技能/装备，完成越多解锁越多世界。<br>
+      ▸ <b>跨世界搜打撤</b>：第二章加入阵营后，可接黑塔帮任务——在 8 个小说世界（空岛/武侠/仙侠/海洋/末世/西幻/科幻/无限流）里执行「搜→打→撤」。每个世界有专属技能/装备或强力队友，完成越多解锁越多世界。<br>
       ▸ <b>多剧情多结局</b>：三章主线 × 阵营抉择 × NPC支线，通向 4 个结局（含隐藏结局）。你的每一个选择，都会留下“回响”。<br><br>
       <b>隐藏要素</b>：获得【回响水晶】或【真相透镜】后，第三章会解锁隐藏选项「？？？？」。
     </div>`;
