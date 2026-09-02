@@ -6564,6 +6564,23 @@ function tagBagList(){ return (S.tagBag||[]).map(tagById).filter(Boolean); }
 function equippedTagsList(){ return (S.equippedTags||[]).map(tagById).filter(Boolean); }
 function hasTagFx(fx){ return equippedTagsList().some(t=>t.fx===fx || (t.fx==='omni' && ['gold','mit','crit','luck'].indexOf(fx)>=0)); }
 function tagSlotLimit(){ return hasBooster('word') ? 99 : TAG_SLOT_BASE; }  // 「词条篡改」外挂 = 插槽限制解除
+function grantBreakthroughTag(){
+  const own = S.tagBag||[];
+  const all = TAG_POOL.map(t=>t.id);
+  const missing = all.filter(id=>!own.includes(id));
+  if(!missing.length){
+    const keys=['str','agi','int','cha','con','per'];
+    const k=keys[rand(keys.length)];
+    S.stats[k]++; S.fate=(S.fate||0)+1;
+    return '词条圆满 · 全属性+1 命运点+1';
+  }
+  const id = missing[rand(missing.length)];
+  S.tagBag = own; S.tagBag.push(id);
+  const sl = tagSlotLimit();
+  S.equippedTags = S.equippedTags||[];
+  if(S.equippedTags.length < sl) S.equippedTags.push(id);
+  return tagById(id).n+'（已自动装备）';
+}
 function grantTag(id, silent){
   const t = tagById(id); if(!t) return null;
   if((S.tagBag||[]).length >= TAG_BAG_MAX) return null;
@@ -7872,14 +7889,18 @@ function gainXp(amount){
   S.xp += amount;
   let ups=0;
   const learned=[];
+  const breakthrough=[];
   while(S.xp >= xpNeed(S.level)){
     S.xp -= xpNeed(S.level);
     S.level++;
     ups++;
     const keys=['str','agi','int','cha','con','per'];
-    keys.forEach(k=>S.stats[k]++);
-    S.maxHp += 8; S.hp += 8;
-    S.maxMp += 4; S.mp += 4;
+    keys.forEach(k=>S.stats[k] += 2);
+    S.maxHp += 15; S.hp += 15;
+    S.maxMp += 8;  S.mp += 8;
+    // 境界突破 · 必抽一条永久词条（《高武：肉鸽词条》——增益永久留存，数值炸穿）
+    const tg = grantBreakthroughTag();
+    if(tg) breakthrough.push(tg);
     // 升级可学一个职业池中的新技能
     const c = classById(S.cls);
     if(c){
@@ -7890,7 +7911,8 @@ function gainXp(amount){
   updateHUD();
   if(ups>0){
     let html = `<div class="levelup"><div class="lu-title">✦ 等级提升 → Lv.${S.level}</div>`;
-    html += `<div class="lu-sub">全属性 +1 · 生命上限 +8 · 法力上限 +4</div>`;
+    html += `<div class="lu-sub">全属性 +2 · 生命上限 +15 · 法力上限 +8</div>`;
+    if(breakthrough.length) html += `<div class="lu-skill" style="color:#ffd700">⚡ 境界突破 · 觉醒词条：${breakthrough.join('、')}</div>`;
     if(learned.length) html += `<div class="lu-skill">习得新技能：${learned.join('、')}（可在「角色」面板更换携带）</div>`;
     html += `<div class="choices" style="margin-top:12px"><div class="choice" id="lu-close" style="text-align:center">收下</div></div></div>`;
     const wrap=document.createElement('div'); wrap.innerHTML=html;
@@ -8688,11 +8710,13 @@ function combatVictory(){
 }
 function victoryRewards(withLoot){
   const e = ENEMIES[CB.id];
-  S.gold += Math.round((e.gold||0)*1.5);
-  gainXp(Math.round((e.xp||0)*1.5));
-  if(hasTagFx('echo')){ S.echoes+=2; saveSave(); combatLog('【词条·回响】残响凝聚——回响碎片 +2！','ok'); }
+  S.gold += Math.round((e.gold||0)*2.5);
+  gainXp(Math.round((e.xp||0)*2.5));
+  S.echoes = (S.echoes||0)+1; saveSave(); combatLog('残响凝结——回响碎片 +1（击杀奖励）','ok');
+  if(hasTagFx('echo')){ S.echoes+=2; saveSave(); combatLog('【词条·回响】残响共鸣——回响碎片再 +2！','ok'); }
   if(S.flag._allyGold){ S.gold += S.flag._allyGold; combatLog('凝光的琼玑阁为你拉来一笔赏金：金币 +'+S.flag._allyGold+'。','ally'); }
-  if(e.reward){ combatLog(e.reward,'ok'); S.gold+=5; }
+  if(e.reward){ combatLog(e.reward,'ok'); S.gold+=8; }
+  if(rand(100)<30){ S.fate=(S.fate||0)+1; combatLog('以战养战，气运翻涌——命运点 +1！','gold'); }
   // 天赋成长/回复
   if(S.talents.includes('growth')){
     const keys=['str','agi','int','cha','con','per'];
@@ -8706,8 +8730,9 @@ function victoryRewards(withLoot){
   updateHUD();
   if(!withLoot) return;
   const gifts = [];
-  if(!S.items.includes('potion') && rand(100)<40) { S.items.push('potion'); gifts.push('回响药剂'); }
-  if(rand(100)<35) { S.items.push('coin'); gifts.push('命运币'); }
+  if(!S.items.includes('potion') && rand(100)<75) { S.items.push('potion'); gifts.push('回响药剂'); }
+  if(rand(100)<65) { S.items.push('coin'); gifts.push('命运币'); }
+  if(rand(100)<25){ const _own=S.tagBag||[]; const _miss=TAG_POOL.map(t=>t.id).filter(id=>!_own.includes(id)); if(_miss.length){ const _t=_miss[rand(_miss.length)]; S.tagBag.push(_t); gifts.push(tagById(_t).n); } }
   if(gifts.length){ combatLog(`战利品：${gifts.join('、')}`, 'ok'); updateHUD(); }
 }
 
@@ -9098,9 +9123,12 @@ function finishWorldStory(wid, msg){
   const w = worldById(wid) || WORLDS[0];
   if(!S.storyDone) S.storyDone = [];
   if(S.storyDone.indexOf(wid)<0) S.storyDone.push(wid);
-  const bonusGold = 15 + (w.diff||1)*10;
-  const bonusXp = 15 + (w.diff||1)*8;
+  const bonusGold = 60 + (w.diff||1)*40;
+  const bonusXp = 60 + (w.diff||1)*30;
   S.gold += bonusGold; gainXp(bonusXp);
+  S.fate = (S.fate||0)+1;
+  S.echoes = (S.echoes||0)+2; saveSave();
+  const _tf = grantBreakthroughTag()||'';
   const _vFin = voiceById(S.voice);
   if(_vFin && _vFin.echoFx){ S.echoes = (S.echoes||0) + _vFin.echoFx; }
   // 多结局结算：按倾向匹配
@@ -9130,7 +9158,7 @@ function finishWorldStory(wid, msg){
       <div class="scene-title">${esc(endTitle)}</div>
       <div class="story">${esc(endText)}</div>
       <div class="story" style="color:var(--gold);margin-top:8px">${wsSunnyLine(top)}</div>
-      <div class="notice" style="color:#7fe0d0">${endNote?esc(endNote):''} ｜ 基础奖励：${bonusGold} 金币 · ${bonusXp} 经验 ${S.fate>0?' · 命运点 '+S.fate:''}</div>
+      <div class="notice" style="color:#7fe0d0">${endNote?esc(endNote):''} ｜ 基础奖励：${bonusGold} 金币 · ${bonusXp} 经验 · 命运点 +1 · 回响碎片 +2 · 觉醒词条：${_tf}</div>
       <div class="hint" style="color:#889;margin-top:10px">该世界${cleared?'已通关':'尚未通关'} ｜ 换了选择，结局也会变——重游可再刷不同结局</div>
       <div class="choices">
         <div class="choice" id="wse-back"><span class="c-tag">【返回】</span>回到世界介绍</div>
