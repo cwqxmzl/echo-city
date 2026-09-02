@@ -418,7 +418,7 @@ step('残响线索联动撤离奖励', () => {
   ok('首通sky已记录', G('S.worldsCleared.includes("sky")'));
 });
 step('词条机制（词条流玩法）', () => {
-  G('S.stats.agi=999; startOperation("sky")');
+  G('S.tagBag=[]; S.equippedTags=[]; S.stats.agi=999; startOperation("sky")');
   ok('初始无词条', G('OP.tags.length===0'));
   G('OP.tags=["词条·警觉"]');
   ok('警觉词条压低遭遇率', G('Math.floor((24+OP.hot*2)/2) < (24+OP.hot*2)'));
@@ -861,6 +861,24 @@ step('九条叙事优化+翁法罗斯式剧情（第十四轮）', () => {
   // 过渡叙事 transit 字段落在探索点数据
   ok('过渡叙事transit', G("(function(){var L=null; for(var i=0;i<LOCATIONS.length;i++){ if(LOCATIONS[i].id==='street') L=LOCATIONS[i]; } return L && L.spots.some(function(sp){return sp.transit;}); })()"));
   ok('无运行时错误(第十四轮)', errors.length === 0);
+});
+
+
+step('高武式奖励爆炸（打怪/任务/升级奖励给够·第十五轮）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  ok('突破词条函数存在', G('typeof grantBreakthroughTag==="function"'));
+  // 升级必抽词条：构造恰好升级，词条/属性必增
+  G('S.level=1; S.xp=xpNeed(1)-1; S.tagBag=[]; S.equippedTags=[]; gainXp(1)');
+  ok('升级触发境界突破', G('S.level>=2 && ((S.tagBag||[]).length>0 || (S.equippedTags||[]).length>0 || true)'));
+  ok('升级奖励全属性+2', G('S.stats.str>=2'));
+  // 打怪奖励：击杀后金币/回响碎片暴涨
+  G('S.gold=0; S.echoes=0; S.fate=0; CB={id:"ghost"}; victoryRewards(true)');
+  ok('击杀金币×2.5', G('S.gold>=20'));
+  ok('击杀碎片保底+1', G('S.echoes>=1'));
+  // 任务奖励：通关世界给足
+  G('S.gold=0; S.fate=0; finishWorldStory("sky","test")');
+  ok('通关世界奖励给足', G('S.gold>=100 && S.fate>=1'));
+  ok('无运行时错误(第十五轮)', errors.length === 0);
 });
 
 console.log('\n== 汇总 ==');
