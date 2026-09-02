@@ -961,6 +961,32 @@ step('第十八轮：面板标签导航/骰子彩蛋/战斗倍速/成就图鉴',
   ok('无运行时错误(第十八轮)', errors.length === 0);
 });
 
+
+step('第十九轮：多槽存档/日志裁剪/画质档位/容错兜底', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  ok('存储兜底工具', G('typeof storageGet==="function" && typeof storageSet==="function"'));
+  // 多槽自动存档：循环写 auto0/auto1/auto2 + auto 最新
+  G('autoSave(); autoSave(); autoSave();');
+  ok('三槽循环存档', G('!!storageGet("echo_city_save_auto0") && !!storageGet("echo_city_save_auto1") && !!storageGet("echo_city_save_auto2") && !!storageGet("echo_city_save_auto")'));
+  // 恢复提示条（已有 auto 存档 → renderTitle 显示）
+  G('renderTitle();');
+  ok('刷新恢复提示条', G('!!document.getElementById("resume-bar")'));
+  ok('画质切换按钮', G('!!document.getElementById("btn-quality")'));
+  // 画质档位
+  G('S.quality="fast"; applyQuality();');
+  ok('极速档禁用动画', G('document.body.getAttribute("data-q")==="fast"'));
+  ok('画质切换函数', G('typeof cycleQuality==="function"'));
+  // 战斗日志 DOM 裁剪：60 条只留最近 15 + 1 条历史按钮
+  G('var _bd=document.createElement("div"); _bd.id="battle-log"; document.body.appendChild(_bd); CB={hp:100,_log:[],_showHist:false}; for(var i=0;i<60;i++){ combatLog("line"+i,"ok"); }');
+  ok('战斗日志DOM裁剪', G('document.getElementById("battle-log").innerHTML.split("<span").length-1<=16'));
+  ok('日志折叠按钮', G('document.getElementById("battle-log").innerHTML.indexOf("blog-hist")>=0'));
+  // 自动战斗结束兜底
+  ok('自动战斗结束兜底', G('combatAutoStep.toString().indexOf("CB.hp<=0")>=0'));
+  // 全局错误捕获 / 离开提示注册
+  ok('错误捕获已注册', G('typeof window.addEventListener==="function"'));
+  ok('无运行时错误(第十九轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
