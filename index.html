@@ -3771,7 +3771,1234 @@ const WORLD_STORIES = {
    }
   ]
  }
+}
+// —— 剧情结构：多结局（善/勇/谋/狂 四倾向）——
+const WORLD_ENDINGS = {
+ "sky": {
+  "name": "浮空群岛",
+  "endings": {
+   "good": {
+    "t": "风起之信",
+    "text": "风语者将「风翎之契」郑重系在你腕上：「你守住了这片天空的温柔。」从此，浮空群岛的风记住了你的名字。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "破风之刃",
+    "text": "你劈开风幕的传闻传遍群岛，石像守卫见了你都退避三舍。有人称你为「风斩者」。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "驭风之谋",
+    "text": "你不费一刀一枪，借气流与雷池之密轻取核心。风语者抚掌：「聪明的旅人，连风都愿意听你的话。」",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "狂风过境",
+    "text": "你一路横冲直撞、顺手牵羊，群岛对你又敬又怕。风语者摇头：「你这阵狂风，不知卷走了多少人的家当。」",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "wuxia": {
+  "name": "快活林黑市",
+  "endings": {
+   "good": {
+    "t": "江湖留义",
+    "text": "快活林从此流传：一个过路的年轻人，替穷苦人出头，快活王都给了他三分薄面。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "刀镇黑市",
+    "text": "你的拳头在黑市打出了名号，赌坊庄家见你绕道走，独眼汉子也学会了客气。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "算尽机关",
+    "text": "总账在你手里翻了个底朝天，你却只取了该取的。快活王叹：「后生可畏，这江湖早晚是你的。」",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "黑市之狼",
+    "text": "你赢了赌局又抢了暗卫，快活王亲自送你出城：「够狠，够贪，像我们这行的人。」",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "xianxia": {
+  "name": "青云剑宗遗迹",
+  "endings": {
+   "good": {
+    "t": "守心之剑",
+    "text": "剑魂为你敛去锋芒：「剑不是用来炫耀的，是用来守护的。你懂了。」青云剑意归于平和。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "斩情之剑",
+    "text": "你以力夺剑，万剑臣服。剑冢之巅，你的剑鸣压过千年余响——青云剑宗，由你重振。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "问心之剑",
+    "text": "问剑碑上的残字被你一字字参透，剑心澄明。守剑魂颔首：「你有慧根，青云后继有人。」",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "嗜杀之剑",
+    "text": "你强夺剑意，剑冢怨灵缠绕剑身。这柄剑，饮过太多不该饮的血。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "ocean": {
+  "name": "深渊海沟",
+  "endings": {
+   "good": {
+    "t": "海族之友",
+    "text": "深渊之眼目送你远去，海族在你身后浮出水面，齐声鸣叫——像在道谢。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "镇海之威",
+    "text": "你直面深渊之眼不退一步，海底的传说从此多了个「敢与深渊对视的人」。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "窥渊之智",
+    "text": "你在低语中听出了真相的碎片，记下这条海沟最深的秘密——将来，它会值大价钱。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "深渊猎手",
+    "text": "你卷走了海骨与珍珠，深渊在你身后缓缓合拢——它记住了你的贪婪，也记住了你的胆子。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "apoc": {
+  "name": "辐射废墟",
+  "endings": {
+   "good": {
+    "t": "文明余烬",
+    "text": "你把旧纪元核心交给了拾荒者营地，废土上第一次亮起完整的灯。有人开始叫你「守望者」。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "废土硬汉",
+    "text": "你硬扛辐射下井的壮举传遍营地，连最凶的拾荒者都朝你竖大拇指。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "旧纪元之脑",
+    "text": "你修复了守护者残骸，让它成了你的哨兵。废土之上，知识就是活下去的本钱。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "焦土之狼",
+    "text": "你卷走了核心又骗了拾荒者，等他们反应过来，你已经在下一个废墟的篝火边数钱了。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "fantasy": {
+  "name": "巨龙巢穴",
+  "endings": {
+   "good": {
+    "t": "龙之友人",
+    "text": "古龙将龙鳞放在你掌心：「你从没想过驯服我，只想同行。」龙族记下了你的善意。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "屠龙者",
+    "text": "你与古龙对拼三合不落下风，它低下龙头，把最亮的那片鳞给了你——这是王者的认可。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "龙穴智者",
+    "text": "你用龙血香引开古龙，从容搬空巢穴还毫发无伤。古龙回来只叹了一声：「聪明的贼。」",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "盗龙之贼",
+    "text": "你偷了龙蛋就跑，身后传来古龙震怒的咆哮——你的通缉令挂满了黑暗森林。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "sci": {
+  "name": "深空站",
+  "endings": {
+   "good": {
+    "t": "星图守望",
+    "text": "你把星图芯片刻录给了空间站 AI，它为你打开最后一道舱门：「愿你的文明，走得更远。」",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "孤星硬闯",
+    "text": "你从自动炮塔下活着穿过来，AI 沉默良久：「一百年了，你是第一个敢硬闯的。」",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "深空解码者",
+    "text": "芯片在你手里化作完整航图，深空站的秘密从此为你所用。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "空间站海盗",
+    "text": "你拆了燃料舱、撬了密码锁，临走还不忘拔走几根高能线缆。AI 在你背后疯狂报警。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "inf": {
+  "name": "副本中枢",
+  "endings": {
+   "good": {
+    "t": "引路者",
+    "text": "你把副本攻略分享给轮回者新人，他们叫你「老好人」，但也因此多了一群肯替你拼命的兄弟。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "副本之王",
+    "text": "你强夺SS令牌的消息传开，轮回者们见了你纷纷让路——副本中枢，你说了算。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "规则猎手",
+    "text": "你读懂了副本的底层规则，把每个陷阱都变成收益。中枢核心都为你亮起绿灯。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "危险的棋子",
+    "text": "你靠残响碎片换来令牌，又转头骗了两个新人。中枢之眼记住了你——它喜欢危险的棋子。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "zelda": {
+  "name": "旷野神域",
+  "endings": {
+   "good": {
+    "t": "英杰之托",
+    "text": "英杰残响消散前留下话：「百年了，终于有人愿意替我们，把和平还给这片土地。」",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "勇者之名",
+    "text": "你强闯神兽试炼的英姿，让旷野上的旅人重新相信了「勇者」二字。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "希卡传人",
+    "text": "你参透了希卡符文，连神庙的机关都为你所用。英杰们感叹：「你像个老练的学者。」",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "神兽之怒",
+    "text": "你抄近道偷懒，神兽的激光追着你屁股打。旷野上多了一道「被神兽追着跑」的传说。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "hollow": {
+  "name": "圣巢深渊",
+  "endings": {
+   "good": {
+    "t": "深渊之光",
+    "text": "你没有继承圣巢的仇恨，而是把骨钉指向黑暗本身。深渊深处，一缕光为你亮起。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "骨钉大师",
+    "text": "你击败残响骑士，圣巢虫族为你鸣笛。它们相信，新的英雄来了。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "护符贤者",
+    "text": "你参透护符共鸣的奥秘，深渊的规则在你眼中透明。你成了圣巢最年轻的贤者。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "游荡的魂",
+    "text": "你带着魂与残响在深渊里横冲直撞，拿走了一切能拿的——虫族见你，如见灾厄。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "elden": {
+  "name": "交界之地",
+  "endings": {
+   "good": {
+    "t": "律法之心",
+    "text": "你没有只为力量奔走，而是选择了交界之地的众生。黄金树的辉光，第一次照得那么温柔。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "碎星克星",
+    "text": "你斩落碎星残影的战绩传遍交界地，连半神的使徒都开始叫你「新王」。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "卢恩之智",
+    "text": "你参透大卢恩的法则，在赐福前立下自己的律法。交界之地，将以你的规则运转。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "失控的褪色者",
+    "text": "你疯狂收集卢恩，无视所有羁绊。赐福的光在你身后暗了一瞬——它开始警惕你了。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "pet": {
+  "name": "精灵大陆",
+  "endings": {
+   "good": {
+    "t": "羁绊之光",
+    "text": "传说精灵自愿跟随你——不是被你捕获，而是相信你能带它看遍大陆。这是训练师最高的荣耀。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "道馆之星",
+    "text": "你连战连胜的传说传遍学院，新生都拿你当偶像。你的徽章墙，正在变得耀眼。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "战术大师",
+    "text": "你用属性相克和战术布局碾压对手，馆主们私下讨论：这孩子，将来是联盟的料。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "捣蛋训练师",
+    "text": "你抢精灵球、坑馆主、逗传说精灵——精灵大陆对你又爱又怕，你的恶作剧名号响当当。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "sekiro": {
+  "name": "苇名国",
+  "endings": {
+   "good": {
+    "t": "护城之心",
+    "text": "你没有只顾复仇，而是为苇名的百姓而战。城头的樱花，记住了你的温柔。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "剑圣之后",
+    "text": "你正面劈开剑圣的架势，苇名上下尊你为「新一代剑圣」。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "忍之极致",
+    "text": "你的潜行与义手配合天衣无缝，从没人见过你的全貌——只知「苇名又多了一位传奇忍者」。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "修罗之影",
+    "text": "你的刀染了太多血，连佛雕师都劝你回头。你只笑——修罗的路，本就是孤独的。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "hades": {
+  "name": "冥界试炼",
+  "endings": {
+   "good": {
+    "t": "冥界之友",
+    "text": "你帮摆渡人、敬死神、守承诺，冥界的亡魂都为你开路。诸神说：这凡人，比神更像神。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "地狱征服者",
+    "text": "你从冥河一路打到冥界大门，连审判者都追不上你。你成了第一个「堂堂正正走出去」的凡人。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "诸神之选",
+    "text": "你懂得取舍与谋划，宙斯和雅典娜同时看好你。双神祝福加身，冥界规则为你让路。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "冥河赌徒",
+    "text": "你连死神的赌约都敢耍心眼，输光了冥河渡口的钱。卡戎见你就把船桨横起来。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "guoyun": {
+  "name": "国运战场",
+  "endings": {
+   "good": {
+    "t": "人族之光",
+    "text": "你没有只为自己赢，而是把气运分给了亿万人。国运战场之上，人族因你而凝成一股绳。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "武神降临",
+    "text": "你以武神之名横扫擂台，异族闻风丧胆。人族城池，因你而固若金汤。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "棋圣之国",
+    "text": "你以千年文明为棋，步步为营，赢下了异族不敢想象的战局。史官为你写下「运筹帷幄」。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "气运豪赌",
+    "text": "你把国运当赌注，险中求胜。赢了是英雄，输了……好在，你赢了。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "wanzu": {
+  "name": "万族战场",
+  "endings": {
+   "good": {
+    "t": "万族之桥",
+    "text": "你没有只想着杀戮，而是为人族争取到了异族的尊重。战争因你而提前结束。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "战场传奇",
+    "text": "你正面冲垮异族一翼的壮举，成为人族战歌里的英雄。万族记住了你的旗帜。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "联盟军师",
+    "text": "你纵横捭阖、结盟破局，用头脑弥补了人族的弱势。你的名字，写进了人族兵法。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "投机者",
+    "text": "你在战场边缘渔利，赚得盆满钵满。有人骂你，也有人羡慕你——你不在乎。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "guimi": {
+  "name": "诡秘之都",
+  "endings": {
+   "good": {
+    "t": "雾都之光",
+    "text": "你没有沉迷力量，而是用它守护雾都的普通人。非凡者都道：这城市最后的良知，是你。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "愚者之影",
+    "text": "你直面愚者低语不后退，神秘人俱乐部破例为你亮灯。你成了雾都最年轻的「执掌者」。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "扮演大师",
+    "text": "你把「扮演法」玩到极致，连老非凡者都看不出你的深浅。雾都的秘密，对你敞开一半。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "失控边缘",
+    "text": "你贪图魔药的力量，灵视越来越高，理智越来越薄。雾都的低语，开始唤你的名字。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "honghuang": {
+  "name": "洪荒古界",
+  "endings": {
+   "good": {
+    "t": "道心纯正",
+    "text": "你过宝山而不贪，量劫中护住一缕生机。紫霄宫上的虚影，为你留下一道功德。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "应劫之躯",
+    "text": "你正面应劫、斩落凶兽，洪荒记住了你的名字。后天生灵，第一次敢向量劫挥拳。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "悟道之机",
+    "text": "你从天地法则中抽丝剥茧，摸到一丝大道脉络。这条证道之路，你比谁都走得稳。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "量劫之虫",
+    "text": "你四处争宝、招惹因果，量劫顺着你的因果线缠了上来。洪荒虽大，却处处与你为敌。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "zhutian": {
+  "name": "诸天万界",
+  "endings": {
+   "good": {
+    "t": "诸天义士",
+    "text": "你在万界危难时挺身而出，轮回者们把你写进了工会的传说——「那个愿意殿后的人」。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "镇魔者",
+    "text": "你挡住域外天魔一击，诸天枢纽的灯为你亮成一片。你的名字，被无数世界记住。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "万界行者",
+    "text": "你读懂了世界跳转的规律，成了最游刃有余的穿梭者。诸天万界，任你往来。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "世界蝗虫",
+    "text": "你四处搜刮世界本源，每个被你「光顾」的世界都拉响了警报。你的悬赏，挂满了诸天。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ },
+ "genshin": {
+  "name": "提瓦特大陆",
+  "endings": {
+   "good": {
+    "t": "风与自由",
+    "text": "你没有只想着力量，而是守护了蒙德的风与自由。风神像前的蒲公英，为你落了一场。",
+    "fx": [
+     [
+      "gold",
+      20
+     ],
+     [
+      "fate",
+      2
+     ]
+    ]
+   },
+   "brave": {
+    "t": "元素斗士",
+    "text": "你击退愚人众、直面深渊使徒的英姿，让七国的旅人记住了「一位外来的旅行者」。",
+    "fx": [
+     [
+      "gold",
+      40
+     ],
+     [
+      "xp",
+      20
+     ]
+    ]
+   },
+   "wise": {
+    "t": "元素学者",
+    "text": "你把元素反应玩到出神入化，连学者都来请教。提瓦特大陆，欠你一个「元素大师」的称号。",
+    "fx": [
+     [
+      "gold",
+      35
+     ],
+     [
+      "fate",
+      1
+     ]
+    ]
+   },
+   "wild": {
+    "t": "危险旅行者",
+    "text": "你见啥拿啥、见怪就惹，深渊教团和愚人众同时把你列上了黑名单——你成了提瓦特最会惹事的人。",
+    "fx": [
+     [
+      "gold",
+      55
+     ],
+     [
+      "xp",
+      15
+     ]
+    ]
+   }
+  }
+ }
 };
+Object.keys(WORLD_ENDINGS).forEach(function(k){
+  if(WORLD_STORIES[k]) WORLD_STORIES[k].endings = WORLD_ENDINGS[k].endings;
+});
+;
 
 const WORLDS = [
   {id:'sky', name:'浮空群岛', style:'空岛世界', diff:1, unlock:0,
@@ -5081,13 +6308,13 @@ const S = {
   roster:[], party:[],
   shards:0, _locDone:{},
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
-  flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[]
+  flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[]})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{}})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -6453,6 +7680,40 @@ function renderWorldIntro(wid){
 
 
 /* ---------- 世界剧情线系统（每个世界 3-4 幕完整剧情 + 特色判定/奖励） ---------- */
+function wsTraitOf(tag){
+  if(!tag) return null;
+  const g='善义和诚谦承醒悟', b='战强夺救闯劫武雷盾', w='巧谋潜析演棋联换付稳拓';
+  if(g.indexOf(tag)>=0) return 'good';
+  if(b.indexOf(tag)>=0) return 'brave';
+  if(w.indexOf(tag)>=0) return 'wise';
+  if('莽狂赌偷盗猎捞易'.indexOf(tag)>=0) return 'wild';
+  return null;
+}
+function wsResetVars(wid){ if(!S.wsVars) S.wsVars={}; S.wsVars[wid]={good:0,brave:0,wise:0,wild:0,last:''}; }
+function wsTopTrait(wid){
+  const v=(S.wsVars&&S.wsVars[wid])||{good:0,brave:0,wise:0,wild:0};
+  let top='good', mx=v.good;
+  [['brave',v.brave],['wise',v.wise],['wild',v.wild]].forEach(function(e){
+    if(e[1]>mx){ top=e[0]; mx=e[1]; }
+  });
+  return mx>0?top:null;
+}
+function wsCausalLine(wid, idx){
+  const top=wsTopTrait(wid); if(!top) return '';
+  const s={
+    good:'你以善待人，名声像风一样先你一步传开——有人为你铺路，也有人记住了你的脸。',
+    brave:'你的勇名在前方炸响，守卫们握紧了武器——敬你是条硬汉，也防着你三分。',
+    wise:'你的筹谋无声落子，暗处的眼睛已经开始留意你的一举一动。',
+    wild:'你手快心野，巡卫与商人已经盯上了你这张不守规矩的新面孔。'
+  };
+  const s2={
+    good:'这一路，你始终没忘为何而来——人心所向，比什么都珍贵。',
+    brave:'到了这一步，你已经没了退路，也从不打算退——刀在手，心就定。',
+    wise:'真相越近，你越冷静——每一步都踩在算计好的位置上。',
+    wild:'局势越是危险，你越是兴奋——这就是你要的冒险。'
+  };
+  return (idx<=1?s:s2)[top];
+}
 function renderWorldStory(wid){
   S.nodeId = 'worldstory:'+wid;
   updateHUD();
@@ -6461,20 +7722,24 @@ function renderWorldStory(wid){
   if(!st) return renderWorldIntro(wid);
   if(!S.worldStory) S.worldStory = {};
   const idx = S.worldStory[wid] || 0;
+  if(idx===0) wsResetVars(wid);
   const step = st.steps[idx];
   const v = $('view-worlds');
   const optsHtml = step.opts.map((o,i)=>
     `<div class="choice" id="wso-${i}"><span class="c-tag">【${esc(o.tag||'选择')}】</span>${esc(o.text)}</div>`
   ).join('');
   const msg = S.lastWsMsg || '';
+  const causal = (idx>0 && idx<st.steps.length-1) ? wsCausalLine(wid, idx) : '';
+  const vv = (S.wsVars&&S.wsVars[wid])||{good:0,brave:0,wise:0,wild:0};
+  const bar = '善'+'▮'.repeat(Math.min(3,vv.good))+'·勇'+'▮'.repeat(Math.min(3,vv.brave))+'·谋'+'▮'.repeat(Math.min(3,vv.wise))+'·狂'+'▮'.repeat(Math.min(3,vv.wild));
   v.innerHTML = `
     <div class="panel">
       <div class="scene-chap">${esc(st.name)} · 世界剧情（${esc(st.src||'')}）</div>
       <div class="scene-title">${esc(step.t)}</div>
-      <div class="story">${esc(step.text)}</div>
+      <div class="story">${esc(step.text)}${causal?'\n\n——'+esc(causal):''}</div>
       ${msg?`<div class="notice" style="color:#ffd777">${esc(msg)}</div>`:''}
       <div class="choices">${optsHtml}</div>
-      <div class="hint" style="color:#889;margin-top:10px">第 ${idx+1}/${st.steps.length} 幕 ｜ 判定基于角色属性（属性×2 + 1d100 对比 DC），胜负皆有收获 ｜ 已完成剧情：${(S.storyDone||[]).indexOf(wid)>=0?'是':'否'}</div>
+      <div class="hint" style="color:#889;margin-top:10px">第 ${idx+1}/${st.steps.length} 幕 ｜ 倾向：${bar} ｜ 判定基于属性（属性×2+1d100 对比 DC），你的每一个选择都会影响最终结局 ｜ 已完成：${(S.storyDone||[]).indexOf(wid)>=0?'是':'否'}</div>
     </div>`;
   showView('worlds');
   $('view').scrollTop=0; window.scrollTo({top:0});
@@ -6487,14 +7752,21 @@ function wsChoose(wid, i){
   const step = st.steps[Math.min(idx, st.steps.length-1)];
   const opt = step.opts[i]; if(!opt) return;
   let msg = opt.log || '你做出了选择。';
-  let extra = '';
+  // 倾向累积
+  const tr = opt.trait || wsTraitOf(opt.tag);
+  if(tr){
+    if(!S.wsVars) S.wsVars={};
+    if(!S.wsVars[wid]) S.wsVars[wid]={good:0,brave:0,wise:0,wild:0,last:''};
+    S.wsVars[wid][tr]+=1; S.wsVars[wid].last=tr;
+    msg += '（剧情倾向：'+({good:'善',brave:'勇',wise:'谋',wild:'狂'})[tr]+' +1）';
+  }
   if(opt.check){
     const s = S.stats[opt.check.stat]||0, dc = opt.check.dc;
     const roll = Math.floor(Math.random()*100)+1;
     const pass = (s*2 + roll) >= dc;
     const branch = pass ? opt.check.ok : opt.check.bad;
     if(branch.fx) wsApplyFx(wid, branch.fx);
-    msg = (pass?'【判定通过】':'【判定失败】') + '（'+opt.check.stat.toUpperCase()+' '+s+' · 检定 '+roll+' / DC '+dc+'）' + (branch.log||opt.log||'');
+    msg = (pass?'【判定通过】':'【判定失败】') + '（'+opt.check.stat.toUpperCase()+' '+s+' · 检定 '+roll+' / DC '+dc+'）' + (branch.log||opt.log||'') + (tr?('（倾向：'+({good:'善',brave:'勇',wise:'谋',wild:'狂'})[tr]+' +1）'):'');
   }
   if(opt.fx) wsApplyFx(wid, opt.fx);
   if(opt.done){ S.lastWsMsg = msg; finishWorldStory(wid, opt.done); return; }
@@ -6523,15 +7795,25 @@ function finishWorldStory(wid, msg){
   const bonusGold = 15 + (w.diff||1)*10;
   const bonusXp = 15 + (w.diff||1)*8;
   S.gold += bonusGold; gainXp(bonusXp);
+  // 多结局结算：按倾向匹配
+  const st = WORLD_STORIES[wid];
+  const top = wsTopTrait(wid);
+  let endTitle='幕落', endText=msg, endNote='';
+  if(st && st.endings && top && st.endings[top]){
+    const eg = st.endings[top];
+    endTitle = eg.t; endText = eg.text;
+    if(eg.fx){ wsApplyFx(wid, eg.fx); }
+    endNote = '结局·'+({good:'善',brave:'勇',wise:'谋',wild:'狂'})[top]+' ｜ 剧情奖励已结算';
+  }
   const cleared = (S.worldsCleared||[]).indexOf(wid)>=0;
   const v = $('view-worlds');
   v.innerHTML = `
     <div class="panel">
       <div class="scene-chap">${esc(w.name)} · 剧情完结</div>
-      <div class="scene-title">幕落 · ${esc(WORLD_STORIES[wid]?WORLD_STORIES[wid].name:'')}</div>
-      <div class="story">${esc(msg)}</div>
-      <div class="notice" style="color:#7fe0d0">剧情线奖励：${bonusGold} 金币 · ${bonusXp} 经验 ${S.fate>0?' · 当前命运点 '+S.fate:''}</div>
-      <div class="hint" style="color:#889;margin-top:10px">该世界${cleared?'已通关':'尚未通关'} ｜ 剧情已记录在档，重游时可直接进入冒险</div>
+      <div class="scene-title">${esc(endTitle)}</div>
+      <div class="story">${esc(endText)}</div>
+      <div class="notice" style="color:#7fe0d0">${endNote?esc(endNote):''} ｜ 基础奖励：${bonusGold} 金币 · ${bonusXp} 经验 ${S.fate>0?' · 命运点 '+S.fate:''}</div>
+      <div class="hint" style="color:#889;margin-top:10px">该世界${cleared?'已通关':'尚未通关'} ｜ 换了选择，结局也会变——重游可再刷不同结局</div>
       <div class="choices">
         <div class="choice" id="wse-back"><span class="c-tag">【返回】</span>回到世界介绍</div>
         <div class="choice" id="wse-enter"><span class="c-tag">【进入】</span>选择外挂 · 进入该世界</div>
