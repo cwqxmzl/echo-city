@@ -539,6 +539,54 @@ step('外挂/天赋全面生效', () => {
   ok('撤离给经验', G('S.xp > ' + x0));
 });
 
+
+console.log('== 17. 永恒防御天赋 + 典型世界特色机制 ==');
+step('永恒防御（SSS·一切防御技能自动升金）', () => {
+  ok('16个天赋', G('TALENTS.length===16'));
+  ok('永恒防御是SSS', G('TALENTS.some(t=>t.id==="eternal"&&t.grade==="SSS"&&t.mod.mit===0.50)'));
+  // 钢铁之躯·金（受击-50%）+ 反甲·金（反弹）
+  G('boot(); newRun(); applyClass("sword"); S.talents=["eternal"]; startCombat("w_sky",null,"death",{})');
+  G('S.stats.agi=0; S.stats.con=0; S.equip.weapon=null; S.equip.armor=null; S.hp=S.maxHp; CB.dc=999; CB.hp=999; window.rand=(n)=> n===4 ? 0 : 100');
+  G('combatEnemyTurn()');
+  ok('钢铁之躯大幅减伤', G('S.hp >= ' + (G('S.maxHp')-6)));
+  ok('反甲反弹伤害', G('CB.hp < 999'));
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+  // 狂徒·金（每回合回血 8%）
+  G('boot(); newRun(); applyClass("assassin"); S.talents=["eternal"]; startCombat("w_sky",null,"death",{})');
+  G('S.stats.agi=999; S.hp=Math.floor(S.maxHp*0.5); CB.dc=999; window.rand=(n)=>0');
+  G('combatEnemyTurn()');
+  const hp1 = G('S.hp');
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+  ok('狂徒·金每回合回血', hp1 > Math.floor(G('S.maxHp')*0.5));
+  // 无敌·金（致命伤害 40% 免疫）
+  G('boot(); newRun(); applyClass("sword"); S.talents=["eternal"]; startCombat("w_sky",null,"death",{})');
+  G('S.stats.agi=-60; S.equip.weapon=null; S.equip.armor=null; S.hp=1; CB.dc=999; CB.hp=999; window.rand=(n)=> n===4 ? 0 : 30');
+  G('combatEnemyTurn()');
+  ok('无敌·金致命免疫', G('S.hp>=1 && CB._eternalInv===true'));
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+});
+step('典型世界特色机制', () => {
+  // 精灵大陆：御兽收服
+  G('boot(); newRun(); applyClass("sword"); startOperation("pet")');
+  G('window.rand=(n)=>20; opExploreLoot(false)');
+  ok('御兽收服成功', G('OP._pet===true'));
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+  // 宠物开场助战
+  G('opCombat(true)');
+  ok('宠物开场助战', G('!!CB && CB.hp < ENEMIES[CB.id].hp'));
+  // 苇名国：忍义潜杀（免战拿战利品）
+  G('startOperation("sekiro"); OP.steps=0; OP.hot=0; window.rand=(n)=>0; opExplore()');
+  ok('苇名潜杀免战', G('OP.phase==="explore" && OP.steps===1'));
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+  // 诡秘之都：理智扣减
+  G('startOperation("guimi"); OP._san=100; OP.steps=0; OP.hot=0; window.rand=(n)=>60; opExplore()');
+  ok('诡秘理智扣减', G('OP._san===96'));
+  G('window.rand=(n)=>Math.floor(Math.random()*n)');
+  // 圣巢深渊：死亡掉魂
+  G('S.gold=100; S._hollowSoul=0; startOperation("hollow"); S.hp=0; renderDeath()');
+  ok('圣巢掉魂', G('S._hollowSoul===40'));
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
