@@ -371,6 +371,25 @@ h1.title-name{
 .spot-item .sp-desc{font-size:11px;color:var(--ink-dim);line-height:1.5}
 .spot-item .sp-tag{font-size:10px;color:var(--gold);letter-spacing:.08em;flex-shrink:0}
 
+/* ===== 存档 / 读档 ===== */
+.save-grid{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.save-slot{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:rgba(255,255,255,.02)}
+.save-slot .ss-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.save-slot .ss-name{font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.04em}
+.save-slot .ss-time{font-size:10.5px;color:var(--ink-dim)}
+.save-slot .ss-label{font-size:12px;color:#e8f0ff;margin-bottom:2px}
+.save-slot .ss-sub{font-size:10.5px;color:var(--ink-dim)}
+.save-slot.empty{opacity:.6}
+.save-slot .ss-acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.save-slot .ss-acts .sbtn{font-size:11px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:#e8f0ff;background:rgba(255,255,255,.03)}
+.save-slot .ss-acts .sbtn:hover{border-color:var(--cyan);background:rgba(167,232,223,.1)}
+.save-slot .ss-acts .sbtn.danger:hover{border-color:#ff8a7a;background:rgba(255,138,122,.12)}
+.save-slot .ss-acts .sbtn.primary{border-color:var(--gold);color:var(--gold)}
+
+/* ===== 随机际遇 ===== */
+.ev-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ev-chip{font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:20px;color:var(--ink-dim)}
+
 @media (max-width:600px){
   h1.title-name{font-size:40px}
   .panel{padding:16px}
@@ -410,6 +429,7 @@ h1.title-name{
     <div class="view" id="view-worlds"></div>
     <div class="view" id="view-map"></div>
     <div class="view" id="view-loc"></div>
+    <div class="view" id="view-save"></div>
     <div class="view" id="view-char"></div>
     <div class="view" id="view-death"></div>
     <div class="view" id="view-ending"></div>
@@ -739,6 +759,7 @@ const LOCATIONS = [
     {ic:'🌫', name:'雾中小巷', node:'c1_probe2', desc:'呼救声与暗处的杀机'},
     {ic:'⚔️', name:'街区巡逻 · 腐化者', repeat:'fiend', desc:'游荡的数据腐化者，可反复挑战刷金币经验'},
     {ic:'🎁', name:'街区补给箱', repeat:'loot', key:'loot_street', desc:'运气好能开出药剂或金币', once:true},
+    {ic:'🔀', name:'随机际遇', repeat:'event', desc:'街头偶发的小插曲——每次都不一样'},
     {ic:'🏰', name:'中城区高塔边界', node:'c1_route_tower', desc:'越过边界，解锁「中枢塔」'}
    ]},
   {id:'tower', icon:'🏢', name:'中枢塔',
@@ -751,14 +772,16 @@ const LOCATIONS = [
     {ic:'🗄', name:'第七号档案室', node:'c2_file', desc:'真相与旧城钥匙（需旧城钥匙）', need:'old_key', needTxt:'需旧城钥匙'},
     {ic:'🛡', name:'塔顶 · 老猫', node:'c2_top', desc:'系统维护员被锁在塔顶（GM钥匙 / 队友）'},
     {ic:'⚔️', name:'塔内巡卫', repeat:'warder', desc:'守望者巡卫，可反复挑战'},
-    {ic:'🎁', name:'塔内补给箱', repeat:'loot', key:'loot_tower', desc:'物资补给', once:true}
+    {ic:'🎁', name:'塔内补给箱', repeat:'loot', key:'loot_tower', desc:'物资补给', once:true},
+    {ic:'🔀', name:'随机际遇', repeat:'event', desc:'塔内的意外状况——每次都不一样'}
    ]},
   {id:'abyss', icon:'🌀', name:'回响深渊',
    desc:'城市的最深处，回响之核的所在。真相在此，结局在此。',
    unlock:'shards', unlockN:3, lockTxt:'需集齐 3 个真相碎片',
    spots:[
     {ic:'🌀', name:'深渊入口', node:'c3_intro', desc:'最终的真相与决战（4 结局）'},
-    {ic:'🎁', name:'深渊祭坛', repeat:'loot', key:'loot_abyss', desc:'深渊边缘的遗物补给', once:true}
+    {ic:'🎁', name:'深渊祭坛', repeat:'loot', key:'loot_abyss', desc:'深渊边缘的遗物补给', once:true},
+    {ic:'🔀', name:'随机际遇', repeat:'event', desc:'深渊边缘的怪事——每次都不一样'}
    ]}
 ];
 const locById = id => LOCATIONS.find(l=>l.id===id);
@@ -768,6 +791,70 @@ function locUnlocked(l){
   if(l.unlock==='shards') return S.shards >= (l.unlockN||3);
   return false;
 }
+/* ---------- 随机际遇事件池 ---------- */
+const EVENTS = {
+  street:[
+    {ic:'🥤', name:'翻倒的自动售货机',
+     desc:'街角一台售货机歪倒，冰可乐滚了一地，一名数据清洁工正骂骂咧咧。他看见你，眼睛一亮：“喂！搭把手，扶正了分你两罐！”',
+     action:'上前帮忙抬正机器', check:{stat:'str',dc:55},
+     succ:{text:'你一把抬正售货机，清洁工感激地塞给你金币和两罐“回响可乐”。', gold:15, hp:8},
+     fail:{text:'机器太重，你反而被压了个趔趄。清洁工赶紧扶你，还塞给你一瓶药：“没白摔，医疗费我出了。”', hp:-5, item:'potion'}},
+    {ic:'🎰', name:'老虎机的诱惑',
+     desc:'游戏厅门口的老虎机突然亮灯，屏幕滚动着一行字：“本机反赌。若有人试图赢走我的钱，我就把它的种子代码全删掉。”你觉得它在挑衅你。',
+     action:'赌一把，拉杆！', check:{stat:'per',dc:60},
+     succ:{text:'你看穿它在虚张声势——拉杆，叮！它不情不愿地吐出一把金币。', gold:22},
+     fail:{text:'你信了它的鬼话投了币，结果它直接黑屏，你的金币被吞了个干净。', gold:-10}},
+    {ic:'🐱', name:'迷路的机械猫',
+     desc:'一只缺了耳朵的机械猫蹲在墙角，用两格像素眼看你。铭牌上写着：“旧城区·第七分局·编号47”。见你走近，它转身就跑，还回头看你。',
+     action:'跟上去', check:{stat:'agi',dc:50},
+     succ:{text:'你跟上了它！它带你钻进一条死巷，从废墟里刨出一个生锈的铁盒——里面是满满的金币。', gold:25},
+     fail:{text:'你追了两条街，机械猫跳上高墙消失。你累得直喘，但墙根下滚出一枚金币——算安慰奖。', gold:5, hp:-3}},
+    {ic:'📡', name:'广播站的怪声',
+     desc:'街角广播突然爆出一阵电流音，随后传来一个男声：“……如果有人听到，请转告 47 号档案室：它们要来了。它们，不是它们。”随后沙沙声消失。你莫名打了个寒颤。',
+     action:'凝神记住这串编号', check:{stat:'int',dc:55},
+     succ:{text:'你牢牢记住“47号档案室”——直觉告诉你，这串编号总有一天派得上用场。', fate:1},
+     fail:{text:'你试图破译电波，但脑袋一团浆糊。广播再也没响过。', hp:-4}}
+  ],
+  tower:[
+    {ic:'🌊', name:'数据洪流',
+     desc:'走廊深处传来轰隆声——一股乳白色的数据洪流正顺着光缆倒灌而来！守卫大喊：“快，找掩体！”',
+     action:'闪进维修夹层', check:{stat:'agi',dc:58},
+     succ:{text:'你灵巧地闪进维修夹层躲过洪流。等一切平息，你在夹层里摸到前人留下的补给。', item:'mpotion', gold:10},
+     fail:{text:'你被数据洪流兜头浇了一身，四肢像灌了铅。', hp:-8}},
+    {ic:'🚨', name:'黑塔帮收保护费',
+     desc:'两个纹着电路纹身的暴徒拦住你：“塔内通行费，一枚记忆卡或者 20 金币，自己选。”你扫了一眼，他们腰间别着褪色的玩具枪。',
+     action:'跟他们讲讲道理', check:{stat:'cha',dc:55},
+     succ:{text:'你三言两语把两个暴徒侃晕了，他们反过来请你喝了杯数据咖啡，还送你一枚记忆卡当“兄弟费”。', item:'memcard', gold:8},
+     fail:{text:'暴徒不买账，你破财消灾，恨恨地记住了这号人。', gold:-15}},
+    {ic:'🗄', name:'故障电梯',
+     desc:'你按下电梯按钮，门开了——里面居然是一间临时档案室，堆满落灰的纸箱。最上面那个箱子上写着：“小心：会咬人的备份。”',
+     action:'小心翻找', check:{stat:'per',dc:50},
+     succ:{text:'你避开“会咬人的备份”，从最底层翻出一叠记忆卡和一些金币。', item:'memcard', gold:15},
+     fail:{text:'你惊动了它——一沓文件扑出来糊了你一脸，你还丢了几枚金币。', gold:-8, hp:-4}},
+    {ic:'🕯', name:'故障投影',
+     desc:'走廊尽头的投影仪开始循环播放一段没有画面的“欢迎词”：“欢迎来到中枢塔。本塔采用世界领先的稳定系统。免责声明：本系统不保证您的意识完整。”灯光忽明忽暗。',
+     action:'细品免责声明', check:{stat:'int',dc:55},
+     succ:{text:'你品出了免责声明背后的猫腻——这座塔的“稳定”，其实一直用来困住谁。一道明悟如微光闪过。', fate:1},
+     fail:{text:'你被绕晕了，一头撞上玻璃门，引来巡逻守卫的侧目。', hp:-3}}
+  ],
+  abyss:[
+    {ic:'👁', name:'回响残影',
+     desc:'深渊边缘立着一道半透明的身影，像某个玩家的残像。它反复念叨同一句话：“别……别让我……再被读档了……”',
+     action:'稳住心神', check:{stat:'con',dc:55},
+     succ:{text:'你没有回应它。残影渐渐消散，化作一缕温和的微光汇入你体内，暖意蔓延。', hp:12},
+     fail:{text:'你忍不住回了句“别怕”，残影猛地转头，死死抓住你的手腕——冰冷刺骨。', hp:-9}},
+    {ic:'📦', name:'废弃补给舱',
+     desc:'深渊边嵌着一只锈蚀的补给舱，舱门半开，里面滚出一罐写着“末日应急口粮·生产于第七次轮回”的罐头。',
+     action:'翻一翻', check:{stat:'per',dc:50},
+     succ:{text:'你翻开罐头，下面压着一叠药剂和一枚金币。', item:'potion', gold:12},
+     fail:{text:'罐头是空的，里面夹了张纸条：“别什么都往嘴里塞。”你被逗笑了。', hp:2}},
+    {ic:'🪞', name:'镜子里的自己',
+     desc:'深渊岩壁上嵌着一面巨大的镜面，里面映出另一个你。镜中的你朝你挥手，然后缓缓比了个“嘘”的手势。',
+     action:'朝镜中的自己点头', check:{stat:'cha',dc:55},
+     succ:{text:'镜中的你咧嘴一笑，消失前在你耳边留下一句：“加油，替我把结局打完。”你感到一阵莫名的力量。', fate:1, hp:6},
+     fail:{text:'你伸手去碰镜面，镜中的你突然用力拍打镜面——整面镜震得嗡嗡响，你被震退了好几步。', hp:-6}}
+  ]
+};
 
 /* ---------- 结局 ---------- */
 const ENDINGS = {
@@ -1271,6 +1358,111 @@ function loadSave(){
 }
 function saveSave(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings})); }catch(e){}
+}
+/* ---------- 存档 / 读档（完整状态） ---------- */
+const SAVE_PREFIX='echo_city_save_';
+function saveSlot(slot){
+  try{
+    const snap = JSON.parse(JSON.stringify(S));
+    if(snap.nodeId==='save') snap.nodeId = S._returnNode || 'map';
+    const info = {
+      v:2, t:Date.now(), slot,
+      label: (S.cls? classById(S.cls).name : '未选职业')+' · Lv'+S.level,
+      sub: (S.run>1? '第'+S.run+'周目 · ':'') + (S.nodeId? locLabel(S.nodeId) : '主菜单'),
+      data: snap
+    };
+    localStorage.setItem(SAVE_PREFIX+slot, JSON.stringify(info));
+    return true;
+  }catch(e){ return false; }
+}
+function locLabel(nid){
+  if(nid==='map') return '箱庭地图';
+  if(nid==='loc'){ const l=locById(S._location); return l? l.name : '区域'; }
+  if(nid==='char') return '角色面板';
+  if(nid==='combat') return '战斗中';
+  if(NODES[nid]) return NODES[nid].title || nid;
+  return nid||'菜单';
+}
+function hasSlot(slot){ return !!localStorage.getItem(SAVE_PREFIX+slot); }
+function slotInfo(slot){ try{ return JSON.parse(localStorage.getItem(SAVE_PREFIX+slot)); }catch(e){ return null; } }
+function deleteSlot(slot){ try{ localStorage.removeItem(SAVE_PREFIX+slot); }catch(e){} }
+function autoSave(){ saveSlot('auto'); }
+function loadSlot(slot){
+  const info = slotInfo(slot); if(!info || !info.data) return false;
+  try{
+    const d = info.data;
+    for(const k in S) delete S[k];
+    Object.assign(S, d);
+    return true;
+  }catch(e){ return false; }
+}
+function resumeFromSave(slot){
+  if(!loadSlot(slot)) return false;
+  updateHUD();
+  const nid = S.nodeId;
+  if(nid==='map') renderMap();
+  else if(nid==='loc'){ const l=locById(S._location); if(l) renderLocation(l); else renderMap(); }
+  else if(nid==='char') renderChar();
+  else if(nid==='combat'){ const l=locById(S._location); if(l) renderLocation(l); else renderMap(); }
+  else if(NODES[nid]) gotoNode(nid);
+  else renderMap();
+  return true;
+}
+function renderSave(){
+  S._returnNode = S.nodeId;
+  S.nodeId='save';
+  updateHUD();
+  const v=$('view-save');
+  const fmt = t => { if(!t) return '—'; const d=new Date(t); return (d.getMonth()+1)+'月'+d.getDate()+'日 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+  const slots = [
+    ['auto','自动存档'],
+    ['slot1','存档位 1'],
+    ['slot2','存档位 2'],
+    ['slot3','存档位 3']
+  ];
+  let html = `<div class="panel">
+    <div class="scene-chap">回响之城 · 第 ${S.run} 周目</div>
+    <div class="scene-title">💾 存档 / 读档</div>
+    <div class="scene-tagline">自动存档会在进出地图 / 区域时自动写入；手动存档可以随时保留当前进度。读档后从存档位置继续。</div>
+    <div class="save-grid">`;
+  slots.forEach(([id,name])=>{
+    const info = slotInfo(id);
+    const empty = !info;
+    html += `<div class="save-slot ${empty?'empty':''}">
+      <div class="ss-head"><span class="ss-name">${name}</span><span class="ss-time">${info? fmt(info.t) : '空'}</span></div>
+      <div class="ss-label">${info? esc(info.label||'') : '（没有存档）'}</div>
+      <div class="ss-sub">${info? esc(info.sub||'') : ''}</div>
+      <div class="ss-acts">
+        ${id!=='auto'? `<span class="sbtn primary" data-a="save" data-s="${id}">💾 存档</span>`:''}
+        ${info? `<span class="sbtn" data-a="load" data-s="${id}">▶ 读取</span>`:''}
+        ${id!=='auto'&&info? `<span class="sbtn danger" data-a="del" data-s="${id}">🗑 删除</span>`:''}
+      </div>
+    </div>`;
+  });
+  html += `</div>
+    <div class="choices">
+      <div class="choice" id="save-back"><span class="c-tag">【返回】</span>返回</div>
+    </div></div>`;
+  v.innerHTML = html;
+  showView('save');
+  document.querySelectorAll('#view-save [data-a]').forEach(el=>{
+    el.onclick=()=>{
+      const a=el.dataset.a, s=el.dataset.s;
+      if(a==='save'){ saveSlot(s); renderSave(); }
+      else if(a==='del'){ deleteSlot(s); renderSave(); }
+      else if(a==='load'){
+        if(resumeFromSave(s)){ /* 已跳转 */ }
+      }
+    };
+  });
+  $('save-back').onclick=()=>{
+    const back = S._returnNode;
+    if(back==='map') renderMap();
+    else if(back==='loc'){ const l=locById(S._location); if(l) renderLocation(l); else renderMap(); }
+    else if(NODES[back]) gotoNode(back);
+    else renderTitle();
+  };
+  $('view').scrollTop=0; window.scrollTo({top:0});
 }
 const itemById = id => ITEMS.find(i=>i.id===id);
 const skillById = id => SKILLS[id];
@@ -2234,6 +2426,7 @@ function spotLocked(l, s){
 function renderMap(){
   if(S.nodeId!=='loc' && S.nodeId!=='map' && S.nodeId!=='class') S._returnNode = S.nodeId;
   S.nodeId='map';
+  autoSave();
   updateHUD();
   const v=$('view-map');
   let html = `<div class="panel">
@@ -2259,6 +2452,7 @@ function renderMap(){
     <div class="choices">
       <div class="choice" id="map-char"><span class="c-tag">【角色】</span>打开角色 / 背包 / 队伍 / 技能</div>
       <div class="choice" id="map-ops"><span class="c-tag">【任务】</span>黑塔帮 · 跨世界搜打撤任务板</div>
+      <div class="choice" id="map-save"><span class="c-tag">【存档】</span>存档 / 读档</div>
       <div class="choice" id="map-back"><span class="c-tag">【返回】</span>回到之前的地方</div>
     </div></div>`;
   v.innerHTML = html;
@@ -2272,6 +2466,7 @@ function renderMap(){
   });
   $('map-char').onclick=()=>{ renderChar(); };
   $('map-ops').onclick=()=>{ renderWorlds(); };
+  $('map-save').onclick=()=>{ renderSave(); };
   $('map-back').onclick=()=>{
     const back = S._returnNode;
     if(back==='loc'){ const l=locById(S._location); if(l){ renderLocation(l); return; } }
@@ -2288,6 +2483,7 @@ function enterLocation(locId){
 function renderLocation(l){
   S._returnNode = S.nodeId;
   S.nodeId='loc';
+  autoSave();
   updateHUD();
   const v=$('view-loc');
   let html = `<div class="panel">
@@ -2327,11 +2523,61 @@ function renderLocation(l){
 function activateSpot(l, s){
   if(s.node){ gotoNode(s.node); return; }
   if(s.repeat==='loot'){ openLoot(l, s); return; }
+  if(s.repeat==='event'){ renderRandomEvent(l); return; }
   if(s.repeat && ENEMIES[s.repeat]){
     S._locReturn = l.id;
     startCombat(s.repeat, '__loc__', 'death', {opMode:false});
     return;
   }
+}
+function applyEventReward(ev, success){
+  const r = success? ev.succ : ev.fail;
+  if(!r) return;
+  if(r.gold) S.gold += r.gold;
+  if(r.hp){ S.hp = Math.max(1, Math.min(S.maxHp, S.hp + r.hp)); }
+  if(r.mp){ S.mp = Math.max(0, Math.min(S.maxMp, S.mp + r.mp)); }
+  if(r.fate) S.fate += r.fate;
+  if(r.xp) gainXp(r.xp);
+  if(r.item) S.items.push(r.item);
+  updateHUD();
+}
+function renderRandomEvent(l){
+  const pool = EVENTS[l.id] || EVENTS.street;
+  const ev = pool[rand(pool.length)];
+  const v=$('view-scene');
+  v.innerHTML = `<div class="panel">
+    <div class="scene-chap">随机际遇 · ${esc(l.name)} · 第 ${S.run} 周目</div>
+    <div class="scene-title">${ev.ic} ${esc(ev.name)}</div>
+    <div class="dice-log" id="dice-log"></div>
+    <div class="story">${esc(ev.desc)}</div>
+    <div class="choices">
+      <div class="choice" id="ev-go"><span class="c-tag">【${ev.check? '判定' : '行动'}】</span>${esc(ev.action||'上前试一试')}${ev.check? `<span class="c-desc">难度 ${ev.check.dc} · ${ev.check.stat==='str'?'力量':ev.check.stat==='agi'?'敏捷':ev.check.stat==='int'?'智力':ev.check.stat==='cha'?'魅力':ev.check.stat==='con'?'体质':'感知'}</span>`:''}</div>
+      <div class="choice" id="ev-leave">绕开走人，不管闲事</div>
+    </div></div>`;
+  showView('scene');
+  $('view').scrollTop=0; window.scrollTo({top:0});
+  $('ev-leave').onclick=()=>{ renderLocation(locById(l.id)); };
+  $('ev-go').onclick=()=>{
+    if(!ev.check){ applyEventReward(ev, true); showEventResult(ev, ev.succ, l); return; }
+    const res = runCheck(ev.check.stat, ev.check.dc, '际遇判定');
+    diceLog(res);
+    const success = res.success;
+    applyEventReward(ev, success);
+    showEventResult(ev, success? ev.succ : ev.fail, l);
+  };
+}
+function showEventResult(ev, r, l){
+  const v=$('view-scene');
+  const panel = v.querySelector('.panel');
+  const bar = document.createElement('div');
+  bar.className='notice'; bar.style.marginTop='14px';
+  bar.textContent = r.text;
+  panel.appendChild(bar);
+  const back = document.createElement('div');
+  back.className='choice'; back.style.marginTop='10px'; back.id='ev-done';
+  back.innerHTML = `<span class="c-tag">【返回】</span>回到「${esc(l.name)}」`;
+  back.onclick=()=>{ renderLocation(locById(l.id)); };
+  panel.appendChild(back);
 }
 function openLoot(l, s){
   const key = s.key || 'loot';
@@ -2522,7 +2768,7 @@ function goEnding(id){
   if(!e) return;
   S.nodeId='ending';
   if(!S.finishedEndings.includes(id)) S.finishedEndings.push(id);
-  S.echoes += 3; S.totalRuns++;
+  if(!S.flag._endedThisRun){ S.echoes += 3; S.totalRuns++; S.flag._endedThisRun=true; }
   saveSave();
   updateHUD();
   const v=$('view-ending');
@@ -2541,12 +2787,15 @@ function goEnding(id){
         <div class="stat-card"><div class="k">已解锁结局</div><div class="v">${S.finishedEndings.length}/4</div></div>
       </div>
       <div class="notice">你记住了这段轮回。这座城，会记得你的选择。</div>
+      <div class="notice" style="color:#7fe0d0">主线已通关——你仍可留在这座城里，继续逛支线、刷世界、培养队友。</div>
       <div class="choices">
+        <div class="choice" id="continue-map"><span class="c-tag">【继续】</span>留在当前周目 · 继续探索箱庭</div>
         <div class="choice" id="again"><span class="c-tag">【轮回】</span>开始新的轮回 · 觉醒新天赋</div>
         <div class="choice" id="back-title2">返回主菜单</div>
       </div>
     </div>`;
   showView('ending');
+  $('continue-map').onclick=()=>{ renderMap(); };
   $('again').onclick=()=>{ resetRun(); renderTalentSelect(); };
   $('back-title2').onclick=()=>{ renderTitle(); };
 }
@@ -2573,6 +2822,7 @@ function renderTitle(){
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
       <div class="btn btn-primary" id="btn-start">开始轮回</div>
       <div class="btn btn-ghost" id="btn-help">玩法说明</div>
+      ${(hasSlot('auto')||hasSlot('slot1')||hasSlot('slot2')||hasSlot('slot3'))? '<div class="btn btn-ghost" id="btn-loadsave">读取存档</div>':''}
     </div>
     <div class="help-box" id="help-box" style="display:none;max-width:560px;margin:22px auto 0;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 22px">
       <b>玩法说明</b><br><br>
@@ -2590,6 +2840,7 @@ function renderTitle(){
   showView('title');
   $('btn-start').onclick=()=>renderTalentSelect();
   $('btn-help').onclick=()=>{ const h=$('help-box'); h.style.display = h.style.display==='none'?'block':'none'; };
+  const lb=$('btn-loadsave'); if(lb) lb.onclick=()=>renderSave();
 }
 function renderTalentSelect(){
   S.nodeId='talent';
