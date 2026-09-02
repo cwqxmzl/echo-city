@@ -26,10 +26,11 @@ let nCount = Object.keys(NODES).length;
 console.log('节点数:', nCount);
 console.log('天赋数:', TALENTS.length, '敌人数:', Object.keys(ENEMIES).length, '结局数:', Object.keys(ENDINGS).length);
 
+const SKIP_GOTO = new Set(['__stay__','__map__','__loc__']);
 // 1. 所有 goto / succ / fail / win / lose / ending 目标存在
 for (const [id, n] of Object.entries(NODES)) {
   (n.choices || []).forEach(c => {
-    if (c.goto && c.goto !== '__stay__' && !NODES[c.goto]) errors.push(`[${id}] goto 目标不存在: ${c.goto}`);
+    if (c.goto && !SKIP_GOTO.has(c.goto) && !NODES[c.goto]) errors.push(`[${id}] goto 目标不存在: ${c.goto}`);
     if (c.succ && !NODES[c.succ]) errors.push(`[${id}] succ 目标不存在: ${c.succ}`);
     if (c.fail && !NODES[c.fail]) errors.push(`[${id}] fail 目标不存在: ${c.fail}`);
     if (c.kind === 'combat') {
@@ -51,7 +52,7 @@ function collectReach(start) {
     seen.add(id);
     const n = NODES[id]; if (!n) return;
     (n.choices || []).forEach(c => {
-      if (c.goto && c.goto !== '__stay__') walk(c.goto);
+      if (c.goto && !SKIP_GOTO.has(c.goto)) walk(c.goto);
       if (c.succ) walk(c.succ);
       if (c.fail) walk(c.fail);
       if (c.kind === 'combat') { walk(c.win); walk(c.lose); }
