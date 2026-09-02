@@ -569,7 +569,10 @@ const SKILLS = {
   tide:{name:'潮汐斩',type:'atk',mp:14,power:1.6,steal:.4,desc:'1.6 倍伤害并吸血 40%（海洋）'},
   swordarts:{name:'御剑术',type:'atk',mp:20,power:2.2,int:true,desc:'飞剑贯穿，2.2 倍智力伤害（仙侠）'},
   energy:{name:'能量爆发',type:'atk',mp:18,power:1.8,rage:true,desc:'1.8 倍伤害并进入狂暴（末世）'},
-  hack:{name:'黑客协议',type:'atk',mp:16,power:1.5,arm:true,int:true,desc:'无视防御的 1.5 倍伤害（科幻）'}
+  hack:{name:'黑客协议',type:'atk',mp:16,power:1.5,arm:true,int:true,desc:'无视防御的 1.5 倍伤害（科幻）'},
+  pale:{name:'苍白之爪',type:'atk',mp:16,power:1.8,desc:'虚空残响凝成的利爪，1.8 倍伤害（圣巢）'},
+  catch:{name:'收服之心',type:'buff',mp:10,aim:true,desc:'下一次攻击必定命中（精灵大陆）'},
+  blitz:{name:'冥河冲刺',type:'atk',mp:15,power:1.5,hits:2,desc:'连刺两次，每次 1.5 倍伤害（冥界）'}
 };
 
 /* ---------- 道具 ---------- */
@@ -596,7 +599,10 @@ const ITEMS = [
   /* 饰品 */
   {id:'windfeather',name:'风羽护符',type:'trinket',desc:'敏捷 +3（空岛世界掉落）',equip:{agi:3}},
   {id:'spiritroot',name:'千年灵根',type:'trinket',desc:'智力 +3（仙侠世界掉落）',equip:{int:3}},
-  {id:'core_shard',name:'核心残片',type:'trinket',desc:'全属性 +1（无限流世界掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1}}
+  {id:'core_shard',name:'核心残片',type:'trinket',desc:'全属性 +1（无限流世界掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1}},
+  {id:'mastersword',name:'驱魔之剑',type:'weapon',desc:'力量 +5，攻击判定 +10（旷野神域掉落）',equip:{str:5},atk:10},
+  {id:'kusanagi',name:'苇名村正',type:'weapon',desc:'敏捷 +4，攻击判定 +6（苇名国掉落）',equip:{agi:4},atk:6},
+  {id:'golden_seal',name:'黄金律法印',type:'trinket',desc:'全属性 +1，受伤 -8%（交界之地掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1},mit:.08}
 ];
 
 /* ---------- 敌人 ---------- */
@@ -634,7 +640,20 @@ const ENEMIES = {
   w_sci:{name:'失控异形',hp:50,atk:13,dc:57,spd:13,gold:26,xp:68,
     desc:'深空站实验舱逃出的生物兵器。外壳覆盖着纳米装甲，行动快如鬼魅。'},
   w_inf:{name:'副本仲裁者',hp:58,atk:15,dc:62,spd:12,gold:34,xp:80,
-    desc:'无限流副本中枢的守卫，融合了所有世界的残响。它是所有“故事”的看门人。'}
+    desc:'无限流副本中枢的守卫，融合了所有世界的残响。它是所有“故事”的看门人。'},
+  /* —— 跨世界搜打撤 · 知名游戏世界（致敬编撰） —— */
+  w_wild:{name:'灾厄之影',hp:56,atk:14,dc:60,spd:12,gold:30,xp:74,
+    desc:'旷野神域的灾厄化身，由瘴气与废墟凝成。它吞噬过无数试图拔起圣剑的勇者。'},
+  w_void:{name:'虚空幻影',hp:54,atk:14,dc:59,spd:13,gold:30,xp:73,
+    desc:'圣巢深渊的虚空造物，模仿闯入者的动作。它的复眼里，倒映着你自己的影子。'},
+  w_elden:{name:'褪色骑士',hp:62,atk:15,dc:63,spd:13,gold:36,xp:86,
+    desc:'交界之地被黄金律法抛弃的骑士，为收集卢恩而战。他的长枪，从不落空。'},
+  w_pet:{name:'传说精灵',hp:50,atk:13,dc:57,spd:12,gold:26,xp:68,
+    desc:'精灵大陆传说中的守护精灵，平时温顺，一旦被激怒，能掀起沙暴与雷雨。'},
+  w_sekiro:{name:'苇名影武者',hp:58,atk:14,dc:61,spd:15,gold:32,xp:78,
+    desc:'苇名国最后的影武者，剑术快如残影。他侍奉的主人已死，唯有忠义不灭。'},
+  w_hades:{name:'冥河三首犬',hp:66,atk:16,dc:65,spd:13,gold:40,xp:92,
+    desc:'冥界的看门犬，三个头分别代表过去、现在与未来。想逃离冥界？先过它这一关。'}
 };
 
 /* ---------- 跨世界搜打撤 · 小说世界 ---------- */
@@ -707,7 +726,56 @@ const WORLDS = [
    loot:'你从仲裁者的核心中，抠出一枚融汇所有世界之力的残片。',
    reward:{type:'equip',id:'core_shard',name:'核心残片'},
    mate:'wuming',
-   base:38}
+   base:38},
+  /* —— 知名游戏世界（致敬编撰） —— */
+  {id:'zelda', name:'旷野神域', style:'旷野冒险', diff:2, unlock:6,
+   desc:'瘴气笼罩的旷野王国，耸立着古代神庙与发光的龙。传说勇者在此沉睡百年，等待圣剑苏醒。',
+   enemy:'w_wild',
+   search:'你从高塔纵身跃下，展开滑翔伞掠过苍翠旷野。远处，一只灾厄笼罩的巨兽在逡巡——那道光芒里的残响，是沉睡百年的勇者之证。',
+   combat:'灾厄之影从瘴气中凝聚成形，手持锈蚀巨剑，瞳孔亮着猩红：“把圣剑，还给我。”',
+   loot:'你从神庙残骸中拔出那柄光芒黯淡的剑——剑身嗡鸣，仿佛在说：它等这一战，等了一百年。',
+   reward:{type:'equip',id:'mastersword',name:'驱魔之剑'},
+   base:36},
+  {id:'hollow', name:'圣巢深渊', style:'虫巢冒险', diff:2, unlock:6,
+   desc:'地下的虫族王国，白盔骑士的传说在黑暗中流传。无数双复眼，正从虚空里注视着你。',
+   enemy:'w_void',
+   search:'你沿着地底灯柱一路向下，圣巢在黑暗中延展。一座白色面具的小骑士雕像，正对着虚空凝望。',
+   combat:'虚空幻影从影子里涌出，无数复眼同时睁开——它模仿你的动作，缓缓举起骨针。',
+   loot:'你从虚空裂缝里捡起一块苍白的碎片，触手冰冷，却透着一丝温柔——像某个沉默守护者的执念。',
+   reward:{type:'skill',id:'pale',name:'苍白之爪'},
+   base:36},
+  {id:'elden', name:'交界之地', style:'魂系史诗', diff:3, unlock:8,
+   desc:'黄金树的光辉洒满尸骸遍野的大地，褪色者们追寻破碎的卢恩。这里堆满王者与传说。',
+   enemy:'w_elden',
+   search:'黄金树的光辉洒满大地，你踩过燃烧的城池废墟。远处的赐福微光，引向一座被风暴包裹的城堡。',
+   combat:'褪色骑士从卢恩风暴中现身，长枪直指你：“褪色者，把卢恩留下。”',
+   loot:'你从骑士的遗骸上拾起一枚印着黄金律法的纹章，微光中仿佛有王者的低语在回荡。',
+   reward:{type:'equip',id:'golden_seal',name:'黄金律法印'},
+   base:40},
+  {id:'pet', name:'精灵大陆', style:'精灵收集', diff:1, unlock:8,
+   desc:'充满精灵伙伴的大陆，训练师们以对战为荣。这里的“残响”，是一只渴望被收服的传说精灵。',
+   enemy:'w_pet',
+   search:'草丛里蹦出一只圆滚滚的精灵，对你投来好奇的目光。对战场边传来欢呼：“就决定是你了！”',
+   combat:'传说精灵感受到你的“残响”气息，狂躁起来——它身上的力量，足以掀起一场沙暴。',
+   loot:'你与精灵对视良久，它最终低下头，把一枚温热的晶球滚到你脚边——那是它的认可。',
+   reward:{type:'skill',id:'catch',name:'收服之心'},
+   base:34},
+  {id:'sekiro', name:'苇名国', style:'忍义之地', diff:2, unlock:8,
+   desc:'樱花与残月下的战国乱世，忍者与剑客的忠义传说。一条影之径，通向不死之身。',
+   enemy:'w_sekiro',
+   search:'残月下的苇名国，樱花飘落如雪。你在屋顶间飞掠，忍者的影子与你不相上下。',
+   combat:'苇名影武者从树影中现身，剑光快过残影：“苇名流，只问剑，不问命。”',
+   loot:'你从影武者怀中取出一柄刃身漆黑的忍者剑，刀镡上刻着“不死”二字。',
+   reward:{type:'equip',id:'kusanagi',name:'苇名村正'},
+   base:38},
+  {id:'hades', name:'冥界试炼', style:'冥界逃生', diff:3, unlock:10,
+   desc:'冥王的地府迷宫，一次次向地表冲刺的逃生者传说。死亡不是终点——回响会带你回来。',
+   enemy:'w_hades',
+   search:'你穿过冥河，三头犬的吼声在廊柱间回荡。地府灯火忽明忽暗——这里，是每个逃生者的起点。',
+   combat:'冥河三首犬挣脱锁链，三个头同时嘶吼：“回去！回去！这里没有你要的路！”',
+   loot:'你从冥河祭坛里拾起一张刻着“再试一次”的冲刺铭文——它像在嘲笑，又像在鼓励。',
+   reward:{type:'skill',id:'blitz',name:'冥河冲刺'},
+   base:42}
 ];
 
 /* ---------- 强力队友 ---------- */
@@ -2218,7 +2286,7 @@ function renderWorlds(){
     <div class="scene-chap">黑塔帮任务板 · 第 ${S.run} 周目</div>
     <div class="scene-title">跨世界搜打撤 · 任务板</div>
     <div class="scene-tagline">黑塔帮挖通了通往「故事残响」世界的通道——搜 → 打 → 撤，把残响带回来</div>
-    <div class="story">接头人弹了弹烟灰：“这些世界，都是从‘回响’里撕下来的小说碎片。空岛、江湖、仙山、海沟、深空……里面的好东西，只要你敢搜、敢打、敢撤，都是你的。”\n\n“规矩不变：搜、打、撤。完成的越多，解锁的世界越离谱。”</div>
+    <div class="story">接头人弹了弹烟灰：“这些世界，都是从‘回响’里撕下来的故事碎片——小说、游戏、传说，什么都有。空岛、江湖、仙山、海沟、深空、旷野、圣巢……里面的好东西，只要你敢搜、敢打、敢撤，都是你的。”\n\n“规矩不变：搜、打、撤。完成的越多，解锁的世界越离谱。”</div>
     <div class="world-grid">`;
   WORLDS.forEach(w=>{
     const locked = done < w.unlock;
@@ -2235,7 +2303,7 @@ function renderWorlds(){
   });
   html += `</div>
     <div class="choices">
-      <div class="choice" id="worlds-back"><span class="c-tag">【返回】</span>返回中枢塔，继续主线</div>
+      <div class="choice" id="worlds-back"><span class="c-tag">【返回】</span>返回箱庭地图</div>
     </div></div>`;
   v.innerHTML = html;
   showView('worlds');
@@ -2247,7 +2315,7 @@ function renderWorlds(){
       startOperation(w.id);
     };
   });
-  $('worlds-back').onclick=()=>gotoNode('c2_file');
+  $('worlds-back').onclick=()=>renderMap();
 }
 function startOperation(worldId){
   const w = worldById(worldId) || WORLDS[0];
