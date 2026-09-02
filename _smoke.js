@@ -587,6 +587,18 @@ step('典型世界特色机制', () => {
   ok('圣巢掉魂', G('S._hollowSoul===40'));
 });
 
+step('撤离按钮修复（op-withdraw 点击有反应）', () => {
+  G('boot(); newRun(); applyClass("sword"); renderHub(); S.stats.agi=999; S.party=["maomao"];');
+  G('startOperation("pet")');
+  const wd = d.getElementById('op-withdraw');
+  ok('撤离按钮已渲染', !!wd);
+  ok('撤离按钮已绑定 onclick', !!(wd && typeof wd.onclick === 'function'));
+  if (wd) wd.click();
+  ok('点击后撤离流程推进到结算', G('OP.phase==="done"'));
+  ok('结算结果已渲染', (d.getElementById('view-operation').textContent||'').length > 50);
+  ok('点击无运行时错误', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
