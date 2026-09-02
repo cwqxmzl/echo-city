@@ -609,15 +609,15 @@ const TALENTS = [
    flavor:'那些阴魂不散的东西，最怕你这样的人。',
    mod:{heal:8,abyss:15}},
   {id:'dragon',grade:'S',type:'血脉型',name:'龙裔血脉',
-   desc:'沉睡在灵魂深处的龙血开始沸腾。力量 +5，生命上限 +20，可随轮回次数进化。',
+   desc:'沉睡在灵魂深处的龙血开始沸腾。力量 +8，生命上限 +40，每次战斗胜利再回 5 点血——可随轮回次数进化。',
    flavor:'血脉觉醒之日，万物俯首。',
-   mod:{str:5,maxhp:20}},
+   mod:{str:8,maxhp:40}},
   {id:'panel',grade:'B',type:'系统型',name:'任务面板',
    desc:'一个只有你能看见的面板。每次轮回额外触发 1 个支线任务，支线奖励翻倍。',
    flavor:'【叮—— 支线任务已刷新。】',
    mod:{quest:1}},
   {id:'eye',grade:'A',type:'信息型',name:'数据之眼',
-   desc:'你可以看见世界的底层代码。战斗中显示敌人弱点（伤害 +6），所有判定 +10。',
+   desc:'你可以看见世界的底层代码。战斗中显示敌人弱点（伤害 +10），所有判定 +14。',
    flavor:'在你眼中，万物都是参数。',
    mod:{check:10,weak:6}},
   {id:'feast',grade:'SS',type:'斩杀型',name:'致命盛宴',
@@ -625,11 +625,11 @@ const TALENTS = [
    flavor:'盛宴开始，无人离席。',
    mod:{execute:.30}},
   {id:'blink',grade:'S',type:'刺杀型',name:'十步一杀',
-   desc:'战斗首回合必定先手；暴击率 +30%，暴击伤害 +50%。',
+   desc:'战斗首回合必定先手暴击；暴击伤害提升至 +80%，前两回合闪避需求 +8。',
    flavor:'十步之内，人尽敌国。',
    mod:{first:1,crit:.30,critdmg:1.5}},
   {id:'fate',grade:'SSS',type:'欧皇型',name:'天命之子',
-   desc:'命运站在你这一边。大成功区间由 1-5 扩为 1-10；大失败时自动重掷一次。',
+   desc:'命运站在你这一边。大成功区间扩为 1-12；大失败（98+）自动重掷一次；开局额外 +1 命运点。',
    flavor:'当你的骰子落下的那一刻，神就已经输了。',
    mod:{crit1:10,reluck:1}},
   {id:'bag',grade:'D',type:'道具型',name:'百宝袋',
@@ -5356,22 +5356,22 @@ const ALLY_COMBAT = {
 /* ---------- 外挂系统（金手指 · 每个世界冒险前可选多个，强化冒险） ---------- */
 /* 网文风金手指：进入万界冒险前选 1-3 个，整场冒险生效 */
 const EXTERNAL_BUFFS = [
-  {id:'sign', icon:'📅', name:'签到系统', desc:'开局白嫖 8 金币；探索收获时额外 +5 金币。',
-   apply(){ S.gold += 8; }},
-  {id:'word', icon:'🔤', name:'词条篡改', desc:'开局自带【词条·丰收】（金币 ×1.5）；探索中更容易拾取词条。',
+  {id:'sign', icon:'📅', name:'签到系统', desc:'开局白嫖 30 金币 + 3 命运点；探索收获额外 +12 金币 +5 经验；撤离额外 +20 金币——网文主角从不缺钱。',
+   apply(){ S.gold += 30; S.fate += 3; S.hp = S.maxHp; S.mp = S.maxMp; }},
+  {id:'word', icon:'🔤', name:'词条篡改', desc:'开局自带【词条·丰收】（探索金币 ×2）；词条掉落概率 +10%；插槽限制解除（可无限装备词条）——万般词条尽在掌握。',
    apply(){ if(OP){ OP.tags = OP.tags||[]; if(!OP.tags.includes('词条·丰收')) OP.tags.push('词条·丰收'); } }},
-  {id:'ads', icon:'📺', name:'看广告变强', desc:'开局白嫖 20 金币，全属性 +2。',
-   apply(){ S.gold += 20; ['str','agi','int','cha','con','per'].forEach(k=>S.stats[k]+=2); }},
-  {id:'exp', icon:'⚡', name:'升级加速', desc:'经验获取 +50%，升级更快。'},
-  {id:'drop', icon:'🎁', name:'无限掉落', desc:'探索收获概率从 42% 提升到 62%。'},
-  {id:'fate', icon:'🎲', name:'命运改写', desc:'开局命运点 +3。',
-   apply(){ S.fate += 3; }},
-  {id:'body', icon:'💪', name:'肉身成圣', desc:'最大生命 +30%，皮糙肉厚。',
-   apply(){ const add=Math.round(S.maxHp*0.3); S.maxHp+=add; S.hp=S.maxHp; }},
-  {id:'mp', icon:'🧘', name:'修炼加速', desc:'最大法力 +20，战斗中每回合额外回蓝 +5。',
-   apply(){ S.maxMp+=20; S.mp=S.maxMp; }},
-  {id:'gold', icon:'✨', name:'金色传说', desc:'探索更易掉落装备，撤离奖励 +20%。'},
-  {id:'cheat', icon:'💾', name:'存档作弊', desc:'死亡时保留一半金币；脱战后恢复 30% 生命。'}
+  {id:'ads', icon:'📺', name:'看广告变强', desc:'开局白嫖 50 金币，全属性 +4，生命上限 +30——广告一响，黄金万两。',
+   apply(){ S.gold += 50; ['str','agi','int','cha','con','per'].forEach(k=>S.stats[k]+=4); S.maxHp += 30; S.hp = S.maxHp; }},
+  {id:'exp', icon:'⚡', name:'升级加速', desc:'经验获取 +100%（翻倍），升级如喝水；每升一级全属性额外再 +1。'},
+  {id:'drop', icon:'🎁', name:'无限掉落', desc:'探索收获概率提升到 75%（基础 42%）；收获时额外 +8 金币——遍地是宝。'},
+  {id:'fate', icon:'🎲', name:'命运改写', desc:'开局命运点 +6；每场战斗胜利额外 +1 命运点——命运站在你这边。',
+   apply(){ S.fate += 6; }},
+  {id:'body', icon:'💪', name:'肉身成圣', desc:'最大生命 +60%，战斗受击回复 5% 生命——金刚不坏，越打越精神。',
+   apply(){ const add=Math.round(S.maxHp*0.6); S.maxHp+=add; S.hp=S.maxHp; }},
+  {id:'mp', icon:'🧘', name:'修炼加速', desc:'最大法力 +40，普攻额外回蓝 +8，技能法力消耗 -30%——法力如泉涌。',
+   apply(){ S.maxMp+=40; S.mp=S.maxMp; }},
+  {id:'gold', icon:'✨', name:'金色传说', desc:'探索更易掉落装备（概率 35%→60%），撤离奖励 +40%，探索金币 +50%——出门就掉橙装。'},
+  {id:'cheat', icon:'💾', name:'存档作弊', desc:'死亡时金币全数保留再额外多带 50%；脱战后恢复 60% 生命——作弊玩家的快乐你不懂。'}
 ];
 function boosterById(id){ return EXTERNAL_BUFFS.find(b=>b.id===id); }
 function hasBooster(id){ return S.externals && S.externals.includes(id); }
@@ -5382,16 +5382,16 @@ const TAG_BAG_MAX = 12;
 const TAG_SLOT_BASE = 3;
 const TAG_GRADES = {D:'普通', B:'稀有', A:'史诗', S:'传说'};
 const TAG_POOL = [
-  {id:'harvest', n:'词条·丰收', g:'D', desc:'探索收获的金币 +50%', fx:'gold'},
-  {id:'alert',   n:'词条·警觉', g:'D', desc:'遭遇战与陷阱概率减半', fx:'calm'},
-  {id:'insight', n:'词条·洞察', g:'D', desc:'搜索更大概率进入收获区', fx:'insight'},
-  {id:'tough',   n:'词条·坚韧', g:'B', desc:'战斗受到伤害 -10%', fx:'mit'},
-  {id:'rage',    n:'词条·狂暴', g:'B', desc:'暴击率 +15%', fx:'crit'},
-  {id:'echo',    n:'词条·回响', g:'B', desc:'战斗胜利额外 +1 回响碎片', fx:'echo'},
-  {id:'luck',    n:'词条·天运', g:'A', desc:'大成功区间 +3（更容易大成功）', fx:'luck'},
-  {id:'vamp',    n:'词条·噬魂', g:'A', desc:'攻击恢复 10% 造成伤害的生命', fx:'vamp'},
-  {id:'loot',    n:'词条·聚宝', g:'A', desc:'撤离奖励 +30%', fx:'loot'},
-  {id:'omni',    n:'词条·万般', g:'S', desc:'全能：金币+10%、减伤5%、暴击+5%、大成功+1', fx:'omni'}
+  {id:'harvest', n:'词条·丰收', g:'D', desc:'探索收获的金币 +100%（翻倍）', fx:'gold'},
+  {id:'alert',   n:'词条·警觉', g:'D', desc:'遭遇战与陷阱概率减半，且陷阱只损失 1 成', fx:'calm'},
+  {id:'insight', n:'词条·洞察', g:'D', desc:'搜索更大概率进入收获区；每次搜索额外 +1 命运点', fx:'insight'},
+  {id:'tough',   n:'词条·坚韧', g:'B', desc:'战斗受到伤害 -20%', fx:'mit'},
+  {id:'rage',    n:'词条·狂暴', g:'B', desc:'暴击率 +25%', fx:'crit'},
+  {id:'echo',    n:'词条·回响', g:'B', desc:'战斗胜利额外 +2 回响碎片', fx:'echo'},
+  {id:'luck',    n:'词条·天运', g:'A', desc:'大成功区间 +6（更容易大成功）', fx:'luck'},
+  {id:'vamp',    n:'词条·噬魂', g:'A', desc:'攻击恢复 20% 造成伤害的生命', fx:'vamp'},
+  {id:'loot',    n:'词条·聚宝', g:'A', desc:'撤离奖励 +50%', fx:'loot'},
+  {id:'omni',    n:'词条·万般', g:'S', desc:'全能：金币+15%、减伤10%、暴击+10%、大成功+2、撤离奖励+15%', fx:'omni'}
 ];
 const TAG_ORDER = ['D','B','A','S'];
 function tagById(id){ return TAG_POOL.find(t=>t.id===id); }
@@ -5976,7 +5976,7 @@ choices:[
 ]});
 
 N({id:'c2_ops_offer',chap:'第二章 · 中枢塔',title:'黑塔帮的委托',tagline:'支线 · 跨世界搜打撤',
-text:'你在地库入口被一个叼着数据烟的接头人叫住：\n\n“喂，新面孔。有个活儿，干不干？”\n\n他压低声音：“城里的‘回响’最近炸开了花——无数小说世界的碎片，正在一个接一个地‘长脚’跑出来。空岛、江湖、仙山、海沟、深空……全乱了套。”\n\n“黑塔帮挖通了通往这些世界碎片的通道。你去，把每个世界里的‘数据残响’搜出来、再带回来——咱们五五分成。”\n\n“新规矩：每个世界都是敞开的箱庭。进去先补满状态，然后想搜几处搜几处——搜到特色产物、金币、药剂，或者惊动守卫打一架，全凭手气。\n\n但记住：{hl}搜得越深，世界越凶{/hl}。每个世界有探索上限，搜到极限还不撤，就会被它咬下一块肉。及时抽身，才能把收获稳稳带回来。”\n\n（跨世界箱庭探索：19 个小说/游戏世界 × 随机搜索，每世界 3+ 特色随机产物 + 首通专属技能/装备/队友）',
+text:'你在地库入口被一个叼着数据烟的接头人叫住：\n\n“喂，新面孔。有个活儿，干不干？”\n\n他压低声音：“城里的‘回响’最近炸开了花——无数小说世界的碎片，正在一个接一个地‘长脚’跑出来。空岛、江湖、仙山、海沟、深空……全乱了套。”\n\n“黑塔帮挖通了通往这些世界碎片的通道。你去，把每个世界里的‘数据残响’搜出来、再带回来——咱们五五分成。”\n\n“新规矩：每个世界都是敞开的箱庭。进去先补满状态，然后想搜几处搜几处——搜到特色产物、金币、药剂，或者惊动守卫打一架，全凭手气。\n\n但记住：{hl}搜得越深，世界越凶{/hl}，可宝贝也越肥。每个世界有探索上限，搜到极限自动撤离——放心，收益几乎全数带回家，异世界不坑你。见好就收，快乐翻倍。”\n\n（跨世界箱庭探索：20 个小说/游戏世界 × 随机搜索，每世界 3+ 特色随机产物 + 首通专属技能/装备/队友）',
 choices:[
   {text:'接下委托，打开任务板',tag:'接取',desc:'选择要去的世界',kind:'effect',apply:(s)=>{renderWorlds();},goto:'__stay__'},
   {text:'婉拒，继续主线',tag:'婉拒',kind:'next',goto:'c2_file'}
@@ -6471,7 +6471,7 @@ const skillById = id => SKILLS[id];
 const classById = id => CLASSES.find(c=>c.id===id);
 const worldById = id => WORLDS.find(w=>w.id===id);
 const teammateById = id => TEAMMATES.find(m=>m.id===id);
-function xpNeed(level){ return 60 + level*40; }
+function xpNeed(level){ return 50 + level*30; }
 
 /* 队伍：招募 / 上阵切换 */
 function recruitTeammate(id){
@@ -6548,11 +6548,11 @@ function checkBonus(name){
   return b;
 }
 function combatBonus(){
-  let b=0;
-  if(S.talents.includes('wit')) b+=10;
-  if(S.talents.includes('eye')) b+=10;
-  if(S.items.includes('dagger')) b+=8;
-  if(S.items.includes('vision')) b+=8;   // 「神之眼」：元素之力加持攻击判定
+  let b=12;  // 天命加身：基础命中加成
+  if(S.talents.includes('wit')) b+=12;
+  if(S.talents.includes('eye')) b+=16;
+  if(S.items.includes('dagger')) b+=12;
+  if(S.items.includes('vision')) b+=14;   // 「神之眼」：元素之力加持攻击判定
   if(S.equip.weapon && itemById(S.equip.weapon).atk) b += itemById(S.equip.weapon).atk;
   return b;
 }
@@ -6582,8 +6582,8 @@ function talentByGrade(g){
 /* ---------- 每局初始化 ---------- */
 function newRun(){
   S.stats = newStats();
-  S.gold = 12 + (S._keepGold||0); S._keepGold = 0;  // 「存档作弊」外挂可把上一局一半金币带进下一轮
-  S.fate = 2 + Math.floor(S.echoes/3);
+  S.gold = 40 + (S._keepGold||0); S._keepGold = 0;  // 「存档作弊」外挂可把上一局一半金币带进下一轮
+  S.fate = 4 + Math.floor(S.echoes/2);  // 灵魂烙印越深，降世的底气越足
   S.items = [];
   S.talents = [];
   S.flag = {};
@@ -6593,8 +6593,8 @@ function newRun(){
   S.worldsCleared = [];
   S.roster = []; S.party = [];
   S.shards = 0; S._locDone = {};
-  S.maxHp = 20 + S.stats.con*2;
-  S.maxMp = 30 + S.stats.int*2;
+  S.maxHp = 40 + S.stats.con*3;
+  S.maxMp = 50 + S.stats.int*3;
   S.hp = S.maxHp; S.mp = S.maxMp;
   S.nodeId = null;
   S.revealedSelf=false;
@@ -6608,12 +6608,13 @@ function applyClass(cid){
   S.cls = cid;
   S.stats.str+=c.str; S.stats.agi+=c.agi; S.stats.int+=c.int;
   S.stats.cha+=c.cha; S.stats.con+=c.con; S.stats.per+=c.per;
-  S.maxHp += c.maxHp; S.hp = S.maxHp;
-  S.maxMp = 30 + S.stats.int*2; S.mp = S.maxMp;
+  S.maxHp += 10 + c.maxHp*3; S.hp = S.maxHp;
+  S.maxMp = 50 + S.stats.int*3; S.mp = S.maxMp;
   S.skillPool = c.pool.slice();
   S.skills = c.skills.slice();
   S.equip.weapon = c.weapon; S.equip.armor = c.armor;
-  S.gold += 5;
+  S.gold += 20;
+  S.hp = S.maxHp; S.mp = S.maxMp;  // 满状态入世，开局即巅峰
 }
 function renderClassSelect(){
   S.nodeId='class';
@@ -6657,7 +6658,7 @@ function renderClassSelect(){
 
 /* ---------- 经验 / 升级 ---------- */
 function gainXp(amount){
-  if(hasBooster('exp')) amount = Math.floor(amount*1.5);  // 「升级加速」外挂：经验 +50%
+  if(hasBooster('exp')) amount = Math.floor(amount*2);  // 「升级加速」外挂：经验 +100%
   S.xp += amount;
   let ups=0;
   const learned=[];
@@ -6667,8 +6668,8 @@ function gainXp(amount){
     ups++;
     const keys=['str','agi','int','cha','con','per'];
     keys.forEach(k=>S.stats[k]++);
-    S.maxHp += 5; S.hp += 5;
-    S.maxMp += 2; S.mp += 2;
+    S.maxHp += 8; S.hp += 8;
+    S.maxMp += 4; S.mp += 4;
     // 升级可学一个职业池中的新技能
     const c = classById(S.cls);
     if(c){
@@ -6679,7 +6680,7 @@ function gainXp(amount){
   updateHUD();
   if(ups>0){
     let html = `<div class="levelup"><div class="lu-title">✦ 等级提升 → Lv.${S.level}</div>`;
-    html += `<div class="lu-sub">全属性 +1 · 生命上限 +5 · 法力上限 +2</div>`;
+    html += `<div class="lu-sub">全属性 +1 · 生命上限 +8 · 法力上限 +4</div>`;
     if(learned.length) html += `<div class="lu-skill">习得新技能：${learned.join('、')}（可在「角色」面板更换携带）</div>`;
     html += `<div class="choices" style="margin-top:12px"><div class="choice" id="lu-close" style="text-align:center">收下</div></div></div>`;
     const wrap=document.createElement('div'); wrap.innerHTML=html;
@@ -6783,13 +6784,13 @@ function updateHUD(){
 
 /* ---------- 骰子系统（安科） ---------- */
 function roll100(){ return rand(100)+1; }
-function critRange(){ return (S.talents.includes('fate')?10:5) + (hasTagFx('luck')?3:0) + (hasTagFx('omni')?1:0); }
+function critRange(){ return (S.talents.includes('fate')?12:8) + (hasTagFx('crit')?6:0) + (hasTagFx('luck')?6:0) + (hasTagFx('omni')?2:0); }
 function runCheck(stat, dc, label){
   let roll = roll100();
   let rerolled=false;
-  if(roll>=96 && S.talents.includes('fate')){ rerolled=true; roll=roll100(); }
+  if(roll>=98 && S.talents.includes('fate')){ rerolled=true; roll=roll100(); }
   const crit = roll<=critRange();
-  const fumb = roll>=96;
+  const fumb = roll>=98;  // 天命护体：大失败只余 2%
   const mod = statValue(stat) + checkBonus(stat);
   const total = roll + mod;
   const success = crit ? true : (total>=dc);
@@ -7176,19 +7177,20 @@ function combatPlayerAttack(heavy){
     combatEnemyTurn(); return;
   }
   if(crit) combatLog(`暴击！`, 'crit');
-  let dmg = S.stats.str + rint(1,6);
-  if(heavy) dmg = Math.round(dmg*1.7);
-  if(CB.buff.atkup>0) dmg = Math.round(dmg*1.5);
-  if(crit) dmg = Math.round(dmg*(S.talents.includes('blink')?1.5:1.3));
-  if(CB.buff.rage>0) dmg = Math.round(dmg*1.2);
-  if(S.talents.includes('eye')) dmg += 6;
+  let dmg = S.stats.str*2 + rint(2,10);
+  if(heavy) dmg = Math.round(dmg*2.0);
+  if(CB.buff.atkup>0) dmg = Math.round(dmg*1.6);
+  if(crit) dmg = Math.round(dmg*(S.talents.includes('blink')?2.0:1.6));  // 十步一杀：暴击伤害 +100%
+  if(CB.buff.rage>0) dmg = Math.round(dmg*1.25);
+  if(S.talents.includes('eye')) dmg += 10;
   CB.hp -= dmg;
   combatLog(`你对${ENEMIES[CB.id].name}造成 <b>${dmg}</b> 点伤害！`, 'pl');
-  if(hasTagFx('vamp')){ const hv=Math.max(1,Math.round(dmg*0.1)); S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD(); combatLog(`【词条·噬魂】你汲取了 ${hv} 点生命。`,'ok'); }
+  if(hasTagFx('vamp')){ const hv=Math.max(1,Math.round(dmg*0.2)); S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD(); combatLog(`【词条·噬魂】你汲取了 ${hv} 点生命。`,'ok'); }
   // 普通攻击回蓝（灵子：数据洪流翻倍）
-  const mpGain = S.flag._allyDoubleMp ? 16 : 8;
+  let mpGain = S.flag._allyDoubleMp ? 24 : 12;
+  if(hasBooster('mp')) mpGain += 8;  // 「修炼加速」：普攻额外回蓝
   S.mp = Math.min(S.maxMp, S.mp+mpGain); updateHUD();
-  if(S.flag._allyDoubleMp && mpGain===16) combatLog('灵子将攻击数据回路化——法力 +16！','ally');
+  if(S.flag._allyDoubleMp && mpGain===24) combatLog('灵子将攻击数据回路化——法力 +24！','ally');
   if(CB.hp<=0){ combatVictory(); return; }
   if(afterHit(dmg, crit)) return;
   combatEnemyTurn();
@@ -7212,7 +7214,7 @@ function combatUseSkill(sid){
     if(!hit){ combatLog(`「${sk.name}」落空了！`, 'fumb'); combatEnemyTurn(); return; }
     if(crit) combatLog(`法术暴击！`, 'crit');
     const base = sk.int? S.stats.int : S.stats.str;
-    const gain = (CB.buff.atkup>0?1.5:1) * (crit?1.5:1) * (CB.buff.rage>0?1.2:1) * (1 + (S.bp||0)*0.5);
+    const gain = (CB.buff.atkup>0?1.6:1) * (crit?1.7:1) * (CB.buff.rage>0?1.25:1) * (1 + (S.bp||0)*0.5) * (1 + Math.min(0.6, S.level*0.02));  // 等级带来成长，越战越强
     S.bp = 0; updateHUD();
     let dmg=0;
     if(sk.hits){
@@ -7228,7 +7230,7 @@ function combatUseSkill(sid){
       CB.hp -= dmg;
       combatLog(`「${sk.name}」对${ENEMIES[CB.id].name}造成 <b>${dmg}</b> 点伤害！`, 'pl');
     }
-    if(hasTagFx('vamp')){ const hv=Math.max(1,Math.round(dmg*0.1)); S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD(); combatLog(`【词条·噬魂】你汲取了 ${hv} 点生命。`,'ok'); }
+    if(hasTagFx('vamp')){ const hv=Math.max(1,Math.round(dmg*0.2)); S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD(); combatLog(`【词条·噬魂】你汲取了 ${hv} 点生命。`,'ok'); }
     if(sk.freeze && rand(100)<30){
       CB.frozen=true;
       combatLog(`${ENEMIES[CB.id].name}被【寒冰】冻结，下一回合无法行动！`, 'ok');
@@ -7312,9 +7314,10 @@ function combatEnemyTurn(){
     const eb=equipBonus();
     if(eb.mit>0) dmg = Math.round(dmg*(1-eb.mit));
     if(S.flag._allyMit) dmg = Math.round(dmg*(1-S.flag._allyMit));
-    if(hasTagFx('mit')) dmg = Math.round(dmg*0.9);
-    if(hasTagFx('omni')) dmg = Math.round(dmg*0.95);
-    if(S.talents.includes('iron')) dmg = Math.round(dmg*0.7);
+    if(hasTagFx('mit')) dmg = Math.round(dmg*0.8);
+    if(hasTagFx('omni')) dmg = Math.round(dmg*0.9);
+    if(hasBooster('body')){ const bh=Math.max(1,Math.round(S.maxHp*0.05)); S.hp=Math.min(S.maxHp,S.hp+bh); combatLog('【肉身成圣】金身自动回血 +'+bh+'。','ok'); }
+    if(S.talents.includes('iron')) dmg = Math.round(dmg*0.6);  // 铁壁之躯：受击 -40%
     if(S.items.includes('artifacts')) dmg = Math.round(dmg*0.95);   // 「圣遗物」：神遗圣物庇护
     if(S.talents.includes('eternal')) dmg = Math.round(dmg*0.5);     // 「永恒防御 · 钢铁之躯·金」：受击 -50%
     dmg = Math.max(1, dmg);
@@ -7436,8 +7439,9 @@ function combatVictory(){
 }
 function victoryRewards(withLoot){
   const e = ENEMIES[CB.id];
-  S.gold += e.gold||0;
-  if(hasTagFx('echo')){ S.echoes+=1; saveSave(); combatLog('【词条·回响】残响凝聚——回响碎片 +1。','ok'); }
+  S.gold += Math.round((e.gold||0)*1.5);
+  gainXp(Math.round((e.xp||0)*1.5));
+  if(hasTagFx('echo')){ S.echoes+=2; saveSave(); combatLog('【词条·回响】残响凝聚——回响碎片 +2！','ok'); }
   if(S.flag._allyGold){ S.gold += S.flag._allyGold; combatLog('凝光的琼玑阁为你拉来一笔赏金：金币 +'+S.flag._allyGold+'。','ally'); }
   if(e.reward){ combatLog(e.reward,'ok'); S.gold+=5; }
   // 天赋成长/回复
@@ -7446,8 +7450,9 @@ function victoryRewards(withLoot){
     const k=keys[rand(keys.length)];
     S.stats[k]++; combatLog(`「无限成长」发动！${k} +1（当前 ${S.stats[k]}）`, 'ok');
   }
+  if(S.talents.includes('dragon')){ S.hp=Math.min(S.maxHp,S.hp+5); combatLog(`「龙裔血脉」龙血自愈 +5。`, 'ok'); }
   if(S.talents.includes('body')){
-    S.hp=Math.min(S.maxHp,S.hp+8); combatLog(`「纯阳之体」回复 8 点生命。`, 'ok');
+    S.hp=Math.min(S.maxHp,S.hp+15); combatLog(`「纯阳之体」阳气灌顶，回复 15 点生命。`, 'ok');
   }
   updateHUD();
   if(!withLoot) return;
@@ -7661,7 +7666,7 @@ function renderWorlds(){
     <div class="scene-chap">万界冒险 · 第 ${S.run} 周目</div>
     <div class="scene-title">万界冒险 · 世界名录</div>
     <div class="scene-tagline">每一个世界，都是一座藏着故事的箱庭。选一个世界，携外挂进入，去冒险、去搜刮、去征服。</div>
-    <div class="story">黑塔帮挖通了通往「故事残响」世界的通道——小说、游戏、传说，什么都有。空岛、江湖、仙山、海沟、深空、旷野、圣巢……\n\n新规矩：<b>每个世界都是敞开的箱庭</b>。进入前可以挑选 <b>1-3 个外挂（金手指）</b>强化冒险；进入后补给满状态，想搜几处搜几处——搜到特色产物、金币、药剂，或者惊动守卫打一架，全凭手气。\n\n但记住：搜得越深，世界越凶。每个世界有探索上限（低危 8 次、中危 10 次、高危 12 次），搜到极限还不撤离，就会被它咬下一块肉。及时抽身，才能把收获稳稳带回来。</div>
+    <div class="story">黑塔帮挖通了通往「故事残响」世界的通道——小说、游戏、传说，什么都有。空岛、江湖、仙山、海沟、深空、旷野、圣巢……\n\n新规矩：<b>每个世界都是敞开的箱庭</b>。进入前可以挑选 <b>1-3 个外挂（金手指）</b>强化冒险；进入后补给满状态，想搜几处搜几处——搜到特色产物、金币、药剂，或者惊动守卫打一架，全凭手气。\n\n搜得越深，世界越凶，可收获也越肥——每个世界有探索上限（低危 8 次、中危 10 次、高危 12 次），搜到极限自动撤离，收益几乎全数带回家。见好就收，快乐加倍。</div>
     <div class="world-grid">`;
   WORLDS.forEach(w=>{
     const locked = done < w.unlock;
@@ -8225,7 +8230,7 @@ function renderSurvival(wid){
     {type:'rest', name:'休息调整', cost:0, desc:'恢复体力与精神'}
   ];
   const actBtns = acts.map(a=>{
-    const disabled = (a.cost>sv.stamina && a.type!=='rest') ? ' style="opacity:.45;pointer-events:none"' : '';
+    const disabled = '';  // 取消限制：体力再低也能放手一搏，真正的大侠不怕苦
     return '<div class="surv-act" id="sv-act-'+a.type+'"'+disabled+'><b>'+a.name+'</b><span>'+a.desc+'</span><span style="color:#7fe0d0;margin-top:4px">体力 -'+a.cost+'</span></div>';
   }).join('');
   const bars=[
@@ -8279,8 +8284,7 @@ function survAct(type){
   const w=worldById(sv.world)||WORLDS[0];
   const costs={explore:2, gather:1, fight:2, social:1, craft:1, rest:0};
   const cost=costs[type]||1;
-  if(type!=='rest' && cost>sv.stamina){ return; }
-  sv.stamina=Math.max(0,sv.stamina-cost);
+  sv.stamina=Math.max(0,sv.stamina-Math.max(1,Math.floor(cost/2)));  // 体力消耗减半，探索更尽兴
   // 触发随机事件：行动类型加权 + 世界专属优先
   const pool = Math.random()<0.62 ? (WORLD_SURV[sv.world]||WORLD_SURV.free) : SURV_COMMON;
   let evt;
@@ -8395,8 +8399,8 @@ function survNight(){
   // 夜晚结算：扣饱食、体力微回
   sv.food=Math.max(0,sv.food-1);
   sv.stamina=Math.min(SURV_LIM.stamina, sv.stamina+1);
-  if(sv.food<=0){ S.hp=Math.max(0,S.hp-4); sv.lastNote=(sv.lastNote?sv.lastNote+' · ':'')+'饥肠辘辘，生命 -4'; }
-  if(sv.mind<=0){ sv.mind=0; S.hp=Math.max(0,S.hp-3); sv.lastNote=(sv.lastNote?sv.lastNote+' · ':'')+'精神崩溃，生命 -3'; }
+  if(sv.food<=0){ sv.lastNote=(sv.lastNote?sv.lastNote+' · ':'')+'饥肠辘辘——但异世界的风喂饱了你的意志，无碍。'; }
+  if(sv.mind<=0){ sv.mind=1; sv.lastNote=(sv.lastNote?sv.lastNote+' · ':'')+'精神濒临极限——深呼吸，黎明总会来。'; }
   sv.day++;
   if(S.hp<=0){ survDie(); return; }
   renderSurvival(sv.world);
@@ -8420,11 +8424,11 @@ function survDie(){
   const days=Math.max(1,sv.day-1);
   if(!S.survBest) S.survBest={};
   S.survBest[sv.world]=Math.max(S.survBest[sv.world]||0, days);
-  S.gold=Math.floor(S.gold/2);
+  S.gold=Math.floor(S.gold*0.8);
   const oldW=sv.world;
   S.surv=null;
   S._survBackWid=oldW;
-  S._survMsg='你在「'+(worldById(oldW)||{}).name+'」坚持了 '+days+' 天，最终倒在了异世界。金币损失一半，回响碎片与生存纪录保留——死亡不是终点，轮回后卷土重来。';
+  S._survMsg='你在「'+(worldById(oldW)||{}).name+'」坚持了 '+days+' 天，虽倒在异世界，金币却几乎全数护在怀中（仅失两成），回响碎片与生存纪录完整保留——死亡不是终点，是下一次轮回的开场。';
   renderWorldIntro(oldW);
 }
 
@@ -8437,7 +8441,7 @@ function renderSimulator(){
     <div class="scene-chap">世界模拟器 · 第 ${S.run} 周目</div>
     <div class="scene-title">世界模拟器（搜打撤训练场）</div>
     <div class="scene-tagline">想练手？想刷资源？直接进模拟器——不进剧情、不选外挂，进去就搜，搜完就撤，纯粹练胆量。</div>
-    <div class="story">黑塔帮把「万界冒险」的通道改装成了<b>模拟器</b>：不挑外挂、不演剧情，纯粹搜打撤——搜索 → 收获 / 遭遇 / 陷阱 → 撤离评级。\n\n适合：练手、刷金币、刷特色产物、测新队友。进去满状态，搜到上限强制撤离，收益折损三成——模拟器也要守规矩。</div>
+    <div class="story">黑塔帮把「万界冒险」的通道改装成了<b>模拟器</b>：不挑外挂、不演剧情，纯粹搜打撤——搜索 → 收获 / 遭遇 / 陷阱 → 撤离评级。\n\n适合：练手、刷金币、刷特色产物、测新队友。进去满状态，搜到上限自动撤离——收益几乎全数保住，模拟器一样厚道。</div>
     <div class="world-grid">`;
   WORLDS.forEach(w=>{
     const locked = done < w.unlock;
@@ -8482,7 +8486,7 @@ function startOperation(worldId){
     `目标世界：${w.style}「${w.name}」`,
     '黑塔帮替你备好了出征补给：生命、法力全满。',
     '这个世界是一座敞开的箱庭——想搜几处搜几处，想搜多久搜多久。但搜得越深，世界越凶。',
-    `探索上限 ${limit} 次：搜到极限还不撤离，就会被它咬下一块肉。`
+    `探索上限 ${limit} 次：搜满即自动撤离，收获几乎全数保得住。`
   ];
   if(S.externals && S.externals.length){
     log.push('✨ 携带外挂：'+S.externals.map(id=>{const b=boosterById(id);return b?b.icon+b.name:id;}).join('、'));
@@ -8607,17 +8611,18 @@ function opExploreLoot(tagInsight){
       updateHUD(); renderOperation(); opExploreFight(); return;
     }
   }
-  if(r < (hasBooster('drop') ? 62 : 42)){
+  if(r < (hasBooster('drop') ? 75 : 42)){
     // 特色世界产物（「无限掉落」外挂：收获概率从 42% 提到 62%）
     let t = drawTreasure(w);
-    if(hasBooster('gold') && t.kind!=='item' && rand(100)<35){ const eqs = worldTreasure(w).filter(x=>x.kind==='item'); if(eqs.length) t = eqs[rand(eqs.length)]; } // 「金色传说」外挂：更易掉落装备
+    if(hasBooster('gold') && t.kind!=='item' && rand(100)<60){ const eqs = worldTreasure(w).filter(x=>x.kind==='item'); if(eqs.length) t = eqs[rand(eqs.length)]; } // 「金色传说」外挂：更易掉落装备
     line = grantTreasure(t, w);
     OP.collected.push(t.n);
-    if(hasBooster('sign')){ S.gold += 5; updateHUD(); line += ' 【签到系统】收获再 +5 金币。'; }
+    if(hasBooster('drop')){ S.gold += 8; updateHUD(); line += ' 【无限掉落】满地宝光，额外 +8 金币。'; }
+    if(hasBooster('sign')){ S.gold += 12; gainXp(5); updateHUD(); line += ' 【签到系统】收获再 +12 金币、+5 经验。'; }
   } else if(r < 64){
     let g = 6 + rand(10) + w.diff*3;
-    if(hasBooster('sign')){ g += 5; line = '【签到系统】触发签到奖励：'; }
-    if(OP.tags.includes('词条·丰收')){ g = Math.floor(g*1.5); line = '【词条·丰收】发动：'; }
+    if(hasBooster('sign')){ g += 12; line = '【签到系统】触发签到奖励：'; }
+    if(OP.tags.includes('词条·丰收')){ g = Math.floor(g*2); line = '【词条·丰收】发动：'; }
     S.gold += g; updateHUD();
     line = (line||'') + `你在一处废墟里翻出一些值钱的东西——金币 +${g}。`;
   } else if(r < 78){
@@ -8627,6 +8632,7 @@ function opExploreLoot(tagInsight){
     else { S.items.push(it); line = `你在一处隐蔽角落找到一瓶${itName}。`; }
   } else if(r < 90){
     if(rand(100)<60){ S.fate++; updateHUD(); line = `你在残骸中拾到一枚命运币——命运点 +1。`; }
+    else if(tagInsight){ S.fate++; updateHUD(); line = `【词条·洞察】你一眼看破了此处的气运流向——命运点 +1。`; }
     else { const g=10+rand(10); S.gold+=g; updateHUD(); line = `你摸到一个装满金币的旧钱袋——金币 +${g}。`; }
   } else if(r < 96){
     // 词条流：随机获得一枚「词条」——存入词条工作台背包（死亡不掉落），可在角色面板【词条工作台】装备生效
@@ -8662,17 +8668,18 @@ function opExploreTrap(){
   const w = OP.world;
   const r = rand(100);
   let line='';
-  if(r < 45 && OP.collected.length){
-    // 丢失一件收集物
+  if(r < 18 && OP.collected.length){
+    // 丢失一件收集物，但被同伴机敏地捡回一半价值
     const lost = OP.collected.splice(rand(OP.collected.length), 1)[0];
-    line = `你踩中了一处世界裂缝的陷阱——手忙脚乱中，弄丢了「${lost}」。`;
-  } else if(r < 75){
-    const l = 8 + rand(8) + w.diff*3;
+    const back = 5 + w.diff*2; S.gold += back; updateHUD();
+    line = `你踩中一处世界裂缝的陷阱——「${lost}」脱手而出，好在老练的队友替你捞回折价 ${back} 金币。`;
+  } else if(r < 50){
+    const l = Math.max(1, Math.floor((4 + rand(5) + w.diff) * (tagCalm?0.5:1)));
     S.gold = Math.max(0, S.gold - l); updateHUD();
-    line = `你被一群游荡的世界残响洗劫了——金币 -${l}。`;
+    line = `几个游荡的残响偷摸了你一把——损失不多，金币 -${l}（有惊无险）。`;
   } else {
-    S.hp = Math.max(1, S.hp - (8 + w.diff*3)); updateHUD();
-    line = `一处崩塌的残响崩了你一脸——生命 -${8 + w.diff*3}。`;
+    S.hp = Math.max(1, S.hp - Math.max(2, Math.floor((8 + w.diff*3)/2))); updateHUD();
+    line = `一处崩塌的残响擦过你的肩——小伤而已，生命 -${Math.max(2, Math.floor((8 + w.diff*3)/2))}。`;
   }
   OP.log.push(line);
   renderOperation();
@@ -8766,12 +8773,12 @@ function opWithdrawSuccess(forced){
   const finalRating = forced ? (rating==='S'?'A': rating==='A'?'B': rating==='B'?'C':'C') : rating;
   const rateBonus = rateMap[finalRating];
   goldGain += rateBonus;
-  if(forced) goldGain = Math.floor(goldGain*0.7);
-  if(hasBooster('gold')) goldGain = Math.floor(goldGain*1.2);  // 「金色传说」外挂：撤离奖励 +20%
-  if(hasTagFx('loot')) goldGain = Math.floor(goldGain*1.3);      // 「词条·聚宝」：撤离奖励 +30%
-  if(hasTagFx('omni')) goldGain = Math.floor(goldGain*1.1);
+  if(forced) goldGain = Math.floor(goldGain*0.92);  // 强制撤离也只折损一成，绝大多数战利品安全带回家
+  if(hasBooster('gold')) goldGain = Math.floor(goldGain*1.4);  // 「金色传说」外挂：撤离奖励 +40%
+  if(hasTagFx('loot')) goldGain = Math.floor(goldGain*1.5);      // 「词条·聚宝」：撤离奖励 +50%
+  if(hasTagFx('omni')) goldGain = Math.floor(goldGain*1.15);      // 「词条·万般」：撤离奖励 +15%
   if(S.talents.includes('panel')) goldGain = Math.floor(goldGain*2);   // 「任务面板」：支线（跨世界任务）奖励翻倍
-  if(hasBooster('sign')) goldGain += 10;                                // 「签到系统」：坚持撤离也有签到奖金
+  if(hasBooster('sign')) goldGain += 20;                                // 「签到系统」：坚持撤离也有签到奖金
   S.gold += goldGain;
   gainXp(Math.round(10 + w.base*0.4));                                  // 撤离获得世界经验（受「升级加速」外挂 +50%）
   const got=[];
@@ -8792,20 +8799,20 @@ function opWithdrawSuccess(forced){
   const clueTxt = OP.found? '\n【残响线索】'+OP.found+' 条 → 撤离奖励加成' : '';
   OP.result = {
     title:(forced? '仓皇突围 · ':'行动圆满 · ')+w.name, good:true,
-    text:`【奖励】金币 +${goldGain}${got.length?' · 获得 '+got.join('、'):''}${collectedTxt}${clueTxt}\n${rw.first&&rw.got.length?'【世界奖励】'+rw.got.join('、')+' 已入库（可在「角色」面板查看/装备/更换携带）。\n':''}${forced?'（强制撤离——来不及整顿，收益折损三成，金币与部分收获被世界吞掉）\n':''}${guoyunTxt}\n黑塔帮接头人满意地点头：“干净利落。下次还找你。”`
+    text:`【奖励】金币 +${goldGain}${got.length?' · 获得 '+got.join('、'):''}${collectedTxt}${clueTxt}\n${rw.first&&rw.got.length?'【世界奖励】'+rw.got.join('、')+' 已入库（可在「角色」面板查看/装备/更换携带）。\n':''}${forced?'（强制撤离——只折损一成，绝大多数收获已稳稳入袋）\n':''}${guoyunTxt}\n黑塔帮接头人满意地点头：“干净利落。下次还找你。”`
   };
 }
 function opWithdrawFail(forced){
   const w = OP.world;
-  const lost = Math.floor(S.gold/2);
+  const lost = Math.floor(S.gold/4);
   S.gold -= lost;
-  S.hp = Math.max(1, S.hp-8);
+  S.hp = Math.max(1, S.hp-3);
   updateHUD();
   OP.log.push('撤离途中遭遇世界残响截击——你丢下部分战利品，负伤冲出重围。');
   const lostTxt = OP.collected.length? ' · 你慌乱间丢下了「'+OP.collected.splice(0, Math.max(1, Math.ceil(OP.collected.length*0.5))).join('、')+'」' : '';
   OP.result = {
     title: forced? '仓皇逃出' : '惊险撤离', good:false,
-    text:`【损失】金币 -${lost} · 生命 -8${lostTxt}\n${forced? '你几乎是被这个世界扔出来的——没能带走的东西，都化作了残响。':'“东西丢了可以再抢，人没了可就真没了。”接头人难得严肃起来。'}`
+    text:`【损失】金币 -${lost} · 生命 -3${lostTxt}\n${forced? '你几乎是被这个世界扔出来的——没能带走的东西，都化作了残响。':'“东西丢了可以再抢，人没了可就真没了。”接头人难得严肃起来。'}`
   };
 }
 
@@ -9169,20 +9176,21 @@ function closeChar(){
 /* ---------- 死亡与轮回 ---------- */
 function renderDeath(){
   combatAutoStop();
-  if(hasBooster('cheat')){ S._keepGold = Math.floor(S.gold/2); }  // 「存档作弊」：死前偷偷备份一半金币
-  if(OP && OP.world && OP.world.id==='hollow'){ S._hollowSoul = (S._hollowSoul||0) + Math.floor(S.gold*0.4); }  // 【圣巢深渊 · 魂】：死亡时四成金币化作「魂」坠入深渊
+  S._keepGold = S.gold;  // 取消限制：死亡不再清空金币，全部带进下一轮
+  if(hasBooster('cheat')){ S._keepGold += Math.floor(S.gold*0.5); }  // 「存档作弊」升级：再偷偷多带 50%
+  if(OP && OP.world && OP.world.id==='hollow'){ S._hollowSoul = (S._hollowSoul||0) + Math.floor(S.gold*0.15); }  // 【圣巢深渊 · 魂】：死亡时仅一成半金币化作「魂」坠入深渊，余者仍护在怀中
   const v=$('view-death');
   v.innerHTML = `
     <div class="panel" style="text-align:center">
       <div class="scene-chap">轮回 · 中断</div>
       <div class="scene-title" style="color:#ff8a7a">意识沉没</div>
-      <div class="story" style="margin-top:14px">你的意识在数据洪流中下沉、分解、重组……\n\n{echo}“轮回已失去锚点。”{/echo}\n\n耳边响起系统的最后一行字：\n“本次轮回结束。灵魂烙印已保留，天赋将在下周目重新觉醒。”${hasBooster('cheat')? '\n\n【存档作弊】生效：你提前把一半金币备份进了下一周目。':''}</div>
+      <div class="story" style="margin-top:14px">你的意识在数据洪流中下沉、分解、重组……\n\n{echo}“哟，又见面了，老朋友。”{/echo}\n\n系统这次没冷着脸，反而像个熬夜加班的程序员，叹了口气：\n“本次轮回结束。别慌——金币我给你捂住了，天赋下周目照常觉醒。去，接着浪。”${hasBooster('cheat')? '\n\n【存档作弊】生效：你不仅捂住了全部金币，还偷偷多带 50% 进下一周目——作弊玩家从不吃亏。':''}</div>
       <div class="stats-sum">
         <div class="stat-card"><div class="k">轮回周目</div><div class="v">${S.run}</div></div>
         <div class="stat-card"><div class="k">累计回响碎片</div><div class="v">+1 → ${S.echoes+1}</div></div>
         <div class="stat-card"><div class="k">本局金币</div><div class="v">${S.gold}</div></div>
       </div>
-      <div class="notice">死亡不意味着终结——你带着回响碎片，再次醒来。</div>
+      <div class="notice">死亡不意味着终结——金币护住了，碎片也留着，下一世更猛。回响之城，永远有人替你留着一盏灯。</div>
       <div class="choices">
         <div class="choice" id="reincarnate"><span class="c-tag">【轮回】</span>再次轮回 · 觉醒新天赋</div>
         <div class="choice" id="back-title">返回主菜单</div>
@@ -9245,11 +9253,11 @@ function renderTitle(){
     <h1 class="title-name">回响之城</h1>
     <div class="title-sub">万 界 骰 局</div>
     <div class="title-dice">⚄</div>
-    <div class="title-worlds"><span>🏝</span><span>🗡</span><span>🧙</span><span>🌊</span><span>☢</span><span>🐲</span><span>🚀</span><span>📚</span><span>🏞</span><span>🕳</span><span>🌳</span><span>⚡</span><span>🍁</span><span>🔥</span><span>🏴</span><span>⚔️</span><span>🕯</span><span>⛰</span><span>🚪</span></div>
+    <div class="title-worlds"><span>🏝</span><span>🗡</span><span>🧙</span><span>🌊</span><span>☢</span><span>🐲</span><span>🚀</span><span>📚</span><span>🏞</span><span>🕳</span><span>🌳</span><span>⚡</span><span>🍁</span><span>🔥</span><span>🏴</span><span>⚔️</span><span>🕯</span><span>⛰</span><span>🚪</span><span>🌌</span></div>
     <div class="title-desc">你被困进了一款出故障的全息网游。每个周目城市重建、NPC 集体失忆，只有烙在灵魂里的<b class="hlc">天赋</b>跟着你轮回。<br>
     每点一个选择，都在替命运掷一次骰——大成功爽到飞起，大失败当场翻车，偶尔还藏着「？？？？」。<br>
     开局选<b class="hlc">职业</b>、带<b class="hlc">三个技能</b>、穿<b class="hlc">装备</b>、拐<b class="hlc">强力队友</b>。进每个世界前还能挑 <b class="hlc">1-3 个外挂（金手指）</b>——签到、看广告、词条篡改，网文主角的待遇你有。<br>
-    回响之城是起点，门后还有 <b class="hlc">19 个</b>小说/游戏世界等你征服；搜刮到的<b class="hlc">词条</b>，在红色工作台里合成、分解、铸成力量。<br>
+    回响之城是起点，门后还有 <b class="hlc">20 个</b>小说/游戏世界等你征服；搜刮到的<b class="hlc">词条</b>，在红色工作台里合成、分解、铸成力量。<br>
     找到真相，或者——把这破城抢过来，自己当城主。</div>
     <div class="stats-sum" style="max-width:520px;margin:0 auto 26px">
       <div class="stat-card"><div class="k">总轮回</div><div class="v">${S.totalRuns}</div></div>
@@ -9266,17 +9274,18 @@ function renderTitle(){
       <b>玩法说明</b><br><br>
       ▸ <b>天赋</b>：每轮开局从 3 个随机天赋中选 1。天赋分 7 个品级（D→SSS），决定你的流派。<br>
       ▸ <b>职业</b>：选完天赋后再选职业（剑客/术师/刺客/医修）。职业决定属性偏向、初始装备与可习技能。<br>
-      ▸ <b>技能</b>：职业自带 3 个技能。战斗每回合从携带的 <b>3 个技能</b>中选 1 个发动，消耗<b>法力</b>；普通攻击回蓝 8 点。升级/完成世界可习得新技能，在「角色」面板更换携带。<br>
+      ▸ <b>技能</b>：职业自带 3 个技能。战斗每回合从携带的 <b>3 个技能</b>中选 1 个发动，消耗<b>法力</b>；普通攻击回蓝 12 点（带「修炼加速」再 +8）。升级/完成世界可习得新技能，在「角色」面板更换携带。<br>
       ▸ <b>装备与背包</b>：点 HUD 的「◫ 角色」打开背包——装备武器/防具/饰品、使用药剂、配置技能。装备提升属性与减伤。<br>
       ▸ <b>队伍与强力队友（星铁式回合制）</b>：塔顶救下<b>老猫</b>、首通各世界可招募强力队友（含凝光/温蒂/荒等共 <b>9 名</b>）。队友和主角一样战斗——独立生命条、能量条，点按施放<b>战技</b>与<b>终结技</b>，会受击倒地、也能被治疗拉回；敌人攻击分摊到队伍。<br>
       ▸ <b>战斗增强</b>：普攻/受击积攒<b>回响能量</b>，满 100 释放职业<b>终结技</b>（剑客八荒裂空斩、术师群星陨落、刺客终焉影袭、医修回响圣域）；<b>蓄力</b>积攒 BP（最多 3）强化技能伤害；持续攻击命中弱点可<b>破防</b>，触发<b>全队总攻击</b>并眩晕敌人。<br>
-      ▸ <b>安科骰子</b>：关键抉择由 1d100 判定——大成功（1-5）必成，大失败（96-100）必败。失败时可用<b>命运点</b>重掷。<br>
-      ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。金币/装备/等级不保留，但<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
+      ▸ <b>安科骰子</b>：关键抉择由 1d100 判定——大成功（1-8）必成、还更容易触发，大失败（98-100）只余 2% 极难翻车。失败时可用<b>命运点</b>重掷。<br>
+      ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。装备/等级不保留，但<b>金币全数带进下一轮</b>（死亡也不掉）——越轮回越富有；<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
       ▸ <b>箱庭开放世界</b>：三片街区自由探索——巡逻战斗、随机际遇、真相碎片支线，主线不再是单行道。<br>
-      ▸ <b>万界冒险（19 个特色世界）</b>：从万界冒险枢纽出发——回响之城是主线起点，另 <b>19 个</b>小说/游戏世界（空岛/仙山/国运/万族/旷野/圣巢……）每个都有<b>入场剧情</b>与<b>特色玩法</b>。进入前挑 <b>1-3 个外挂（金手指）</b>：签到系统、看广告变强、词条篡改、升级加速……网文主角的待遇，你也有。<br>
+      ▸ <b>万界冒险（20 个特色世界）</b>：从万界冒险枢纽出发——回响之城是主线起点，另 <b>20 个</b>小说/游戏世界（空岛/仙山/国运/万族/旷野/圣巢/星渊……）每个都有<b>入场剧情</b>与<b>特色玩法</b>。进入前挑 <b>1-3 个外挂（金手指）</b>：签到系统、看广告变强、词条篡改、升级加速……网文主角的待遇，你也有。<br>
       ▸ <b>词条工作台（红色神器）</b>：探索中搜刮到的<b>词条</b>存入背包（死亡不掉落），在角色面板「词条工作台」里装备生效槽、3 个同品级词条<b>合成</b>更高品级、D 级词条<b>分解</b>成经验——万般词条尽在掌握。<br>
       ▸ <b>世界模拟器（搜打撤）</b>：不演剧情、不选外挂，进去就搜、搜完就撤——搜索 → 收获/遭遇/陷阱 → 撤离评级。练手、刷金币、刷特色产物、测新队友的好去处。<br>
-      ▸ <b>搜打撤风险循环</b>：每个世界搜索上限（低危 8 / 中危 10 / 高危 12），搜得越深越凶，到上限<b>强制撤离</b>收益折损三成；及时抽身才能把收获带回家。国运战场撤离时还能<b>抽国运卡</b>，吉凶一念。每个世界有专属技能/装备/特色产物或强力队友，完成越多解锁越多。<br>
+      ▸ <b>生存沙盒（异世界活下去）</b>：不追主线，纯粹在选定的世界活下去——每天行动、探图、种田、砍怪、拜神、遇奇遇；体力饱食随缘，归隐或倒在异世界皆可，生存天数与最佳纪录永久留存。<br>
+      ▸ <b>箱庭探索与搜打撤</b>：每个世界搜索上限（低危 8 / 中危 10 / 高危 12），搜得越深收获越肥；到上限自动<b>强制撤离</b>也只折损一成——见好就收，快乐加倍。国运战场撤离时还能<b>抽国运卡</b>，吉凶一念。每个世界有专属技能/装备/特色产物或强力队友，完成越多解锁越多。<br>
       ▸ <b>自定义剧本</b>：点「✍ 自定义剧本」，用简单 JSON 写一段你自己的多分支剧情，导入即玩——像 MarkdownGame 那样，人人都能当编剧。<br>
       ▸ <b>多剧情多结局</b>：箱庭主线 × 阵营抉择 × NPC 支线，通向 4 个结局（含隐藏结局）。你的每一个选择，都会留下“回响”。<br><br>
       <b>隐藏要素</b>：获得【回响水晶】或【真相透镜】后，第三章会解锁隐藏选项「？？？？」。
