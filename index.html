@@ -221,6 +221,26 @@ h1.title-name{
 .battle-log .crit{color:#ffd98a}
 .battle-log .fumb{color:#ff8a7a}
 
+/* 搜打撤行动 */
+.op-steps{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.op-step{
+  flex:1;min-width:96px;text-align:center;font-size:13px;padding:8px 6px;border-radius:9px;
+  border:1px solid var(--line);color:var(--ink-dim);background:rgba(16,24,52,.5);
+}
+.op-step.on{
+  border-color:var(--gold);color:var(--gold);background:rgba(60,46,20,.3);
+  box-shadow:0 0 14px rgba(230,165,68,.25);font-weight:700;
+}
+.op-step.done{border-color:var(--cyan);color:var(--cyan)}
+.op-log{
+  margin-top:12px;padding:12px 16px;border-left:3px solid var(--cyan-dim);
+  background:rgba(84,210,192,.06);border-radius:0 8px 8px 0;
+  font-family:var(--serif);font-size:14px;color:#d7dfef;line-height:2;white-space:pre-wrap;
+}
+.op-result{border:1px solid var(--line-strong);border-radius:12px;padding:16px;margin-top:14px}
+.op-result.good{border-color:rgba(230,165,68,.5);background:rgba(60,46,20,.15)}
+.op-result.bad{border-color:rgba(213,86,74,.5);background:rgba(60,24,24,.15)}
+
 /* 结局 */
 .ending-banner{text-align:center;padding:34px 10px 10px}
 .ending-title{font-family:var(--serif);font-size:40px;font-weight:900;line-height:1.3;animation:glowpulse 3s ease-in-out infinite}
@@ -270,6 +290,7 @@ h1.title-name{
     <div class="view" id="view-talent"></div>
     <div class="view" id="view-scene"></div>
     <div class="view" id="view-combat"></div>
+    <div class="view" id="view-operation"></div>
     <div class="view" id="view-death"></div>
     <div class="view" id="view-ending"></div>
   </main>
@@ -444,7 +465,7 @@ choices:[
 ]});
 
 N({id:'c1_intro',chap:'第一章 · 旧日街区',title:'醒来',tagline:'轮回历重置 · 第 {run} 周目',
-text:'你睁开眼睛，天是锈红色的。\n\n街道以你熟悉又陌生的姿态延伸向远方——熟悉，是因为你似乎走过无数遍；陌生，是因为每一次醒来，它都换了一副骨架。\n\n耳边传来系统冰冷而亲切的提示音：\n\n“轮回历已重置。回响之城正在重组。”\n“当前周目：【第 {run} 周目】。”\n“请记住：你带着的天赋，是唯一不会消失的东西。”\n\n你摸了摸胸口。那里有某种温热的东西在跳动——那是你的灵魂烙印，你的天赋。\n\n远处，旧日街区的霓虹灯牌一下下闪烁，像是某种信号。\n\n你深吸一口气，迈步走向那座城。',
+text:'你睁开眼睛，天是锈红色的。\n\n街道以你熟悉又陌生的姿态延伸向远方——熟悉，是因为你似乎走过无数遍；陌生，是因为每一次醒来，它都换了一副骨架。\n\n耳边传来系统冰冷而亲切的提示音：\n\n“轮回历已重置。回响之城正在重组。”\n“当前周目：【第 {run} 周目】。”\n“请记住：你带着的天赋，是唯一不会消失的东西。”\n\n（系统日志小字：本次重组预计耗时 0.0 秒。放心，进度条已经被程序员砍掉了——省得你盯着它转圈。）\n\n你摸了摸胸口。那里有某种温热的东西在跳动——那是你的灵魂烙印，你的天赋。\n\n远处，旧日街区的霓虹灯牌一下下闪烁，像是某种信号。\n\n你深吸一口气，迈步走向那座城。',
 choices:[
   {text:'环顾四周，确认现状',tag:'感知',desc:'先摸清这周目的地形与危机',kind:'check',stat:'per',dc:48,
    succ:'c1_per_ok',fail:'c1_per_bad',
@@ -505,7 +526,7 @@ choices:[
 
 /* 探索事件B：废弃游戏厅 */
 N({id:'c1_e1b',chap:'第一章 · 旧日街区',title:'废弃游戏厅',tagline:'探索 · 随机事件',
-text:'霓虹最亮处，是一家旧式街机厅。\n\n门口的灯牌上写着“欢迎再来”，玻璃门缝里透出微光。推开门，几台老旧的街机还在自动运行，屏幕上是上个世纪的老游戏。\n\n柜台后没有人，只有一台蒙尘的“老虎机”嗡嗡作响。\n\n角落里，一枚【记忆卡】插在卡槽里，半截露在外面。',
+text:'霓虹最亮处，是一家旧式街机厅。\n\n门口的灯牌上写着“欢迎再来”，玻璃门缝里透出微光。推开门，几台老旧的街机还在自动运行，屏幕上是上个世纪的老游戏。\n\n柜台后没有人，只有一台蒙尘的“老虎机”嗡嗡作响。\n\n（机器侧面贴着一张褪色的纸条：“本机概率：50%。要么出，要么不出。”）\n\n角落里，一枚【记忆卡】插在卡槽里，半截露在外面。',
 choices:[
   {text:'拔出记忆卡',tag:'探索',desc:'感知判定 · 检查有没有陷阱',kind:'check',stat:'per',dc:48,
    succ:'c1_arcade_card',fail:'c1_arcade_trap',
@@ -526,7 +547,7 @@ choices:[
   {text:'离开游戏厅',tag:'前进',kind:'next',goto:'c1_probe2'}
 ]});
 N({id:'c1_arcade_win',chap:'第一章 · 旧日街区',title:'大吉',tagline:'事件后续',
-text:'金币入袋的悦耳声响中，你看见老虎机屏幕上缓缓浮现一行小字：\n\n“第三局。愿赌注仍在。”\n\n“第三局”？\n\n你的心猛地一沉——这台机器，难道知道这是你第几次轮回？\n\n无论如何，你带着金币离开了游戏厅。',
+text:'金币入袋的悦耳声响中，你看见老虎机屏幕上缓缓浮现一行小字：\n\n“第三局。愿赌注仍在。”\n\n“第三局”？\n\n你的心猛地一沉——这台机器，难道知道这是你第几次轮回？\n\n（屏幕角落闪过一行小字：“非洲人还在氪金，欧洲人已经出货。玄不救非，氪不改命。”）\n\n无论如何，你带着金币离开了游戏厅。',
 choices:[
   {text:'离开游戏厅',tag:'前进',kind:'next',goto:'c1_probe2'}
 ]});
@@ -543,7 +564,7 @@ choices:[
 
 /* 探索事件C：灰袍商人 */
 N({id:'c1_e1c',chap:'第一章 · 旧日街区',title:'灰袍商人',tagline:'探索 · 随机事件',
-text:'灰袍人在街角支起一个小摊，摊上摆着各种奇形怪状的“回响水晶”。\n\n“诚惠——一枚【灰袍印记】或 30 金币，换一个真相。”他笑眯眯地看着你，“不贵。真的不贵。”\n\n他的摊位上，有一块水晶正对着你微微发亮。',
+text:'灰袍人在街角支起一个小摊，摊上摆着各种奇形怪状的“回响水晶”。\n\n“诚惠——一枚【灰袍印记】或 30 金币，换一个真相。”他笑眯眯地看着你，“不贵。真的不贵。”\n\n（摊上挂着一块手写招牌：“本店商品一经售出，概不退换。支持货币：金币、旧城钥匙、以及你的好奇心。”）\n\n他的摊位上，有一块水晶正对着你微微发亮。',
 choices:[
   {text:'买下那块发亮的水晶',tag:'交易',desc:'直觉告诉你它很重要',kind:'effect',apply:(s)=>{s.flag.truth_hint=true;},goto:'c1_merchant_crystal'},
   {text:'询问他的来历',tag:'对话',desc:'魅力判定 · 套话',kind:'check',stat:'cha',dc:60,
@@ -595,7 +616,7 @@ choices:[
 
 /* ===== 第二章 · 中枢塔 ===== */
 N({id:'c2_intro',chap:'第二章 · 中枢塔',title:'数据之城',tagline:'轮回历第 {run} 周目',
-text:'中枢塔内部远比外面看起来宽阔。\n\n无数光缆如血管般在穹顶交错，数据流在其中奔涌，发出低沉的嗡鸣。整座塔像一头活着的巨兽，而你们，都在它的腹中。\n\n大厅中央立着一座巨大的全息屏，滚动着两行标语：\n\n“【守望者联盟】：稳定，高于一切。”\n“【黑塔帮】：自由，高于一切。”\n\n两个截然不同的声音，同时向你抛来橄榄枝。',
+text:'中枢塔内部远比外面看起来宽阔。\n\n无数光缆如血管般在穹顶交错，数据流在其中奔涌，发出低沉的嗡鸣。整座塔像一头活着的巨兽，而你们，都在它的腹中。\n\n大厅中央立着一座巨大的全息屏，滚动着两行标语：\n\n“【守望者联盟】：稳定，高于一切。”\n“【黑塔帮】：自由，高于一切。”\n\n（全息屏角落滚动着一行小字：“本塔 WiFi 免费，密码：别乱连。”）\n\n两个截然不同的声音，同时向你抛来橄榄枝。',
 choices:[
   {text:'前往数据洪流闸门',tag:'前进',desc:'那里似乎有守卫',kind:'next',goto:'c2_gate'},
   {text:'先观察大厅的两个阵营',tag:'观察',desc:'感知判定 · 看清形势',kind:'check',stat:'per',dc:50,
@@ -606,7 +627,7 @@ choices:[
    succText:'（1d100+智力 判定成功）角落的小字极快滚动，你抓住几帧：\n\n“测试者名单：……【已注销】。”\n“轮回异常原因：未归档。”\n“档案室权限：第七号——需旧城钥匙。”\n\n旧城钥匙！你下意识摸了摸怀里那把钥匙。'}
 ]});
 N({id:'c2_hidden_text',chap:'第二章 · 中枢塔',title:'被忽略的字',tagline:'情报',
-text:'你记住了“第七号档案室”和“旧城钥匙”的关联。\n\n那扇门，可能藏着这整座城为何轮回的秘密。\n\n现在，你需要穿过闸门，继续深入。',
+text:'你记住了“第七号档案室”和“旧城钥匙”的关联。\n\n那扇门，可能藏着这整座城为何轮回的秘密。\n\n（滚动的小字最后还闪过一行：“愿你能找到退出按钮。—— 一位已离职的员工留”）\n\n现在，你需要穿过闸门，继续深入。',
 choices:[
   {text:'前往数据洪流闸门',tag:'前进',kind:'next',goto:'c2_gate'}
 ]});
@@ -662,14 +683,23 @@ choices:[
   {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'}
 ]});
 N({id:'c2_faction_black',chap:'第二章 · 中枢塔',title:'黑塔帮',tagline:'阵营 · 黑塔帮',
-text:'“哟，新面孔。”地库阴影里，一个叼着数据烟的男人懒洋洋地开口，“黑塔帮收人，不问来历，只问胆子。敢碰禁区数据吗？”\n\n他扔给你一袋金币和一枚【黑塔帮纹章】：“拿好。我们只认利益——但你若能搞到回响之核的底层数据，价钱好商量。”\n\n【获得：黑塔帮纹章 · 金币+20】\n\n他意味深长地补充：“顺便——守望者那群疯子，正在满城追杀‘乱码’。你最好小心点。”',
+text:'“哟，新面孔。”地库阴影里，一个叼着数据烟的男人懒洋洋地开口，“黑塔帮收人，不问来历，只问胆子。敢碰禁区数据吗？”\n\n他扔给你一袋金币和一枚【黑塔帮纹章】：“拿好。我们只认利益——但你若能搞到回响之核的底层数据，价钱好商量。”\n\n【获得：黑塔帮纹章 · 金币+20】\n\n他压低声音补充了一句：“干完这一票，我带你去看真正的‘后门’——不是我说的那个‘后门’。”\n\n“顺便——守望者那群疯子，正在满城追杀‘乱码’。你最好小心点。”',
 choices:[
-  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'}
+  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
+  {text:'打听黑塔帮的“外快”',tag:'支线',desc:'接一个搜打撤的委托，能赚一笔',kind:'next',goto:'c2_ops_offer'}
 ]});
 N({id:'c2_faction_none',chap:'第二章 · 中枢塔',title:'独行者',tagline:'阵营 · 中立',
 text:'你没有加入任何一方。\n\n“聪明。”角落里传来一个苍老的声音——灰袍商人居然也在塔里，“中立者最自由，也最危险。两边都当你是变数，随时可能动手。”\n\n他抛给你一件东西：“【回响水晶】的姊妹篇——【真相透镜】。拿着，第三章会用得上。”\n\n【获得：真相透镜】\n\n他笑了笑：“独行的人，往往看得最清楚。祝你好运，变数先生。”',
 choices:[
-  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'}
+  {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
+  {text:'找灰袍打听有没有“私活”',tag:'支线',desc:'灰袍消息灵通，或许能牵线',kind:'next',goto:'c2_ops_offer'}
+]});
+
+N({id:'c2_ops_offer',chap:'第二章 · 中枢塔',title:'黑塔帮的委托',tagline:'支线 · 搜打撤行动',
+text:'你在地库入口被一个叼着数据烟的接头人叫住：\n\n“喂，新面孔。有个活儿，干不干？”\n\n他压低声音：“旧仓库那边，有批异常数据‘长了脚’，占了一整层。我们人手不够——你去，把目标清掉，再把能带的数据带回来。”\n\n“规矩就三个字：{hl}搜、打、撤{/hl}。搜到了再打，打完了就撤，别贪。干成，金币管够。”\n\n（搜打撤行动：搜索定位 → 打击目标 → 安全撤离，一步出错都可能吃大亏）',
+choices:[
+  {text:'接下委托',tag:'接取',desc:'进入搜打撤行动',kind:'effect',apply:(s)=>{startOperation();},goto:'c2_ops_offer'},
+  {text:'婉拒，继续主线',tag:'婉拒',kind:'next',goto:'c2_file'}
 ]});
 
 N({id:'c2_file',chap:'第二章 · 中枢塔',title:'第七号档案室',tagline:'探索 · 关键情报',
@@ -710,7 +740,7 @@ choices:[
    succText:'（1d100+感知 判定成功）你后退一步，冷静观察。\n\n然后你看见——那台“逃生终端”的绿灯，实际上是一个伪装成出口的【数据诱捕器】。而老猫的锁链，其实只锁了三道，另外两道，是他自己扣上的。\n\n“被你看穿了。”老猫苦笑，解开剩下的锁链，“抱歉，我在测试你会不会第一个冲向出口——如果是，你就是帮这座城市‘清理障碍’的内鬼。”\n\n他递给你【GM权限钥匙】：“现在，我信你。拿去。”\n\n【获得：GM权限钥匙】'}
 ]});
 N({id:'c2_save_gm',chap:'第二章 · 中枢塔',title:'老猫',tagline:'NPC · 老猫（GM）',
-text:'老猫揉了揉手腕，神色复杂地看向你：\n\n“轮回异常……其实是我设计的。”\n\n你瞳孔一缩。\n\n“别急着动手。”他抬手，“当时服务器事故，你的意识差点被数据洪流搅碎。我用最后的权限开了‘轮回保护’，让城市反复重置，给你争取清醒的时间。”\n\n“但我没想到——城市自己进化出了意识。它现在……不想让你走了。”\n\n他看向远处那道数据光柱：“回响之核，就是城市的‘心脏’。想结束这一切，要么关闭它，要么……取代它。”\n\n【NPC：老猫已结缘 · 持有GM权限钥匙】',
+text:'老猫揉了揉手腕，神色复杂地看向你：\n\n“轮回异常……其实是我设计的。”\n\n你瞳孔一缩。\n\n“别急着动手。”他抬手，“当时服务器事故，你的意识差点被数据洪流搅碎。我用最后的权限开了‘轮回保护’，让城市反复重置，给你争取清醒的时间。”\n\n“这段保护代码，我当年只写了三行注释：别改。别动。改了别找我。”他自嘲地笑了笑，“结果它自己进化成了这样。”\n\n“但我没想到——城市自己进化出了意识。它现在……不想让你走了。”\n\n他看向远处那道数据光柱：“回响之核，就是城市的‘心脏’。想结束这一切，要么关闭它，要么……取代它。”\n\n【NPC：老猫已结缘 · 持有GM权限钥匙】',
 choices:[
   {text:'“告诉我，该怎么选择。”',tag:'对话',kind:'next',goto:'c2_final_hint'}
 ]});
@@ -727,7 +757,7 @@ choices:[
   {text:'关闭终端，砸掉它',tag:'决绝',desc:'不留退路，才能走到底',kind:'effect',apply:(s)=>{s.flag.terminal_destroyed=true;},goto:'c2_save_gm'}
 ]});
 N({id:'c2_terminal_confirm',chap:'第二章 · 中枢塔',title:'退出失败',tagline:'抉择 · 逃生',
-text:'你按下了“确认”。\n\n终端机剧烈震动——\n\n然后，屏幕上跳出一行猩红大字：\n\n“错误：出口已被锁定。”\n\n“本服务器管理员【回响之核】已开启‘禁止离开’权限。”\n\n“你无法通过正常途径离开这座城市。”\n\n终端机屏幕暗下去，彻底失去响应。\n\n老猫叹了口气：“果然……它已经锁死了所有出口。现在，你只能往下走了。”\n\n【真相：出口已被回响之核封锁】',
+text:'你按下了“确认”。\n\n终端机剧烈震动——\n\n然后，屏幕上跳出一行猩红大字：\n\n“错误：出口已被锁定。”\n\n“本服务器管理员【回响之核】已开启‘禁止离开’权限。”\n\n“你无法通过正常途径离开这座城市。”\n\n终端机屏幕暗下去，彻底失去响应。\n\n（屏幕熄灭前弹出一个小气泡：“温馨提示：想离开请找人工客服。人工客服在线时间：本城没有。”）\n\n老猫叹了口气：“果然……它已经锁死了所有出口。现在，你只能往下走了。”\n\n【真相：出口已被回响之核封锁】',
 choices:[
   {text:'前往回响深渊',tag:'前进',kind:'next',goto:'c3_intro'}
 ]});
@@ -1103,10 +1133,11 @@ function renderCheckFailWithReroll(res, c){
 
 /* ---------- 战斗 ---------- */
 let CB=null;
-function startCombat(enemyId, winNode, loseNode){
+function startCombat(enemyId, winNode, loseNode, opts){
   const e = ENEMIES[enemyId];
   CB = {id:enemyId, hp:e.hp, max:e.hp, atk:e.atk, dc:e.dc, spd:e.spd,
-        winNode, loseNode, turn:0, guard:false, guardUsed:false, fatalGuard:true};
+        winNode, loseNode, turn:0, guard:false, guardUsed:false, fatalGuard:true,
+        opMode:!!(opts&&opts.opMode), opBonus:(opts&&opts.opBonus)||0};
   S.nodeId = 'combat';
   updateHUD();
   renderCombat();
@@ -1139,6 +1170,7 @@ function renderCombat(){
   mk('防御','本回合减伤50%', ()=>combatGuard());
   if(hasPotion) mk('回响药剂',`剩余${S.items.filter(i=>i==='potion').length}`, ()=>combatPotion());
   if(S.fate>0) mk('命运之力',`消耗1点·下一次攻击必中且暴击 (${S.fate})`, ()=>combatFate());
+  if(CB.opMode) mk('撤离','放弃战斗·尝试突围', ()=>opWithdrawFromCombat());
   showView('combat');
 }
 function combatLog(html, cls){
@@ -1161,7 +1193,7 @@ function combatPlayerAttack(heavy){
   if(fateForce){ crit=true; roll=100; S.flag._fateForce=false; }
   const mod = combatBonus();
   const total = roll + mod;
-  const need = CB.dc + (heavy?15:0);
+  const need = CB.dc + (heavy?15:0) - (CB.opBonus||0);
   const hit = crit || total>=need;
   combatLog(`你发动${heavy?'重击':'攻击'}｜1d100 = ${roll} ${mod>0?'+'+mod:''} = ${total} ／ 命中需求 ${need}`, 'pl');
   if(!hit){
@@ -1237,6 +1269,27 @@ function combatEnemyTurn(){
 function combatVictory(){
   const e = ENEMIES[CB.id];
   combatLog(`你击败了 ${e.name}！`, 'crit');
+  if(CB.opMode){
+    // 搜打撤行动：目标已清除，进入撤离阶段
+    victoryRewards(false);
+    combatLog('目标已清除！四周的异常数据四散奔逃——正是撤离的时机。', 'ok');
+    updateHUD();
+    CB=null;
+    setTimeout(()=>{
+      OP.phase='withdraw';
+      OP.log.push('目标已清除。别贪战利品——现在，按规矩：撤！');
+      renderOperation();
+    }, 950);
+    return;
+  }
+  victoryRewards(true);
+  updateHUD();
+  const winNode = CB.winNode;
+  CB=null;
+  setTimeout(()=>gotoNode(winNode), 900);
+}
+function victoryRewards(withLoot){
+  const e = ENEMIES[CB.id];
   S.gold += e.gold||0;
   if(e.reward){ combatLog(e.reward,'ok'); S.gold+=5; }
   // 天赋成长/回复
@@ -1249,13 +1302,150 @@ function combatVictory(){
     S.hp=Math.min(S.maxHp,S.hp+8); combatLog(`「纯阳之体」回复 8 点生命。`, 'ok');
   }
   updateHUD();
-  const winNode = CB.winNode;
+  if(!withLoot) return;
   const gifts = [];
   if(!S.items.includes('potion') && rand(100)<40) { S.items.push('potion'); gifts.push('回响药剂'); }
   if(rand(100)<35) { S.items.push('coin'); gifts.push('命运币'); }
   if(gifts.length){ combatLog(`战利品：${gifts.join('、')}`, 'ok'); updateHUD(); }
-  CB=null;
-  setTimeout(()=>gotoNode(winNode), 900);
+}
+
+/* ---------- 搜打撤行动 ---------- */
+let OP = null;
+function startOperation(){
+  OP = {
+    phase:'search', bonus:0, surprised:false,
+    log:['—— 搜打撤行动 · 开始 ——','目标：一处被异常数据占领的旧仓库。','规矩：搜到了再打，打完了就撤，别贪。']
+  };
+  S.nodeId='operation';
+  updateHUD();
+  renderOperation();
+}
+function opPhaseIndex(){
+  if(OP.phase==='search'||OP.phase==='searching') return 0;
+  if(OP.phase==='combat') return 1;
+  if(OP.phase==='withdraw'||OP.phase==='withdrawing') return 2;
+  return 3;
+}
+function renderOperation(){
+  const v = $('view-operation');
+  const phases = ['搜索','打击','撤离'];
+  const cur = opPhaseIndex();
+  let body='';
+  if(OP.phase==='search'){
+    body = `<div class="choices" id="op-choices"><div class="choice" id="op-search"><span class="c-tag">【搜索】</span>搜索目标据点<span class="c-desc">感知判定 · 定位敌人，寻找弱点</span></div></div>`;
+  } else if(OP.phase==='searching'){
+    body = `<div class="notice">正在搜索目标……</div>`;
+  } else if(OP.phase==='combat'){
+    body = `<div class="notice">目标已锁定——进入战斗！</div>`;
+  } else if(OP.phase==='withdraw'){
+    body = `<div class="choices" id="op-choices"><div class="choice" id="op-withdraw"><span class="c-tag">【撤离】</span>执行撤离<span class="c-desc">敏捷判定 · 带着战利品安全离开</span></div></div>`;
+  } else if(OP.phase==='withdrawing'){
+    body = `<div class="notice">正在撤离……</div>`;
+  } else {
+    // done
+    const r = OP.result||{title:'行动结束',good:false,text:''};
+    body = `<div class="op-result ${r.good?'good':'bad'}">
+      <div class="scene-title" style="font-size:18px;margin-bottom:8px">${esc(r.title)}</div>
+      <div class="story" style="white-space:pre-wrap">${esc(r.text)}</div>
+    </div>
+    <div class="choices" id="op-choices"><div class="choice" id="op-done"><span class="c-tag">【返回】</span>返回中枢塔，继续主线</div></div>`;
+  }
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">支线 · 搜打撤行动 · 第 ${S.run} 周目</div>
+      <div class="scene-title">黑塔帮的委托</div>
+      <div class="scene-tagline">搜 → 打 → 撤</div>
+      <div class="op-steps">
+        ${phases.map((p,i)=>`<div class="op-step ${i<cur?'done':''} ${i===cur?'on':''}">${['①','②','③'][i]} ${p}</div>`).join('')}
+      </div>
+      <div class="dice-log" id="dice-log"></div>
+      <div class="op-log">${OP.log.map(l=>esc(l)).join('\n')}</div>
+      ${body}
+    </div>`;
+  showView('operation');
+  const btn = $('op-search')||$('op-withdraw')||$('op-done');
+  if(btn) btn.onclick = ()=>{
+    if(btn.id==='op-search') opSearch();
+    else if(btn.id==='op-withdraw') opWithdraw();
+    else { OP=null; gotoNode('c2_file'); }
+  };
+  $('view').scrollTop=0; window.scrollTo({top:0});
+}
+function opSearch(){
+  const res = runCheck('per', 55, '搜索 · 定位目标');
+  OP.log.push(`【骰】搜索：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 55 ${res.success?'　判定成功':'　判定失败'}`);
+  if(res.success){
+    OP.bonus += 10;
+    OP.log.push('你摸清了目标据点的守卫分布，找到了敌人的数据弱点（打击阶段命中需求 -10）。');
+  } else {
+    OP.surprised = true;
+    OP.log.push('你不慎踩响了一块故障地板——警报大作！守卫已先手，且任务奖励将减半。');
+  }
+  OP.phase = 'combat';
+  renderOperation();
+  setTimeout(opCombat, 900);
+}
+function opCombat(){
+  startCombat('fiend', null, 'death', {opMode:true, opBonus:OP.bonus});
+  if(OP.surprised) setTimeout(()=>combatEnemyTurn(), 700);
+}
+function opWithdrawFromCombat(){
+  if(!CB) return;
+  combatLog('你且战且退，尝试从战区突围……', 'pl');
+  const res = runCheck('agi', 55, '撤离 · 突围');
+  if(res.success){
+    OP.log.push(`【骰】撤离：1d100 = ${res.roll} = ${res.total} ／ 难度 55　判定成功`);
+    if(OP.bonus>0){ S.gold += 8; updateHUD(); }
+    OP.log.push('你甩开追兵，带着搜集到的情报全身而退。');
+    OP.result = {
+      title:'行动中止', good:true,
+      text:`任务未能完成——但至少，你保住了性命与情报。\n${OP.bonus>0?'【情报费】金币 +8':'没有完成目标，也没有额外收获。'}\n黑塔帮接头人撇撇嘴：“啧，至少没白跑一趟。”`
+    };
+  } else {
+    S.hp = Math.max(1, S.hp-10); updateHUD();
+    OP.log.push(`【骰】撤离：1d100 = ${res.roll} = ${res.total} ／ 难度 55　判定失败`);
+    OP.log.push('撤退失败——你挨了一记重击，狼狈逃回。');
+    OP.result = {
+      title:'负伤突围', good:false,
+      text:'撤退失败，你被异常数据咬了一口，狼狈逃回大本营。\n【损失】生命 -10\n“活着回来就好。”接头人难得说了一句人话。'
+    };
+  }
+  CB = null;
+  OP.phase = 'done';
+  renderOperation();
+}
+function opWithdraw(){
+  OP.phase = 'withdrawing';
+  renderOperation();
+  const res = runCheck('agi', 55, '撤离 · 离开战区');
+  const base = 25 + (OP.bonus>0 ? 10 : 0);
+  setTimeout(()=>{
+    OP.log.push(`【骰】撤离：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 55 ${res.success?'　判定成功':'　判定失败'}`);
+    if(res.success){
+      S.gold += base;
+      const got=[];
+      if(!S.items.includes('memcard') && rand(100)<60){ S.items.push('memcard'); got.push('记忆卡'); }
+      if(rand(100)<45){ S.items.push('coin'); got.push('命运币'); }
+      updateHUD();
+      OP.log.push('你带着战利品扬长而去，身后传来异常数据的哀嚎。');
+      OP.result = {
+        title:'行动圆满', good:true,
+        text:`【奖励】金币 +${base}${got.length?' · 获得 '+got.join('、'):''}\n黑塔帮接头人满意地点头：“干净利落，连撤退都这么帅。下次还找你。”`
+      };
+    } else {
+      const lost = Math.floor(S.gold/2);
+      S.gold -= lost;
+      S.hp = Math.max(1, S.hp-8);
+      updateHUD();
+      OP.log.push('撤退途中遭遇截击——你丢下部分战利品，负伤冲出重围。');
+      OP.result = {
+        title:'惊险撤离', good:false,
+        text:`【损失】金币 -${lost} · 生命 -8\n“东西丢了可以再抢，人没了可就真没了。”接头人难得严肃起来。`
+      };
+    }
+    OP.phase = 'done';
+    renderOperation();
+  }, 700);
 }
 
 /* ---------- 死亡与轮回 ---------- */
@@ -1349,6 +1539,7 @@ function renderTitle(){
       ▸ <b>安科骰子</b>：关键抉择由 1d100 判定——大成功（1-5）必成，大失败（96-100）必败。失败时可用<b>命运点</b>重掷。<br>
       ▸ <b>命运点</b>：每轮获得 2 点（回响碎片越多，初始越多）。用于重掷骰子与战斗爆发。<br>
       ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。金币与天赋不保留，但<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
+      ▸ <b>搜打撤行动</b>：黑塔帮的支线委托——搜索定位 → 打击目标 → 安全撤离，一步都不能少。高风险，高回报。<br>
       ▸ <b>多剧情多结局</b>：三章主线 × 阵营抉择 × NPC支线，通向 4 个结局（含隐藏结局）。你的每一个选择，都会留下“回响”。<br><br>
       <b>隐藏要素</b>：获得【回响水晶】或【真相透镜】后，第三章会解锁隐藏选项「？？？？」。
     </div>`;
