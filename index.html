@@ -260,6 +260,72 @@ h1.title-name{
 .kbd{font-family:var(--mono);border:1px solid var(--line-strong);border-radius:5px;padding:1px 6px;font-size:12px;color:var(--gold)}
 .notice{color:var(--gold);font-size:13px;margin-top:12px}
 
+/* ===== 职业选择 ===== */
+.class-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.ccard{cursor:pointer;user-select:none;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel-solid);transition:all .18s}
+.ccard:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:0 10px 28px rgba(0,0,0,.4)}
+.ccard .cl-name{font-family:var(--serif);font-size:19px;font-weight:800;color:var(--cyan);margin-bottom:4px}
+.ccard .cl-role{font-size:11px;color:var(--gold);letter-spacing:.1em;margin-bottom:8px}
+.ccard .cl-desc{font-size:12.5px;color:var(--ink-dim);line-height:1.7}
+.ccard .cl-skill{font-size:12px;color:#a7e8df;margin-top:8px;line-height:1.7}
+.ccard .cl-stat{font-size:11.5px;color:var(--ink-dim);margin-top:6px;line-height:1.6}
+
+/* ===== 法力条 ===== */
+.mp-bar{width:100%;height:6px;background:#1c2546;border-radius:4px;overflow:hidden;margin-top:2px}
+.mp-fill{height:100%;background:linear-gradient(90deg,#54d2c0,#8fe8da);border-radius:4px;transition:width .4s}
+
+/* ===== 技能栏（战斗） ===== */
+.skill-slot{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+.skill-card{cursor:pointer;user-select:none;text-align:left;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:rgba(24,36,72,.5);transition:all .15s;position:relative}
+.skill-card:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.skill-card .sk-name{font-family:var(--serif);font-size:15px;font-weight:700;color:#a7e8df}
+.skill-card .sk-mp{position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+.skill-card .sk-desc{font-size:11px;color:var(--ink-dim);margin-top:3px;line-height:1.5}
+.skill-card.locked{opacity:.4;pointer-events:none;filter:grayscale(.7)}
+
+/* ===== 角色 / 背包 ===== */
+.char-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.char-block{border:1px solid var(--line);border-radius:10px;padding:12px;background:rgba(16,24,52,.5)}
+.char-block .cb-k{font-size:11px;color:var(--ink-dim)}
+.char-block .cb-v{font-family:var(--mono);font-size:17px;color:var(--gold);margin-top:3px}
+.char-block .xp-bar{width:100%;height:6px;background:#1c2546;border-radius:4px;overflow:hidden;margin-top:4px}
+.char-block .xp-fill{height:100%;background:linear-gradient(90deg,#b78df0,#ffd98a);border-radius:4px}
+.equip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.equip-cell{border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:rgba(16,24,52,.5);font-size:12px;color:var(--ink-dim)}
+.equip-cell b{display:block;font-size:13px;color:var(--ink);margin-top:2px}
+.equip-cell .btn{padding:4px 10px;font-size:11px;margin-top:5px}
+.inv-group{margin-top:14px}
+.inv-group .ig-title{font-size:12px;letter-spacing:.15em;color:var(--cyan);margin-bottom:8px}
+.inv-item{display:flex;align-items:center;gap:10px;justify-content:space-between;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:8px;background:rgba(16,24,52,.4)}
+.inv-item .ii-main{flex:1}
+.inv-item .ii-name{font-size:14px;color:var(--ink)}
+.inv-item .ii-desc{font-size:11.5px;color:var(--ink-dim);margin-top:2px}
+.inv-item .ii-num{font-family:var(--mono);font-size:12px;color:var(--gold)}
+.inv-item .btn{padding:6px 12px;font-size:12px}
+.skill-edit{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+.skill-edit .skill-card.equipped{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+
+/* ===== 世界 / 任务板 ===== */
+.world-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+.wcard{cursor:pointer;user-select:none;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel-solid);transition:all .18s;position:relative;overflow:hidden}
+.wcard:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.wcard.locked{opacity:.42;cursor:not-allowed;filter:grayscale(.6)}
+.wcard.locked:hover{transform:none}
+.wcard .w-style{font-size:11px;color:var(--cyan);letter-spacing:.12em;margin-bottom:5px}
+.wcard .w-name{font-family:var(--serif);font-size:19px;font-weight:800;margin-bottom:6px}
+.wcard .w-desc{font-size:12px;color:var(--ink-dim);line-height:1.7}
+.wcard .w-reward{font-size:11.5px;color:var(--gold);margin-top:8px}
+.wcard .w-done{position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:11px;color:var(--cyan);border:1px solid var(--cyan-dim);padding:2px 8px;border-radius:999px}
+.wcard .w-diff{position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line-strong)}
+.diff-1{color:#7fe0d0}.diff-2{color:#ffd98a}.diff-3{color:#ffb3a0}
+
+/* ===== 升级横幅 ===== */
+.levelup{position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:60;background:var(--panel-solid);border:1px solid var(--gold);border-radius:14px;padding:20px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:glowpulse 2s ease-in-out infinite;max-width:340px;width:calc(100% - 40px)}
+.levelup .lu-title{font-family:var(--serif);font-size:22px;color:var(--gold);font-weight:800;margin-bottom:6px}
+.levelup .lu-sub{font-size:13px;color:var(--ink-dim);line-height:1.8}
+.levelup .lu-skill{font-size:13px;color:#a7e8df;margin-top:6px;line-height:1.7}
+
 @media (max-width:600px){
   h1.title-name{font-size:40px}
   .panel{padding:16px}
@@ -277,9 +343,12 @@ h1.title-name{
 <div id="app">
   <header id="hud">
     <div class="hud-block"><span>生命</span><b id="hud-hp">--</b><div class="hp-bar"><div class="hp-fill" id="hud-hpbar"></div></div></div>
+    <div class="hud-block"><span>法力</span><b id="hud-mp">--</b><div class="mp-bar"><div class="mp-fill" id="hud-mpbar"></div></div></div>
+    <div class="hud-block"><span>等级</span><b id="hud-lv">1</b></div>
     <div class="hud-block"><span>轮回</span><b id="hud-run">1</b></div>
     <div class="hud-block"><span>章节</span><b id="hud-chap">--</b></div>
     <div class="hud-right">
+      <span class="chip" id="btn-inv" style="cursor:pointer" title="角色 / 背包 / 技能">◫ 角色</span>
       <span class="chip" id="hud-fate" title="命运点：可重掷骰子">◆ 0</span>
       <span class="chip gold" id="hud-echo" title="回响碎片：轮回间保留的永久货币">◈ 0</span>
       <span class="chip" id="hud-gold" title="金币">◎ 0</span>
@@ -288,9 +357,12 @@ h1.title-name{
   <main id="view">
     <div class="view" id="view-title"></div>
     <div class="view" id="view-talent"></div>
+    <div class="view" id="view-class"></div>
     <div class="view" id="view-scene"></div>
     <div class="view" id="view-combat"></div>
     <div class="view" id="view-operation"></div>
+    <div class="view" id="view-worlds"></div>
+    <div class="view" id="view-char"></div>
     <div class="view" id="view-death"></div>
     <div class="view" id="view-ending"></div>
   </main>
@@ -379,35 +451,191 @@ const TALENTS = [
    mod:{mit:0.30}}
 ];
 
+/* ---------- 职业（角色系统） ---------- */
+const CLASSES = [
+  {id:'sword', name:'剑客', role:'近战 · 攻守兼备',
+   desc:'一柄旧日长剑，斩开数据洪流。力量优先，攻守兼备，适合正面突破。',
+   str:3,agi:1,int:0,cha:0,con:1,per:0,maxHp:10,
+   weapon:'iron_sword', armor:'cloth',
+   skills:['slash','pierce','shield'],
+   pool:['slash','pierce','shield','warscry','cleave','bloodslash']},
+  {id:'mage', name:'术师', role:'法术 · 毁灭爆发',
+   desc:'以智力驾驭数据本源，火与雷随念而生。身板脆弱，但出手即是毁天灭地。',
+   str:0,agi:0,int:4,cha:1,con:0,per:1,maxHp:2,
+   weapon:'arcane_staff', armor:'robe',
+   skills:['fireball','frost','heal'],
+   pool:['fireball','frost','thunder','heal','holy','aim']},
+  {id:'assassin', name:'刺客', role:'敏捷 · 一击致命',
+   desc:'行走于阴影之中，高暴击高闪避。先手制敌，来去如风。',
+   str:1,agi:4,int:0,cha:0,con:0,per:1,maxHp:4,
+   weapon:'steel_dagger', armor:'leather',
+   skills:['cleave','bloodslash','haste'],
+   pool:['cleave','bloodslash','haste','aim','slash','taunt']},
+  {id:'medic', name:'医修', role:'辅助 · 治疗续航',
+   desc:'悬壶济世，以符箓之术撑起整支队伍的生机。耐打，且能让敌人打到怀疑人生。',
+   str:0,agi:0,int:1,cha:3,con:2,per:0,maxHp:8,
+   weapon:'jade_talisman', armor:'robe',
+   skills:['heal','holy','shield'],
+   pool:['heal','holy','shield','taunt','frost','warscry']}
+];
+
+/* ---------- 技能库（三技能槽构筑） ---------- */
+const SKILLS = {
+  slash:{name:'横斩',type:'atk',mp:8,power:1.6,desc:'强力斩击，造成 1.6 倍力量伤害'},
+  pierce:{name:'破甲击',type:'atk',mp:12,power:1.3,arm:true,desc:'无视防御的重击，伤害 1.3 倍'},
+  cleave:{name:'连斩',type:'atk',mp:14,power:0.8,hits:2,desc:'连续斩击两次，每次 0.8 倍伤害'},
+  bloodslash:{name:'吸血斩',type:'atk',mp:16,power:1.4,steal:.5,desc:'1.4 倍伤害，并回复伤害的一半'},
+  warscry:{name:'战吼',type:'buff',mp:10,atkup:true,desc:'攻击力 +50%，持续 2 回合'},
+  fireball:{name:'火球术',type:'atk',mp:16,power:2.0,int:true,desc:'2.0 倍智力法术伤害'},
+  frost:{name:'寒冰箭',type:'atk',mp:12,power:1.4,int:true,freeze:true,desc:'1.4 倍法术伤害，30% 冻结敌人一回合'},
+  thunder:{name:'雷霆万钧',type:'atk',mp:22,power:2.6,int:true,desc:'2.6 倍智力的毁灭性法术'},
+  heal:{name:'回春术',type:'heal',mp:14,heal:.35,int:true,desc:'回复 35% 生命上限'},
+  holy:{name:'圣愈术',type:'heal',mp:20,heal:.6,int:true,desc:'回复 60% 生命上限'},
+  shield:{name:'铁壁',type:'def',mp:10,guard:true,desc:'获得护盾，接下来两回合减伤 60%'},
+  haste:{name:'疾风步',type:'buff',mp:10,haste:true,desc:'本回合先手，闪避 +30'},
+  aim:{name:'瞄准',type:'buff',mp:8,aim:true,desc:'下一次攻击必定命中'},
+  taunt:{name:'嘲讽',type:'buff',mp:8,taunt:true,desc:'吸引火力，下回合受击伤害 -40%'},
+  rage:{name:'狂暴',type:'buff',mp:12,rage:true,desc:'暴击率 +50%，持续 2 回合'},
+  /* —— 跨世界搜打撤 · 世界专属技能 —— */
+  blade:{name:'风刃剑诀',type:'atk',mp:18,power:1.2,hits:3,desc:'三连风刃，每次 1.2 倍伤害（空岛）'},
+  tide:{name:'潮汐斩',type:'atk',mp:14,power:1.6,steal:.4,desc:'1.6 倍伤害并吸血 40%（海洋）'},
+  swordarts:{name:'御剑术',type:'atk',mp:20,power:2.2,int:true,desc:'飞剑贯穿，2.2 倍智力伤害（仙侠）'},
+  energy:{name:'能量爆发',type:'atk',mp:18,power:1.8,rage:true,desc:'1.8 倍伤害并进入狂暴（末世）'},
+  hack:{name:'黑客协议',type:'atk',mp:16,power:1.5,arm:true,int:true,desc:'无视防御的 1.5 倍伤害（科幻）'}
+};
+
 /* ---------- 道具 ---------- */
 const ITEMS = [
-  {id:'potion',name:'回响药剂',desc:'使用后恢复 25 点生命。',use:'heal',val:25},
-  {id:'memcard',name:'记忆卡',desc:'战斗外使用，立即揭示一个隐藏选项。',use:'reveal',val:1},
-  {id:'coin',name:'命运币',desc:'使用后命运点 +1。',use:'fate',val:1},
-  {id:'dagger',name:'数据匕首',desc:'战斗攻击判定 +8（被动）。',use:'passive',val:8},
-  {id:'mark',name:'灰袍印记',desc:'灰袍商人留下的信物，或许能换来一个真相。',use:'flag',val:'merchant_mark'}
+  {id:'potion',name:'回响药剂',type:'consumable',desc:'使用后恢复 25 点生命。',use:'heal',val:25},
+  {id:'mpotion',name:'灵气药剂',type:'consumable',desc:'使用后恢复 30 点法力。',use:'mp',val:30},
+  {id:'memcard',name:'记忆卡',type:'consumable',desc:'战斗外使用，立即揭示一个隐藏选项。',use:'reveal',val:1},
+  {id:'coin',name:'命运币',type:'consumable',desc:'使用后命运点 +1。',use:'fate',val:1},
+  {id:'dagger',name:'数据匕首',type:'trinket',desc:'战斗攻击判定 +8（被动）。',use:'passive',val:8,equip:{}},
+  {id:'mark',name:'灰袍印记',type:'key',desc:'灰袍商人留下的信物，或许能换来一个真相。',use:'flag',val:'merchant_mark'},
+  /* 武器 */
+  {id:'iron_sword',name:'旧日长剑',type:'weapon',desc:'力量 +3',equip:{str:3}},
+  {id:'arcane_staff',name:'奥术法杖',type:'weapon',desc:'智力 +3',equip:{int:3}},
+  {id:'steel_dagger',name:'淬毒匕首',type:'weapon',desc:'敏捷 +3',equip:{agi:3}},
+  {id:'jade_talisman',name:'青玉符箓',type:'weapon',desc:'智力 +2 体质 +1',equip:{int:2,con:1}},
+  {id:'darksteel',name:'玄铁重剑',type:'weapon',desc:'力量 +4（武侠世界掉落）',equip:{str:4}},
+  /* 防具 */
+  {id:'cloth',name:'旧式工装',type:'armor',desc:'体质 +1',equip:{con:1}},
+  {id:'leather',name:'皮制护甲',type:'armor',desc:'敏捷 +1 体质 +1',equip:{agi:1,con:1}},
+  {id:'robe',name:'符文长袍',type:'armor',desc:'智力 +1 体质 +1',equip:{int:1,con:1}},
+  {id:'coral_armor',name:'珊瑚鳞甲',type:'armor',desc:'体质 +3，受伤 -10%（海洋世界掉落）',equip:{con:3},mit:.10},
+  {id:'dragon_scale',name:'龙鳞甲',type:'armor',desc:'体质 +3，受伤 -15%（西幻世界掉落）',equip:{con:3},mit:.15},
+  {id:'exo',name:'外骨骼装甲',type:'armor',desc:'力量 +2 体质 +2（科幻世界掉落）',equip:{str:2,con:2}},
+  /* 饰品 */
+  {id:'windfeather',name:'风羽护符',type:'trinket',desc:'敏捷 +3（空岛世界掉落）',equip:{agi:3}},
+  {id:'spiritroot',name:'千年灵根',type:'trinket',desc:'智力 +3（仙侠世界掉落）',equip:{int:3}},
+  {id:'core_shard',name:'核心残片',type:'trinket',desc:'全属性 +1（无限流世界掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1}}
 ];
 
 /* ---------- 敌人 ---------- */
 const ENEMIES = {
-  ghost:{name:'回响幽灵',hp:26,atk:8,dc:42,spd:10,gold:8,
+  ghost:{name:'回响幽灵',hp:26,atk:8,dc:42,spd:10,gold:8,xp:30,
     desc:'半透明的旧日残影，一遍遍重复着生前的动作。它们并不想伤害你，只是……忘不掉。',
     reward:'击败后获得情报：它临死前指着中城区的高塔。'},
-  fiend:{name:'数据腐化者',hp:32,atk:10,dc:46,spd:9,gold:10,
+  fiend:{name:'数据腐化者',hp:32,atk:10,dc:46,spd:9,gold:10,xp:36,
     desc:'被异常数据侵蚀的游荡者，眼球里滚动着乱码。它们从“回响”中诞生，只为吞噬“清醒者”。'},
-  keeper:{name:'归档者·K',hp:50,atk:13,dc:58,spd:12,gold:20,
+  keeper:{name:'归档者·K',hp:50,atk:13,dc:58,spd:12,gold:20,xp:55,
     desc:'中枢塔的守护者，一台自称“档案管理员”的旧式AI。它认为你是不该存在的“乱码”。',
     reward:'击败后获得【记忆卡】与中枢塔通行权限。'},
-  thug:{name:'黑塔帮暴徒',hp:38,atk:11,dc:50,spd:10,gold:14,
+  thug:{name:'黑塔帮暴徒',hp:38,atk:11,dc:50,spd:10,gold:14,xp:40,
     desc:'黑塔帮的打手，崇尚丛林法则。他们想把你“格式化”成他们的人。'},
-  warder:{name:'守望者巡卫',hp:42,atk:12,dc:52,spd:11,gold:16,
+  warder:{name:'守望者巡卫',hp:42,atk:12,dc:52,spd:11,gold:16,xp:46,
     desc:'守望者联盟的巡逻者，认为“稳定高于一切”，包括你的自由。'},
-  gaze:{name:'深渊凝视者',hp:44,atk:12,dc:56,spd:10,gold:18,
+  gaze:{name:'深渊凝视者',hp:44,atk:12,dc:56,spd:10,gold:18,xp:50,
     desc:'从回响之核剥离出的意志碎片。直视它，就是在直视深渊。',
     reward:'击败后，你更接近真相。'},
-  core:{name:'回响之核·审判形态',hp:82,atk:15,dc:66,spd:13,gold:40,
-    desc:'回响之核的最终姿态。整座城市的“回响”都汇聚于此，它要以审判者的身份，决定你的去留。'}
+  core:{name:'回响之核·审判形态',hp:82,atk:15,dc:66,spd:13,gold:40,xp:90,
+    desc:'回响之核的最终姿态。整座城市的“回响”都汇聚于此，它要以审判者的身份，决定你的去留。'},
+  /* —— 跨世界搜打撤 · 小说世界敌人 —— */
+  w_sky:{name:'云端守卫',hp:40,atk:11,dc:52,spd:12,gold:18,xp:55,
+    desc:'悬浮在云海之上的石像守卫，长矛上缠绕着细碎的雷光。它守卫着浮空城的“数据残响”。'},
+  w_ocean:{name:'深渊海妖',hp:44,atk:12,dc:54,spd:10,gold:20,xp:58,
+    desc:'海沟最深处的歌者。它的歌声能让人忘记呼吸，直到沉入海底。'},
+  w_xianxia:{name:'噬魂邪修',hp:42,atk:12,dc:53,spd:11,gold:20,xp:58,
+    desc:'坠入魔道的剑修，周身缠绕着黑红色的怨气。剑未出鞘，杀意已至。'},
+  w_wuxia:{name:'魔教护法',hp:46,atk:12,dc:55,spd:11,gold:22,xp:62,
+    desc:'快活林地下势力的头目，刀法又快又狠。他盯着你的钱包和命。'},
+  w_apoc:{name:'变异感染者',hp:48,atk:13,dc:56,spd:9,gold:24,xp:64,
+    desc:'辐射废墟中的变异体，力量远超常人。它已经没有“人”的意识了。'},
+  w_fantasy:{name:'地底恶龙',hp:52,atk:14,dc:58,spd:10,gold:28,xp:70,
+    desc:'盘踞在巢穴深处的幼龙，吐息灼热，鳞甲如铁。它把“残响”当成自己的财宝。'},
+  w_sci:{name:'失控异形',hp:50,atk:13,dc:57,spd:13,gold:26,xp:68,
+    desc:'深空站实验舱逃出的生物兵器。外壳覆盖着纳米装甲，行动快如鬼魅。'},
+  w_inf:{name:'副本仲裁者',hp:58,atk:15,dc:62,spd:12,gold:34,xp:80,
+    desc:'无限流副本中枢的守卫，融合了所有世界的残响。它是所有“故事”的看门人。'}
 };
+
+/* ---------- 跨世界搜打撤 · 小说世界 ---------- */
+const WORLDS = [
+  {id:'sky', name:'浮空群岛', style:'空岛世界', diff:1, unlock:0,
+   desc:'悬浮在云海之上的古文明浮空岛，风与雷在石柱间低语。',
+   enemy:'w_sky',
+   search:'云层之下，一座悬空的青铜城门若隐若现——你要搜刮的“数据残响”，就藏在城门的另一侧。',
+   combat:'石像守卫睁开了眼，雷光沿着长矛炸裂。它举起武器，向你发起冲锋。',
+   loot:'你从浮空城的残响中，拓下一卷泛着青色剑意的口诀。',
+   reward:{type:'skill',id:'blade',name:'风刃剑诀'},
+   base:26},
+  {id:'wuxia', name:'快活林黑市', style:'武侠世界', diff:1, unlock:0,
+   desc:'刀光剑影的江湖黑市，屋檐上随时有人等着取你性命。',
+   enemy:'w_wuxia',
+   search:'快活林的灯火下，暗哨与刀客各怀心事。那间地下室，据说藏着魔教的秘密账本。',
+   combat:'魔教护法从梁上跃下，长刀映着烛火：“来黑市，就得守黑市的规矩。”',
+   loot:'你从账本夹层里摸出一把玄铁重剑，剑锋寒光凛冽。',
+   reward:{type:'equip',id:'darksteel',name:'玄铁重剑'},
+   base:28},
+  {id:'xianxia', name:'青云剑宗遗迹', style:'仙侠世界', diff:1, unlock:0,
+   desc:'灵气稀薄的剑宗废墟，断壁残垣间偶有剑鸣回荡。',
+   enemy:'w_xianxia',
+   search:'你攀上青云峰顶，山门残破，碑文模糊。真正的“残响”藏在一座倒塌的藏剑阁里。',
+   combat:'一道黑红色的剑气冲天而起，噬魂邪修立于剑尖：“擅闯剑宗者，以剑问罪。”',
+   loot:'你从藏剑阁的残骸中，拾起一枚泛着灵光的玉简。',
+   reward:{type:'skill',id:'swordarts',name:'御剑术'},
+   base:28},
+  {id:'ocean', name:'深渊海沟', style:'海洋世界', diff:2, unlock:2,
+   desc:'终年不见天日的海底遗迹，巨大的海兽骨架在黑暗中发着微光。',
+   enemy:'w_ocean',
+   search:'你潜入海沟，水压让骨骼吱嘎作响。那艘沉船的残骸里，有“残响”的信号。',
+   combat:'深渊海妖从水草丛中现身，歌声直刺灵魂：“留下来……陪我说说话……”',
+   loot:'你在沉船的宝箱里，发现一件珊瑚鳞甲，还带着海水的咸味。',
+   reward:{type:'equip',id:'coral_armor',name:'珊瑚鳞甲'},
+   base:30},
+  {id:'apoc', name:'辐射废墟', style:'末世世界', diff:2, unlock:2,
+   desc:'焦土与报废的战车之间，感染者成群游荡。文明在这里只剩残骸。',
+   enemy:'w_apoc',
+   search:'你在辐射尘埃中搜索，一座地下避难所的入口露出半截。里面传来啃食骨头的声音。',
+   combat:'变异感染者撞开铁门，猩红的眼睛锁定了你。它的嘶吼在废墟里回荡。',
+   loot:'你从避难所的应急箱里，搜出一份军用能量模块的配方。',
+   reward:{type:'skill',id:'energy',name:'能量爆发'},
+   base:32},
+  {id:'fantasy', name:'巨龙巢穴', style:'西幻世界', diff:2, unlock:4,
+   desc:'黑暗森林深处，一座堆满金银的巢穴。龙的呼吸声，让地面微微震颤。',
+   enemy:'w_fantasy',
+   search:'你循着灼热的吐息深入巢穴，恶龙盘踞在财宝堆上，警惕地打量着你这个闯入者。',
+   combat:'地底恶龙展开双翼，龙息在喉间翻涌：“凡人，你觊觎我的财宝——还有我的命。”',
+   loot:'你从恶龙的战利品中，扒下一件龙鳞甲。鳞片温热，坚不可摧。',
+   reward:{type:'equip',id:'dragon_scale',name:'龙鳞甲'},
+   base:34},
+  {id:'sci', name:'深空站', style:'科幻世界', diff:2, unlock:4,
+   desc:'失重漂浮的深空实验站，警报灯一闪一灭，舷窗外是永恒的星海。',
+   enemy:'w_sci',
+   search:'你借助零重力滑行在实验站走廊，目标数据仓库里，有失控实验的记录。',
+   combat:'失控异形从通风管道钻出，纳米装甲在灯光下流动。它发出金属摩擦般的尖啸。',
+   loot:'你在实验站的服务器里，下载了一段“黑客协议”的底层代码。',
+   reward:{type:'skill',id:'hack',name:'黑客协议'},
+   base:34},
+  {id:'inf', name:'副本中枢', style:'无限流世界', diff:3, unlock:6,
+   desc:'所有世界的中转站，无数光门通往不同的故事。这里是“残响”的源头。',
+   enemy:'w_inf',
+   search:'你穿过无数道世界之门，副本中枢的核心区域就在眼前。一股压迫感扑面而来。',
+   combat:'副本仲裁者从虚空中凝聚成型：“你收集了太多故事。现在，把它们都交出来。”',
+   loot:'你从仲裁者的核心中，抠出一枚融汇所有世界之力的残片。',
+   reward:{type:'equip',id:'core_shard',name:'核心残片'},
+   base:38}
+];
 
 /* ---------- 结局 ---------- */
 const ENDINGS = {
@@ -686,19 +914,19 @@ N({id:'c2_faction_black',chap:'第二章 · 中枢塔',title:'黑塔帮',tagline
 text:'“哟，新面孔。”地库阴影里，一个叼着数据烟的男人懒洋洋地开口，“黑塔帮收人，不问来历，只问胆子。敢碰禁区数据吗？”\n\n他扔给你一袋金币和一枚【黑塔帮纹章】：“拿好。我们只认利益——但你若能搞到回响之核的底层数据，价钱好商量。”\n\n【获得：黑塔帮纹章 · 金币+20】\n\n他压低声音补充了一句：“干完这一票，我带你去看真正的‘后门’——不是我说的那个‘后门’。”\n\n“顺便——守望者那群疯子，正在满城追杀‘乱码’。你最好小心点。”',
 choices:[
   {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
-  {text:'打听黑塔帮的“外快”',tag:'支线',desc:'接一个搜打撤的委托，能赚一笔',kind:'next',goto:'c2_ops_offer'}
+  {text:'打听黑塔帮的“外快”',tag:'支线',desc:'跨世界搜打撤任务，能赚装备和技能',kind:'next',goto:'c2_ops_offer'}
 ]});
 N({id:'c2_faction_none',chap:'第二章 · 中枢塔',title:'独行者',tagline:'阵营 · 中立',
 text:'你没有加入任何一方。\n\n“聪明。”角落里传来一个苍老的声音——灰袍商人居然也在塔里，“中立者最自由，也最危险。两边都当你是变数，随时可能动手。”\n\n他抛给你一件东西：“【回响水晶】的姊妹篇——【真相透镜】。拿着，第三章会用得上。”\n\n【获得：真相透镜】\n\n他笑了笑：“独行的人，往往看得最清楚。祝你好运，变数先生。”',
 choices:[
   {text:'在塔内继续探索',tag:'前进',kind:'next',goto:'c2_file'},
-  {text:'找灰袍打听有没有“私活”',tag:'支线',desc:'灰袍消息灵通，或许能牵线',kind:'next',goto:'c2_ops_offer'}
+  {text:'找灰袍打听有没有“私活”',tag:'支线',desc:'灰袍能牵线跨世界搜打撤任务',kind:'next',goto:'c2_ops_offer'}
 ]});
 
-N({id:'c2_ops_offer',chap:'第二章 · 中枢塔',title:'黑塔帮的委托',tagline:'支线 · 搜打撤行动',
-text:'你在地库入口被一个叼着数据烟的接头人叫住：\n\n“喂，新面孔。有个活儿，干不干？”\n\n他压低声音：“旧仓库那边，有批异常数据‘长了脚’，占了一整层。我们人手不够——你去，把目标清掉，再把能带的数据带回来。”\n\n“规矩就三个字：{hl}搜、打、撤{/hl}。搜到了再打，打完了就撤，别贪。干成，金币管够。”\n\n（搜打撤行动：搜索定位 → 打击目标 → 安全撤离，一步出错都可能吃大亏）',
+N({id:'c2_ops_offer',chap:'第二章 · 中枢塔',title:'黑塔帮的委托',tagline:'支线 · 跨世界搜打撤',
+text:'你在地库入口被一个叼着数据烟的接头人叫住：\n\n“喂，新面孔。有个活儿，干不干？”\n\n他压低声音：“城里的‘回响’最近炸开了花——无数小说世界的碎片，正在一个接一个地‘长脚’跑出来。空岛、江湖、仙山、海沟、深空……全乱了套。”\n\n“黑塔帮挖通了通往这些世界碎片的通道。你去，把每个世界里的‘数据残响’搜出来、打干净、再带回来——咱们五五分成。”\n\n“规矩就三个字：{hl}搜、打、撤{/hl}。搜到了再打，打完了就撤，别贪。”\n\n（跨世界搜打撤：8 个小说世界 × 搜→打→撤，每个世界有专属技能/装备奖励）',
 choices:[
-  {text:'接下委托',tag:'接取',desc:'进入搜打撤行动',kind:'effect',apply:(s)=>{startOperation();},goto:'c2_ops_offer'},
+  {text:'接下委托，打开任务板',tag:'接取',desc:'选择要去的世界',kind:'effect',apply:(s)=>{renderWorlds();},goto:'__stay__'},
   {text:'婉拒，继续主线',tag:'婉拒',kind:'next',goto:'c2_file'}
 ]});
 
@@ -890,15 +1118,34 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 const STORE_KEY = 'echo-city-save-v1';
 const S = {
   run:1, echoes:0, totalRuns:0, bestProgress:0, finishedEndings:[],
-  hp:0, maxHp:0, gold:0, fate:0, items:[], talents:[],
+  hp:0, maxHp:0, mp:0, maxMp:0, gold:0, fate:0, items:[], talents:[],
+  level:1, xp:0, cls:null, skills:[], skillPool:[], equip:{weapon:null,armor:null,trinket:null},
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0},
-  flag:{}, nodeId:null
+  flag:{}, nodeId:null, worldsCleared:[]
 };
 function loadSave(){
   try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; } }catch(e){}
 }
 function saveSave(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings})); }catch(e){}
+}
+const itemById = id => ITEMS.find(i=>i.id===id);
+const skillById = id => SKILLS[id];
+const classById = id => CLASSES.find(c=>c.id===id);
+const worldById = id => WORLDS.find(w=>w.id===id);
+function xpNeed(level){ return 60 + level*40; }
+
+/* 装备属性合计 */
+function equipBonus(){
+  const b={str:0,agi:0,int:0,cha:0,con:0,per:0,atk:0,mit:0};
+  ['weapon','armor','trinket'].forEach(slot=>{
+    const it = S.equip[slot] && itemById(S.equip[slot]);
+    if(!it) return;
+    if(it.equip){ for(const k in it.equip){ if(k in b) b[k]+=it.equip[k]; } }
+    if(it.mit) b.mit += it.mit;
+    if(it.atk) b.atk += it.atk;
+  });
+  return b;
 }
 
 /* ---------- 属性 ---------- */
@@ -911,7 +1158,7 @@ function newStats(){
 function statValue(name){
   if(name==='will') return S.stats.int + Math.floor(S.stats.con/2);
   if(name==='luck') return 0;
-  return S.stats[name]||0;
+  return (S.stats[name]||0) + (equipBonus()[name]||0);
 }
 /* 天赋判定加成 */
 function checkBonus(name){
@@ -929,6 +1176,7 @@ function combatBonus(){
   if(S.talents.includes('wit')) b+=10;
   if(S.talents.includes('eye')) b+=10;
   if(S.items.includes('dagger')) b+=8;
+  if(S.equip.weapon && itemById(S.equip.weapon).atk) b += itemById(S.equip.weapon).atk;
   return b;
 }
 
@@ -962,12 +1210,149 @@ function newRun(){
   S.items = [];
   S.talents = [];
   S.flag = {};
+  S.level = 1; S.xp = 0; S.cls = null;
+  S.skills = []; S.skillPool = [];
+  S.equip = {weapon:null,armor:null,trinket:null};
+  S.worldsCleared = [];
   S.maxHp = 20 + S.stats.con*2;
-  S.hp = S.maxHp;
+  S.maxMp = 30 + S.stats.int*2;
+  S.hp = S.maxHp; S.mp = S.maxMp;
   S.nodeId = null;
   S.revealedSelf=false;
 }
 function resetRun(){ newRun(); S.run++; }
+
+/* ---------- 职业 ---------- */
+function applyClass(cid){
+  const c = classById(cid); if(!c) return;
+  S.cls = cid;
+  S.stats.str+=c.str; S.stats.agi+=c.agi; S.stats.int+=c.int;
+  S.stats.cha+=c.cha; S.stats.con+=c.con; S.stats.per+=c.per;
+  S.maxHp += c.maxHp; S.hp = S.maxHp;
+  S.maxMp = 30 + S.stats.int*2; S.mp = S.maxMp;
+  S.skillPool = c.pool.slice();
+  S.skills = c.skills.slice();
+  S.equip.weapon = c.weapon; S.equip.armor = c.armor;
+  S.gold += 5;
+}
+function renderClassSelect(){
+  S.nodeId='class';
+  updateHUD();
+  const v=$('view-class');
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">轮回历第 ${S.run} 周目 · 入世</div>
+      <div class="scene-title">选择你的职业</div>
+      <div class="scene-tagline">职业决定初始属性偏向、初始装备，以及可修习的技能</div>
+      <div class="story">灵魂烙印已经烙下。\n\n但在踏入这座城之前，你还需要一副“皮囊”和一个“身份”。\n\n系统提示音再次响起：\n\n“检测到灵魂烙印。请选择入世职业——它将决定你在这座城里的战斗方式。”</div>
+      <div class="class-cards" id="class-cards"></div>
+    </div>`;
+  const box=$('class-cards');
+  CLASSES.forEach(c=>{
+    const card=document.createElement('div');
+    card.className='ccard';
+    const statDesc = ['力量','敏捷','智力','魅力','体质','感知'].map((k,i)=>{
+      const v=[c.str,c.agi,c.int,c.cha,c.con,c.per][i];
+      return v? `${k} +${v}` : null;
+    }).filter(Boolean).join(' · ');
+    card.innerHTML = `
+      <div class="cl-name">${esc(c.name)}</div>
+      <div class="cl-role">${esc(c.role)}</div>
+      <div class="cl-desc">${esc(c.desc)}</div>
+      <div class="cl-stat">初始：${esc(statDesc)} ｜ 生命上限 +${c.maxHp}</div>
+      <div class="cl-skill">初始技能：${c.skills.map(s=>esc(SKILLS[s].name)).join('、')}</div>`;
+    card.onclick=()=>{
+      box.querySelectorAll('.ccard').forEach(x=>x.style.borderColor='var(--line)');
+      card.style.borderColor='var(--gold)';
+      setTimeout(()=>{
+        applyClass(c.id);
+        updateHUD();
+        gotoNode('c1_intro');
+      }, 450);
+    };
+    box.appendChild(card);
+  });
+  showView('class');
+}
+
+/* ---------- 经验 / 升级 ---------- */
+function gainXp(amount){
+  S.xp += amount;
+  let ups=0;
+  const learned=[];
+  while(S.xp >= xpNeed(S.level)){
+    S.xp -= xpNeed(S.level);
+    S.level++;
+    ups++;
+    const keys=['str','agi','int','cha','con','per'];
+    keys.forEach(k=>S.stats[k]++);
+    S.maxHp += 5; S.hp += 5;
+    S.maxMp += 2; S.mp += 2;
+    // 升级可学一个职业池中的新技能
+    const c = classById(S.cls);
+    if(c){
+      const can = c.pool.filter(s=>!S.skillPool.includes(s));
+      if(can.length){ const ns = can[rand(can.length)]; S.skillPool.push(ns); learned.push(SKILLS[ns].name); }
+    }
+  }
+  updateHUD();
+  if(ups>0){
+    let html = `<div class="levelup"><div class="lu-title">✦ 等级提升 → Lv.${S.level}</div>`;
+    html += `<div class="lu-sub">全属性 +1 · 生命上限 +5 · 法力上限 +2</div>`;
+    if(learned.length) html += `<div class="lu-skill">习得新技能：${learned.join('、')}（可在「角色」面板更换携带）</div>`;
+    html += `<div class="choices" style="margin-top:12px"><div class="choice" id="lu-close" style="text-align:center">收下</div></div></div>`;
+    const wrap=document.createElement('div'); wrap.innerHTML=html;
+    const lu = wrap.firstChild;
+    document.body.appendChild(lu);
+    $('lu-close').onclick=()=>{ lu.remove(); };
+  }
+}
+
+/* ---------- 背包 / 装备 / 道具 ---------- */
+function addItem(id, n){
+  n = n||1;
+  for(let i=0;i<n;i++) S.items.push(id);
+  updateHUD();
+}
+function removeItemAt(idx){ S.items.splice(idx,1); updateHUD(); }
+function countItem(id){ return S.items.filter(i=>i===id).length; }
+function equipSlot(itemId){
+  const it = itemById(itemId); if(!it||!(it.type==='weapon'||it.type==='armor'||it.type==='trinket')) return;
+  // 若背包里已有同槽装备，先回收再换上
+  const slot = it.type;
+  if(S.equip[slot]){
+    const old = S.equip[slot];
+    S.equip[slot]=null;
+    if(!S.items.includes(old)) S.items.push(old);
+  }
+  S.equip[slot]=itemId;
+  const idx = S.items.indexOf(itemId);
+  if(idx>=0) S.items.splice(idx,1);
+  S.maxHp = Math.max(S.maxHp, 20 + S.stats.con*2);
+  if(S.hp>S.maxHp) S.hp=S.maxHp;
+  updateHUD();
+}
+function unequipSlot(slot){
+  if(!S.equip[slot]) return;
+  S.items.push(S.equip[slot]);
+  S.equip[slot]=null;
+  updateHUD();
+}
+function useItem(itemId){
+  const it = itemById(itemId);
+  if(!it) return false;
+  if(it.type==='consumable'){
+    if(it.use==='heal'){ S.hp=Math.min(S.maxHp,S.hp+it.val); }
+    else if(it.use==='mp'){ S.mp=Math.min(S.maxMp,S.mp+it.val); }
+    else if(it.use==='fate'){ S.fate+=it.val; }
+    else if(it.use==='reveal'){ /* 揭示隐藏选项：标记已用 */ }
+    const idx = S.items.indexOf(itemId);
+    if(idx>=0) S.items.splice(idx,1);
+    updateHUD();
+    return true;
+  }
+  return false;
+}
 
 /* ---------- 文本填充 ---------- */
 function fillText(t){
@@ -991,12 +1376,20 @@ function updateHUD(){
   $('hud-hp').textContent = Math.max(0,S.hp)+'/'+S.maxHp;
   const f=$('hud-hpbar'); f.style.width = Math.max(0,S.hp/S.maxHp*100)+'%';
   f.classList.toggle('low', S.hp/S.maxHp<0.3);
+  $('hud-mp').textContent = Math.max(0,S.mp)+'/'+S.maxMp;
+  const mf=$('hud-mpbar'); mf.style.width = Math.max(0,S.mp/S.maxMp*100)+'%';
+  $('hud-lv').textContent = S.level + (S.cls? ' · '+classById(S.cls).name : '');
   $('hud-run').textContent = S.run;
   const nn = S.nodeId && NODES[S.nodeId];
-  $('hud-chap').textContent = nn ? nn.chap : (S.nodeId==='combat'?'战斗':'—');
+  $('hud-chap').textContent = nn ? nn.chap : (S.nodeId==='combat'?'战斗':(S.nodeId==='operation'?'搜打撤':(S.nodeId==='worlds'?'任务板':(S.nodeId==='char'?'角色':(S.nodeId==='class'?'入世':'—')))));
   $('hud-fate').textContent = '◆ '+S.fate;
   $('hud-echo').textContent = '◈ '+S.echoes;
   $('hud-gold').textContent = '◎ '+S.gold;
+  const invBtn=$('btn-inv');
+  invBtn.onclick = ()=>{
+    if(S.nodeId==='char'){ closeChar(); return; }
+    if(S.nodeId && S.nodeId!=='title') renderChar();
+  };
 }
 
 /* ---------- 骰子系统（安科） ---------- */
@@ -1090,7 +1483,8 @@ function resolveChoice(c){
   if(c.kind==='effect'){
     try{ if(c.apply) c.apply(S); }catch(e){}
     if(c.addNote){ const n=NODES[S.nodeId]; if(n){ n._note=c.addNote; } }
-    gotoNode(c.goto); return;
+    if(c.goto && c.goto!=='__stay__') gotoNode(c.goto);
+    return;
   }
   if(c.kind==='check'){
     const res = runCheck(c.stat, c.dc, c.tag||'判定');
@@ -1137,7 +1531,8 @@ function startCombat(enemyId, winNode, loseNode, opts){
   const e = ENEMIES[enemyId];
   CB = {id:enemyId, hp:e.hp, max:e.hp, atk:e.atk, dc:e.dc, spd:e.spd,
         winNode, loseNode, turn:0, guard:false, guardUsed:false, fatalGuard:true,
-        opMode:!!(opts&&opts.opMode), opBonus:(opts&&opts.opBonus)||0};
+        opMode:!!(opts&&opts.opMode), opBonus:(opts&&opts.opBonus)||0,
+        buff:{guard:0,atkup:0,rage:0,aim:false,haste:false,taunt:false}, frozen:false};
   S.nodeId = 'combat';
   updateHUD();
   renderCombat();
@@ -1146,30 +1541,54 @@ function renderCombat(){
   const e = ENEMIES[CB.id];
   const v = $('view-combat');
   const logEntries = CB._log||['战斗开始。'];
+  const buffTxt=[];
+  if(CB.buff.guard>0) buffTxt.push('护盾×'+CB.buff.guard);
+  if(CB.buff.atkup>0) buffTxt.push('战吼×'+CB.buff.atkup);
+  if(CB.buff.rage>0) buffTxt.push('狂暴×'+CB.buff.rage);
+  if(CB.buff.aim) buffTxt.push('瞄准');
+  if(CB.buff.haste) buffTxt.push('疾风');
+  if(CB.buff.taunt) buffTxt.push('嘲讽');
   v.innerHTML = `
     <div class="panel">
-      <div class="scene-chap">战斗 · 第 ${S.run} 周目</div>
+      <div class="scene-chap">战斗 · 第 ${S.run} 周目${CB.opMode?' · 搜打撤':''}</div>
       <div class="combat-enemy">
         <div class="e-name">${esc(e.name)}</div>
         <div class="e-desc">${esc(e.desc)}</div>
         <div class="e-bar"><div class="e-fill" style="width:${CB.hp/CB.max*100}%"></div></div>
-        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-dim);margin-top:6px">HP ${Math.max(0,CB.hp)} / ${CB.max}</div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--ink-dim);margin-top:6px">
+          <span>HP ${Math.max(0,CB.hp)} / ${CB.max}</span>
+          <span>你的法力 ${Math.max(0,S.mp)} / ${S.maxMp}${buffTxt.length?' · '+buffTxt.join(' '):''}</span>
+        </div>
       </div>
       <div class="battle-log" id="battle-log">${logEntries.join('<br>')}</div>
+      <div class="skill-slot">
+        <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em">技能 · 携带 ${S.skills.length}/3</div>
+        <div class="skill-grid" id="skill-grid"></div>
+      </div>
       <div class="combat-actions" id="combat-actions"></div>
     </div>`;
+  const sg=$('skill-grid');
+  S.skills.forEach(sid=>{
+    const sk = skillById(sid); if(!sk) return;
+    const locked = S.mp < sk.mp;
+    const b=document.createElement('div');
+    b.className='skill-card'+(locked?' locked':'');
+    b.innerHTML = `<span class="sk-name">${esc(sk.name)}</span><span class="sk-mp">◆ ${sk.mp}</span><span class="sk-desc">${esc(sk.desc)}</span>`;
+    b.onclick=()=>{ if(!locked) combatUseSkill(sid); };
+    sg.appendChild(b);
+  });
   const act = $('combat-actions');
   const mk = (txt,sub,fn)=>{
     const b=document.createElement('div'); b.className='cact';
     b.innerHTML = `${txt}${sub?`<span class="ca-sub">${sub}</span>`:''}`;
     b.onclick = fn; act.appendChild(b);
   };
-  const hasPotion = S.items.includes('potion');
-  mk('攻击','力量+敏捷 · 命中'+CB.dc, ()=>combatPlayerAttack(false));
+  mk('攻击','力量+敏捷 · 命中'+CB.dc+' · 回蓝8', ()=>combatPlayerAttack(false));
   mk('重击','伤害更高 · 命中-15', ()=>combatPlayerAttack(true));
   mk('防御','本回合减伤50%', ()=>combatGuard());
-  if(hasPotion) mk('回响药剂',`剩余${S.items.filter(i=>i==='potion').length}`, ()=>combatPotion());
-  if(S.fate>0) mk('命运之力',`消耗1点·下一次攻击必中且暴击 (${S.fate})`, ()=>combatFate());
+  if(countItem('potion')>0) mk('回响药剂',`剩余${countItem('potion')}`, ()=>combatItem('potion'));
+  if(countItem('mpotion')>0) mk('灵气药剂',`剩余${countItem('mpotion')}`, ()=>combatItem('mpotion'));
+  if(S.fate>0) mk('命运之力',`消耗1点·必中且暴击 (${S.fate})`, ()=>combatFate());
   if(CB.opMode) mk('撤离','放弃战斗·尝试突围', ()=>opWithdrawFromCombat());
   showView('combat');
 }
@@ -1191,10 +1610,13 @@ function combatPlayerAttack(heavy){
   let crit = roll<=critRange();
   if(S.talents.includes('blink') && CB.turn===1){ crit = true; }
   if(fateForce){ crit=true; roll=100; S.flag._fateForce=false; }
+  if(CB.buff.aim){ CB.buff.aim=false; }
   const mod = combatBonus();
   const total = roll + mod;
-  const need = CB.dc + (heavy?15:0) - (CB.opBonus||0);
-  const hit = crit || total>=need;
+  let need = CB.dc + (heavy?15:0) - (CB.opBonus||0);
+  if(CB.buff.haste) need -= 20;
+  if(CB.buff.aim===false && total<need && false){} // no-op
+  const hit = crit || total>=need || (CB.buff.aim===false && roll>=0 && roll===100);
   combatLog(`你发动${heavy?'重击':'攻击'}｜1d100 = ${roll} ${mod>0?'+'+mod:''} = ${total} ／ 命中需求 ${need}`, 'pl');
   if(!hit){
     combatLog(`攻击落空！`, 'fumb');
@@ -1203,27 +1625,99 @@ function combatPlayerAttack(heavy){
   if(crit) combatLog(`暴击！`, 'crit');
   let dmg = S.stats.str + rint(1,6);
   if(heavy) dmg = Math.round(dmg*1.7);
+  if(CB.buff.atkup>0) dmg = Math.round(dmg*1.5);
   if(crit) dmg = Math.round(dmg*(S.talents.includes('blink')?1.5:1.3));
+  if(CB.buff.rage>0) dmg = Math.round(dmg*1.2);
   if(S.talents.includes('eye')) dmg += 6;
   CB.hp -= dmg;
   combatLog(`你对${ENEMIES[CB.id].name}造成 <b>${dmg}</b> 点伤害！`, 'pl');
+  // 普通攻击回蓝
+  S.mp = Math.min(S.maxMp, S.mp+8); updateHUD();
   if(CB.hp<=0){ combatVictory(); return; }
+  combatEnemyTurn();
+}
+function combatUseSkill(sid){
+  if(!CB) return;
+  const sk = skillById(sid); if(!sk) return;
+  if(S.mp < sk.mp){ combatLog(`法力不足，无法施放「${sk.name}」（需要 ◆${sk.mp}）`, 'fumb'); return; }
+  CB.turn++;
+  S.mp -= sk.mp; updateHUD();
+  if(sk.type==='atk'){
+    let roll = roll100();
+    let crit = roll<=critRange();
+    if(CB.buff.aim){ CB.buff.aim=false; }
+    const mod = combatBonus();
+    const total = roll + mod;
+    let need = CB.dc - (CB.opBonus||0);
+    if(CB.buff.haste) need -= 20;
+    const hit = crit || total>=need || (CB.buff.aim===false && roll>=0);
+    combatLog(`你施放「${sk.name}」｜1d100 = ${roll} ${mod>0?'+'+mod:''} = ${total} ／ 命中需求 ${need}`, 'pl');
+    if(!hit){ combatLog(`「${sk.name}」落空了！`, 'fumb'); combatEnemyTurn(); return; }
+    if(crit) combatLog(`法术暴击！`, 'crit');
+    const base = sk.int? S.stats.int : S.stats.str;
+    const gain = (CB.buff.atkup>0?1.5:1) * (crit?1.5:1) * (CB.buff.rage>0?1.2:1);
+    let dmg=0;
+    if(sk.hits){
+      let totalDmg=0;
+      for(let i=0;i<sk.hits;i++){
+        const h = Math.max(1, Math.round(base*sk.power*gain));
+        CB.hp -= h; totalDmg += h;
+      }
+      dmg=totalDmg;
+      combatLog(`「${sk.name}」连击 ${sk.hits} 段，共造成 <b>${dmg}</b> 点伤害！`, 'pl');
+    } else {
+      dmg = Math.max(1, Math.round(base*sk.power*gain));
+      CB.hp -= dmg;
+      combatLog(`「${sk.name}」对${ENEMIES[CB.id].name}造成 <b>${dmg}</b> 点伤害！`, 'pl');
+    }
+    if(sk.freeze && rand(100)<30){
+      CB.frozen=true;
+      combatLog(`${ENEMIES[CB.id].name}被【寒冰】冻结，下一回合无法行动！`, 'ok');
+    }
+    if(sk.steal){
+      const hv=Math.round(dmg*sk.steal);
+      S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD();
+      combatLog(`你汲取了 <b>${hv}</b> 点生命。`, 'ok');
+    }
+    if(sk.rage){ CB.buff.rage=2; combatLog('「能量爆发」的余波让你进入狂暴状态！', 'ok'); }
+    if(CB.hp<=0){ combatVictory(); return; }
+    combatEnemyTurn(); return;
+  }
+  if(sk.type==='heal'){
+    const hv=Math.round(S.maxHp*sk.heal);
+    S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD();
+    combatLog(`「${sk.name}」回复 <b>${hv}</b> 点生命！（${S.hp}/${S.maxHp}）`, 'pl');
+    combatEnemyTurn(); return;
+  }
+  if(sk.type==='def'){
+    CB.buff.guard=2;
+    combatLog(`「${sk.name}」！接下来两回合受到伤害 -60%。`, 'pl');
+    combatEnemyTurn(); return;
+  }
+  if(sk.type==='buff'){
+    if(sk.atkup){ CB.buff.atkup=2; combatLog(`「${sk.name}」！攻击力 +50%，持续 2 回合。`, 'pl'); }
+    if(sk.haste){ CB.buff.haste=true; combatLog(`「${sk.name}」！本回合先手，闪避 +30。`, 'pl'); }
+    if(sk.aim){ CB.buff.aim=true; combatLog(`「${sk.name}」！下一次攻击必定命中。`, 'pl'); }
+    if(sk.taunt){ CB.buff.taunt=true; combatLog(`「${sk.name}」！下回合受击伤害 -40%。`, 'pl'); }
+    if(sk.rage){ CB.buff.rage=2; combatLog(`「${sk.name}」！暴击率 +50%，持续 2 回合。`, 'pl'); }
+    combatEnemyTurn(); return;
+  }
   combatEnemyTurn();
 }
 function combatGuard(){
   CB.turn++;
-  CB.guard=true;
+  CB.buff.guard=Math.max(CB.buff.guard,1);
   combatLog(`你摆出防御姿态，本回合受到的伤害减半。`, 'pl');
   combatEnemyTurn();
 }
-function combatPotion(){
+function combatItem(itemId){
   CB.turn++;
-  const idx=S.items.indexOf('potion');
+  const idx=S.items.indexOf(itemId);
   if(idx<0) return;
   S.items.splice(idx,1);
-  S.hp = Math.min(S.maxHp, S.hp+25);
-  updateHUD();
-  combatLog(`你饮下回响药剂，恢复 25 点生命！（当前 ${S.hp}/${S.maxHp}）`, 'pl');
+  const it=itemById(itemId);
+  if(it.use==='heal'){ S.hp=Math.min(S.maxHp,S.hp+it.val); updateHUD(); combatLog(`你饮下${it.name}，恢复 ${it.val} 点生命！（${S.hp}/${S.maxHp}）`, 'pl'); }
+  else if(it.use==='mp'){ S.mp=Math.min(S.maxMp,S.mp+it.val); updateHUD(); combatLog(`你饮下${it.name}，恢复 ${it.val} 点法力！（${S.mp}/${S.maxMp}）`, 'pl'); }
   combatEnemyTurn();
 }
 function combatFate(){
@@ -1231,26 +1725,29 @@ function combatFate(){
   S.fate--; updateHUD();
   S.flag._fateForce = true;
   combatLog(`你燃尽一枚命运点，下一次攻击必定命中且暴击！`, 'crit');
-  // 重新渲染按钮状态
   renderCombat();
-  // 立即补一次操作：直接帮玩家攻击
   combatPlayerAttack(false);
 }
 function combatEnemyTurn(){
   if(!CB) return;
+  if(CB.frozen){ CB.frozen=false; combatLog(`${ENEMIES[CB.id].name}被冻结，无法行动！`, 'ok'); endEnemyTurn(); return; }
   const e = ENEMIES[CB.id];
   let roll = roll100();
   const mod = e.atk;
   const total = roll + mod;
-  const need = 50 + Math.round(S.stats.agi*0.8) + (S.talents.includes('blink')&&CB.turn<=1?8:0);
+  let need = 50 + Math.round(S.stats.agi*0.8) + (S.talents.includes('blink')&&CB.turn<=1?8:0);
+  if(CB.buff.haste) need += 20;
   let hit = total>=need;
   combatLog(`${e.name}发动攻击｜1d100 = ${roll} + ${mod} = ${total} ／ 你的闪避 ${need}`, 'en');
   if(!hit){
     combatLog(`${e.name}的攻击被你闪开！`, 'ok');
-    renderCombat(); return;
+    endEnemyTurn(); return;
   }
   let dmg = e.atk + rint(1,4) - Math.round(S.stats.con*0.3);
-  if(CB.guard){ dmg = Math.round(dmg*0.5); CB.guard=false; }
+  if(CB.buff.guard>0){ dmg = Math.round(dmg*0.4); }
+  if(CB.buff.taunt){ dmg = Math.round(dmg*0.6); CB.buff.taunt=false; }
+  const eb=equipBonus();
+  if(eb.mit>0) dmg = Math.round(dmg*(1-eb.mit));
   if(S.talents.includes('iron')) dmg = Math.round(dmg*0.7);
   dmg = Math.max(1, dmg);
   S.hp -= dmg;
@@ -1264,6 +1761,14 @@ function combatEnemyTurn(){
     combatLog(`——关键时刻，一道苍老的声音在灵魂深处响起：「小子，把这条命，交给老夫！」\n老爷爷替你挡下了致命一击！（生命 1/${S.maxHp}）`, 'crit');
   }
   if(S.hp<=0){ renderDeath(); return; }
+  endEnemyTurn();
+}
+function endEnemyTurn(){
+  if(!CB) return;
+  if(CB.buff.guard>0) CB.buff.guard--;
+  if(CB.buff.atkup>0) CB.buff.atkup--;
+  if(CB.buff.rage>0) CB.buff.rage--;
+  CB.buff.haste=false;
   renderCombat();
 }
 function combatVictory(){
@@ -1272,6 +1777,7 @@ function combatVictory(){
   if(CB.opMode){
     // 搜打撤行动：目标已清除，进入撤离阶段
     victoryRewards(false);
+    gainXp(e.xp||0);
     combatLog('目标已清除！四周的异常数据四散奔逃——正是撤离的时机。', 'ok');
     updateHUD();
     CB=null;
@@ -1283,6 +1789,7 @@ function combatVictory(){
     return;
   }
   victoryRewards(true);
+  gainXp(e.xp||0);
   updateHUD();
   const winNode = CB.winNode;
   CB=null;
@@ -1309,12 +1816,58 @@ function victoryRewards(withLoot){
   if(gifts.length){ combatLog(`战利品：${gifts.join('、')}`, 'ok'); updateHUD(); }
 }
 
-/* ---------- 搜打撤行动 ---------- */
+/* ---------- 跨世界搜打撤行动 ---------- */
 let OP = null;
-function startOperation(){
+function renderWorlds(){
+  S.nodeId='worlds';
+  updateHUD();
+  const v=$('view-worlds');
+  const done = S.worldsCleared.length;
+  let html = `<div class="panel">
+    <div class="scene-chap">黑塔帮任务板 · 第 ${S.run} 周目</div>
+    <div class="scene-title">跨世界搜打撤 · 任务板</div>
+    <div class="scene-tagline">黑塔帮挖通了通往「故事残响」世界的通道——搜 → 打 → 撤，把残响带回来</div>
+    <div class="story">接头人弹了弹烟灰：“这些世界，都是从‘回响’里撕下来的小说碎片。空岛、江湖、仙山、海沟、深空……里面的好东西，只要你敢搜、敢打、敢撤，都是你的。”\n\n“规矩不变：搜、打、撤。完成的越多，解锁的世界越离谱。”</div>
+    <div class="world-grid">`;
+  WORLDS.forEach(w=>{
+    const locked = done < w.unlock;
+    const cleared = S.worldsCleared.includes(w.id);
+    const diffTxt = ['','低危','中危','高危'][w.diff];
+    const diffCls = 'diff-'+w.diff;
+    html += `<div class="wcard ${locked?'locked':''}" data-id="${w.id}">
+      ${cleared?'<div class="w-done">✓ 已完成</div>':'<div class="w-diff '+diffCls+'">'+diffTxt+'</div>'}
+      <div class="w-style">${esc(w.style)}</div>
+      <div class="w-name">${esc(w.name)}</div>
+      <div class="w-desc">${esc(w.desc)}</div>
+      <div class="w-reward">${locked? '🔒 需先完成 '+w.unlock+' 个世界':'首次奖励：'+esc(w.reward.name)+' ｜ 金币 ≈'+w.base}</div>
+    </div>`;
+  });
+  html += `</div>
+    <div class="choices">
+      <div class="choice" id="worlds-back"><span class="c-tag">【返回】</span>返回中枢塔，继续主线</div>
+    </div></div>`;
+  v.innerHTML = html;
+  showView('worlds');
+  $('view').scrollTop=0; window.scrollTo({top:0});
+  document.querySelectorAll('.wcard').forEach(cd=>{
+    cd.onclick=()=>{
+      const w=worldById(cd.dataset.id);
+      if(S.worldsCleared.length < w.unlock) return;
+      startOperation(w.id);
+    };
+  });
+  $('worlds-back').onclick=()=>gotoNode('c2_file');
+}
+function startOperation(worldId){
+  const w = worldById(worldId) || WORLDS[0];
   OP = {
-    phase:'search', bonus:0, surprised:false,
-    log:['—— 搜打撤行动 · 开始 ——','目标：一处被异常数据占领的旧仓库。','规矩：搜到了再打，打完了就撤，别贪。']
+    phase:'search', bonus:0, surprised:false, world:w,
+    log:[
+      `—— 搜打撤行动 · ${w.name} ——`,
+      `目标世界：${w.style}「${w.name}」`,
+      '规矩：搜到了再打，打完了就撤，别贪。',
+      w.search
+    ]
   };
   S.nodeId='operation';
   updateHUD();
@@ -1330,30 +1883,30 @@ function renderOperation(){
   const v = $('view-operation');
   const phases = ['搜索','打击','撤离'];
   const cur = opPhaseIndex();
+  const w = OP.world;
   let body='';
   if(OP.phase==='search'){
-    body = `<div class="choices" id="op-choices"><div class="choice" id="op-search"><span class="c-tag">【搜索】</span>搜索目标据点<span class="c-desc">感知判定 · 定位敌人，寻找弱点</span></div></div>`;
+    body = `<div class="choices" id="op-choices"><div class="choice" id="op-search"><span class="c-tag">【搜索】</span>在「${esc(w.name)}」中搜索目标<span class="c-desc">感知判定 · 定位残响，寻找弱点</span></div></div>`;
   } else if(OP.phase==='searching'){
     body = `<div class="notice">正在搜索目标……</div>`;
   } else if(OP.phase==='combat'){
     body = `<div class="notice">目标已锁定——进入战斗！</div>`;
   } else if(OP.phase==='withdraw'){
-    body = `<div class="choices" id="op-choices"><div class="choice" id="op-withdraw"><span class="c-tag">【撤离】</span>执行撤离<span class="c-desc">敏捷判定 · 带着战利品安全离开</span></div></div>`;
+    body = `<div class="choices" id="op-choices"><div class="choice" id="op-withdraw"><span class="c-tag">【撤离】</span>带着残响撤离<span class="c-desc">敏捷判定 · 安全离开这个世界</span></div></div>`;
   } else if(OP.phase==='withdrawing'){
     body = `<div class="notice">正在撤离……</div>`;
   } else {
-    // done
     const r = OP.result||{title:'行动结束',good:false,text:''};
     body = `<div class="op-result ${r.good?'good':'bad'}">
       <div class="scene-title" style="font-size:18px;margin-bottom:8px">${esc(r.title)}</div>
       <div class="story" style="white-space:pre-wrap">${esc(r.text)}</div>
     </div>
-    <div class="choices" id="op-choices"><div class="choice" id="op-done"><span class="c-tag">【返回】</span>返回中枢塔，继续主线</div></div>`;
+    <div class="choices" id="op-choices"><div class="choice" id="op-done"><span class="c-tag">【返回】</span>返回任务板 / 主线</div></div>`;
   }
   v.innerHTML = `
     <div class="panel">
-      <div class="scene-chap">支线 · 搜打撤行动 · 第 ${S.run} 周目</div>
-      <div class="scene-title">黑塔帮的委托</div>
+      <div class="scene-chap">搜打撤 · ${esc(w.style)} · 第 ${S.run} 周目</div>
+      <div class="scene-title">搜打撤 · ${esc(w.name)}</div>
       <div class="scene-tagline">搜 → 打 → 撤</div>
       <div class="op-steps">
         ${phases.map((p,i)=>`<div class="op-step ${i<cur?'done':''} ${i===cur?'on':''}">${['①','②','③'][i]} ${p}</div>`).join('')}
@@ -1367,7 +1920,7 @@ function renderOperation(){
   if(btn) btn.onclick = ()=>{
     if(btn.id==='op-search') opSearch();
     else if(btn.id==='op-withdraw') opWithdraw();
-    else { OP=null; gotoNode('c2_file'); }
+    else { OP=null; renderWorlds(); }
   };
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
@@ -1376,22 +1929,34 @@ function opSearch(){
   OP.log.push(`【骰】搜索：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 55 ${res.success?'　判定成功':'　判定失败'}`);
   if(res.success){
     OP.bonus += 10;
-    OP.log.push('你摸清了目标据点的守卫分布，找到了敌人的数据弱点（打击阶段命中需求 -10）。');
+    OP.log.push('你摸清了该世界的残响守卫分布，找到了它的数据弱点（打击阶段命中需求 -10）。');
   } else {
     OP.surprised = true;
-    OP.log.push('你不慎踩响了一块故障地板——警报大作！守卫已先手，且任务奖励将减半。');
+    OP.log.push('你不慎踩响了一处世界裂缝的警报——守卫已先手，且任务奖励将减半。');
   }
   OP.phase = 'combat';
   renderOperation();
   setTimeout(opCombat, 900);
 }
 function opCombat(){
-  startCombat('fiend', null, 'death', {opMode:true, opBonus:OP.bonus});
+  startCombat(OP.world.enemy, null, 'death', {opMode:true, opBonus:OP.bonus});
   if(OP.surprised) setTimeout(()=>combatEnemyTurn(), 700);
+}
+function opWorldReward(){
+  const w = OP.world;
+  const first = !S.worldsCleared.includes(w.id);
+  if(first) S.worldsCleared.push(w.id);
+  const got=[];
+  if(w.reward.type==='skill'){
+    if(!S.skillPool.includes(w.reward.id)){ S.skillPool.push(w.reward.id); got.push(`技能「${w.reward.name}」`); }
+  } else if(w.reward.type==='equip'){
+    if(!S.items.includes(w.reward.id)){ S.items.push(w.reward.id); got.push(`装备「${w.reward.name}」`); }
+  }
+  return {got, first};
 }
 function opWithdrawFromCombat(){
   if(!CB) return;
-  combatLog('你且战且退，尝试从战区突围……', 'pl');
+  combatLog('你且战且退，尝试从这个世界突围……', 'pl');
   const res = runCheck('agi', 55, '撤离 · 突围');
   if(res.success){
     OP.log.push(`【骰】撤离：1d100 = ${res.roll} = ${res.total} ／ 难度 55　判定成功`);
@@ -1407,7 +1972,7 @@ function opWithdrawFromCombat(){
     OP.log.push('撤退失败——你挨了一记重击，狼狈逃回。');
     OP.result = {
       title:'负伤突围', good:false,
-      text:'撤退失败，你被异常数据咬了一口，狼狈逃回大本营。\n【损失】生命 -10\n“活着回来就好。”接头人难得说了一句人话。'
+      text:'撤退失败，你被世界残响咬了一口，狼狈逃回大本营。\n【损失】生命 -10\n“活着回来就好。”接头人难得说了一句人话。'
     };
   }
   CB = null;
@@ -1417,27 +1982,33 @@ function opWithdrawFromCombat(){
 function opWithdraw(){
   OP.phase = 'withdrawing';
   renderOperation();
+  const w = OP.world;
   const res = runCheck('agi', 55, '撤离 · 离开战区');
   const base = 25 + (OP.bonus>0 ? 10 : 0);
   setTimeout(()=>{
     OP.log.push(`【骰】撤离：1d100 = ${res.roll}${res.mod>0?'+'+res.mod:''} = ${res.total} ／ 难度 55 ${res.success?'　判定成功':'　判定失败'}`);
     if(res.success){
-      S.gold += base;
+      const rw = opWorldReward();
+      let goldGain = base + (rw.first? w.base : 0);
+      S.gold += goldGain;
       const got=[];
+      if(rw.got.length) got.push(rw.got[0]);
       if(!S.items.includes('memcard') && rand(100)<60){ S.items.push('memcard'); got.push('记忆卡'); }
       if(rand(100)<45){ S.items.push('coin'); got.push('命运币'); }
       updateHUD();
-      OP.log.push('你带着战利品扬长而去，身后传来异常数据的哀嚎。');
+      OP.log.push(w.loot);
+      if(rw.first && rw.got.length) OP.log.push(`【首次完成「${w.name}」】获得 ${rw.got.join('、')}！`);
+      OP.log.push('你带着战利品扬长而去，身后传来世界残响的低鸣。');
       OP.result = {
-        title:'行动圆满', good:true,
-        text:`【奖励】金币 +${base}${got.length?' · 获得 '+got.join('、'):''}\n黑塔帮接头人满意地点头：“干净利落，连撤退都这么帅。下次还找你。”`
+        title:'行动圆满 · '+w.name, good:true,
+        text:`【奖励】金币 +${goldGain}${got.length?' · 获得 '+got.join('、'):''}\n${rw.first&&rw.got.length?'【世界奖励】'+rw.got.join('、')+' 已入库（可在「角色」面板查看/装备/更换携带）。\n':''}黑塔帮接头人满意地点头：“干净利落，连撤退都这么帅。下次还找你。”`
       };
     } else {
       const lost = Math.floor(S.gold/2);
       S.gold -= lost;
       S.hp = Math.max(1, S.hp-8);
       updateHUD();
-      OP.log.push('撤退途中遭遇截击——你丢下部分战利品，负伤冲出重围。');
+      OP.log.push('撤离途中遭遇世界残响截击——你丢下部分战利品，负伤冲出重围。');
       OP.result = {
         title:'惊险撤离', good:false,
         text:`【损失】金币 -${lost} · 生命 -8\n“东西丢了可以再抢，人没了可就真没了。”接头人难得严肃起来。`
@@ -1446,6 +2017,111 @@ function opWithdraw(){
     OP.phase = 'done';
     renderOperation();
   }, 700);
+}
+
+/* ---------- 角色 / 背包 / 技能配置 ---------- */
+function renderChar(){
+  S._returnNode = S.nodeId;
+  S.nodeId='char';
+  updateHUD();
+  const v=$('view-char');
+  const eb = equipBonus();
+  const c = S.cls? classById(S.cls):null;
+  const stats = ['str','agi','int','cha','con','per'];
+  const statNames = {str:'力量',agi:'敏捷',int:'智力',cha:'魅力',con:'体质',per:'感知'};
+  let html = `<div class="panel">
+    <div class="scene-chap">角色 · 第 ${S.run} 周目</div>
+    <div class="scene-title">${esc(c? c.name : '未定')} · Lv.${S.level}</div>
+    <div class="scene-tagline">${esc(c? c.role : '')} ｜ 经验 ${S.xp}/${xpNeed(S.level)} ｜ 已完成世界 ${S.worldsCleared.length}/${WORLDS.length}</div>
+    <div class="char-top">
+      <div class="char-block"><div class="cb-k">生命</div><div class="cb-v">${S.hp}/${S.maxHp}</div></div>
+      <div class="char-block"><div class="cb-k">法力</div><div class="cb-v">${S.mp}/${S.maxMp}</div></div>
+      <div class="char-block"><div class="cb-k">金币</div><div class="cb-v">◎ ${S.gold}</div></div>
+      <div class="char-block"><div class="cb-k">命运点</div><div class="cb-v">◆ ${S.fate}</div></div>
+    </div>
+    <div class="char-block" style="margin-top:10px">
+      <div class="cb-k">经验值（升级全属性+1，可习得新技能）</div>
+      <div class="xp-bar"><div class="xp-fill" style="width:${Math.min(100,S.xp/xpNeed(S.level)*100)}%"></div></div>
+    </div>
+    <div class="stat-grid">
+      ${stats.map(k=>`<div class="stat-cell">${statNames[k]}${eb[k]? ` <span style="color:var(--gold)">+${eb[k]}</span>`:''}<b>${statValue(k)}</b></div>`).join('')}
+    </div>`;
+  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">装备</div>
+    <div class="equip-grid">
+      ${['weapon','armor','trinket'].map(slot=>{
+        const it = S.equip[slot]? itemById(S.equip[slot]):null;
+        const slotName = {weapon:'武器',armor:'防具',trinket:'饰品'}[slot];
+        return `<div class="equip-cell">${slotName}<b>${it? esc(it.name):'空'}</b>${it? `<div class="btn btn-small" data-uneq="${slot}">卸下</div>`:''}</div>`;
+      }).join('')}
+    </div>`;
+  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">技能库 · 携带 ${S.skills.length}/3（点击切换携带）</div>
+    <div class="skill-edit">`;
+  if(!S.skillPool.length) html += `<div class="notice">尚未习得任何技能。选择职业后获得初始技能，升级或完成世界可习得新技能。</div>`;
+  S.skillPool.forEach(sid=>{
+    const sk = skillById(sid); if(!sk) return;
+    const eq = S.skills.includes(sid);
+    html += `<div class="skill-card ${eq?'equipped':''}" data-skill="${sid}">
+      <span class="sk-name">${esc(sk.name)}</span><span class="sk-mp">◆ ${sk.mp}</span>
+      <span class="sk-desc">${esc(sk.desc)}</span></div>`;
+  });
+  html += `</div>`;
+  html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">背包</div>`;
+  const groups = [['consumable','消耗品'],['weapon','武器'],['armor','防具'],['trinket','饰品'],['key','任务道具']];
+  let hasItem=false;
+  groups.forEach(([type,tname])=>{
+    const items = S.items.filter(id=>{ const it=itemById(id); return it && it.type===type; });
+    if(!items.length) return;
+    hasItem=true;
+    html += `<div class="inv-group"><div class="ig-title">${tname}</div>`;
+    const seen=[];
+    items.forEach(id=>{
+      if(seen.includes(id)) return;
+      seen.push(id);
+      const it=itemById(id);
+      const num = countItem(id);
+      let btn='';
+      if(it.type==='consumable') btn = `<div class="btn btn-small" data-use="${id}">使用</div>`;
+      else if(it.type==='weapon'||it.type==='armor'||it.type==='trinket'){
+        const eq = S.equip[it.type]===id;
+        btn = eq? '<span class="ii-num" style="color:var(--cyan)">已装备</span>' : `<div class="btn btn-small" data-equip="${id}">装备</div>`;
+      }
+      html += `<div class="inv-item"><div class="ii-main"><div class="ii-name">${esc(it.name)}</div><div class="ii-desc">${esc(it.desc)}</div></div><span class="ii-num">×${num}</span>${btn}</div>`;
+    });
+    html += `</div>`;
+  });
+  if(!hasItem) html += `<div class="notice">背包空空如也——去搜打撤世界或打赢战斗，带点好东西回来。</div>`;
+  html += `<div class="choices"><div class="choice" id="char-close"><span class="c-tag">【返回】</span>返回游戏</div></div></div>`;
+  v.innerHTML = html;
+  showView('char');
+  v.querySelectorAll('[data-use]').forEach(b=>{
+    b.onclick=()=>{ useItem(b.dataset.use); renderChar(); };
+  });
+  v.querySelectorAll('[data-equip]').forEach(b=>{
+    b.onclick=()=>{ equipSlot(b.dataset.equip); renderChar(); };
+  });
+  v.querySelectorAll('[data-uneq]').forEach(b=>{
+    b.onclick=()=>{ unequipSlot(b.dataset.uneq); renderChar(); };
+  });
+  v.querySelectorAll('[data-skill]').forEach(b=>{
+    b.onclick=()=>{
+      const sid=b.dataset.skill;
+      const i=S.skills.indexOf(sid);
+      if(i>=0) S.skills.splice(i,1);
+      else if(S.skills.length<3) S.skills.push(sid);
+      else S.skills[0]=sid;
+      renderChar();
+    };
+  });
+  $('char-close').onclick=()=>{ closeChar(); };
+}
+function closeChar(){
+  const back = S._returnNode||'c1_intro';
+  if(back==='combat' && CB) renderCombat();
+  else if(back==='operation' && OP) renderOperation();
+  else if(back==='worlds') renderWorlds();
+  else if(back==='class') renderClassSelect();
+  else if(NODES[back]) gotoNode(back);
+  else gotoNode('c1_intro');
 }
 
 /* ---------- 死亡与轮回 ---------- */
@@ -1523,6 +2199,7 @@ function renderTitle(){
     <div class="title-dice">⚄</div>
     <div class="title-desc">你被困在一款出了“轮回异常”的全息网游里。每一周目，城市重组、NPC失忆，唯有灵魂烙印中的<b class="hlc">天赋</b>与你同在。<br>
     每一次抉择，都可能掷出命运的骰子——大成功、大失败、还有隐藏的「？？？？」。<br>
+    这一次，你还能选择<b class="hlc">职业</b>、构筑<b class="hlc">三技能</b>、穿戴<b class="hlc">装备</b>，并通过<b class="hlc">跨世界搜打撤</b>，闯进空岛、仙山、江湖、海沟……<br>
     找到真相，或成为这座城新的主人。</div>
     <div class="stats-sum" style="max-width:520px;margin:0 auto 26px">
       <div class="stat-card"><div class="k">总轮回</div><div class="v">${S.totalRuns}</div></div>
@@ -1536,10 +2213,12 @@ function renderTitle(){
     <div class="help-box" id="help-box" style="display:none;max-width:560px;margin:22px auto 0;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 22px">
       <b>玩法说明</b><br><br>
       ▸ <b>天赋</b>：每轮开局从 3 个随机天赋中选 1。天赋分 7 个品级（D→SSS），决定你的流派。<br>
+      ▸ <b>职业</b>：选完天赋后再选职业（剑客/术师/刺客/医修）。职业决定属性偏向、初始装备与可习技能。<br>
+      ▸ <b>技能</b>：职业自带 3 个技能。战斗每回合从携带的 <b>3 个技能</b>中选 1 个发动，消耗<b>法力</b>；普通攻击回蓝 8 点。升级/完成世界可习得新技能，在「角色」面板更换携带。<br>
+      ▸ <b>装备与背包</b>：点 HUD 的「◫ 角色」打开背包——装备武器/防具/饰品、使用药剂、配置技能。装备提升属性与减伤。<br>
       ▸ <b>安科骰子</b>：关键抉择由 1d100 判定——大成功（1-5）必成，大失败（96-100）必败。失败时可用<b>命运点</b>重掷。<br>
-      ▸ <b>命运点</b>：每轮获得 2 点（回响碎片越多，初始越多）。用于重掷骰子与战斗爆发。<br>
-      ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。金币与天赋不保留，但<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
-      ▸ <b>搜打撤行动</b>：黑塔帮的支线委托——搜索定位 → 打击目标 → 安全撤离，一步都不能少。高风险，高回报。<br>
+      ▸ <b>轮回肉鸽</b>：死亡或通关即轮回。金币/装备/等级不保留，但<b>回响碎片</b>永久累积，可提升下轮初始命运点。<br>
+      ▸ <b>跨世界搜打撤</b>：第二章加入阵营后，可接黑塔帮任务——在 8 个小说世界（空岛/武侠/仙侠/海洋/末世/西幻/科幻/无限流）里执行「搜→打→撤」。每个世界有专属技能/装备，完成越多解锁越多世界。<br>
       ▸ <b>多剧情多结局</b>：三章主线 × 阵营抉择 × NPC支线，通向 4 个结局（含隐藏结局）。你的每一个选择，都会留下“回响”。<br><br>
       <b>隐藏要素</b>：获得【回响水晶】或【真相透镜】后，第三章会解锁隐藏选项「？？？？」。
     </div>`;
@@ -1580,12 +2259,12 @@ function renderTalentSelect(){
       box.querySelectorAll('.tcard').forEach(c=>c.classList.remove('sel'));
       card.classList.add('sel');
       S._picked=t;
-      $('talent-note').textContent = `已选定「${t.name}」。开始轮回。`;
+      $('talent-note').textContent = `已选定「${t.name}」。准备入世。`;
       setTimeout(()=>{
         applyTalent(t);
         S.hp = Math.min(S.maxHp, S.hp);
         updateHUD();
-        gotoNode('c1_intro');
+        renderClassSelect();
       }, 500);
     };
     box.appendChild(card);
