@@ -1103,6 +1103,20 @@ step('第二十四轮：箱庭天气时间（四时段/六天气/连锁预测/�
   ok('无运行时错误(第二十四轮)', errors.length === 0);
 });
 
+
+step('第二十五轮：剧情回溯图鉴（回声档案·三层碎片/线索串联/跨周目持久化/日记彩蛋）', () => {
+  G('boot(); newRun(); applyClass("sword"); S._codex={}; S._codexLineDone={}');
+  ok('图鉴初始 0/10', G('(function(){ var p=codexProgress(); return p.got===0 && p.total===10; })()'));
+  ok('碎片解锁+去重', G('(function(){ codexAdd("lw_key"); codexAdd("lw_key"); return Object.keys(S._codex).length===1; })()'));
+  ok('NPC钩子埋点（安抚成功→半把钥匙）', G('(function(){ NODE_ARRIVAL["c1_ghost_peace"](); return !!S._codex["lw_key"]; })()'));
+  ok('广播事件挂钩（随机事件→城线碎片）', G('(function(){ S._phase=0;S._weather="calm"; var g0=S.gold; applyEventReward({name:"广播站的怪声",succ:{gold:1}}, true); return !!S._codex["ct_broad"] && S.gold===g0+1; })()'));
+  ok('线索串联奖励（林晚线集齐→echo+1/fate+1）', G('(function(){ var e0=S.echoes, f0=S.fate; codexAdd("lw_name"); codexAdd("lw_wait"); codexAdd("lw_give"); codexAdd("lw_fear"); return S.echoes===e0+1 && S.fate===f0+1 && !!S._codexLineDone["林晚"]; })()'));
+  ok('图鉴渲染（收集度+线索分组+未解锁？？？）', G('(function(){ renderCodex(); var h=document.getElementById("view-codex").innerHTML; return h.indexOf("记忆的拼图")>=0 && h.indexOf("？？？")>=0 && h.indexOf("林晚")>=0; })()'));
+  ok('90%解锁灰袍商人日记', G('(function(){ ["mc_remember","mc_secret","cat_city"].forEach(function(k){ if(!S._codex[k]) codexAdd(k); }); renderCodex(); var h=document.getElementById("view-codex").innerHTML; return h.indexOf("灰袍商人的日记")>=0 && h.indexOf("第四十七次循环")>=0; })()'));
+  ok('图鉴持久化（save/load 保留）', G('(function(){ var n=Object.keys(S._codex).length; saveSave(); S._codex={}; loadSave(); return Object.keys(S._codex).length===n; })()'));
+  ok('无运行时错误(第二十五轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
