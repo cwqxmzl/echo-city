@@ -1150,6 +1150,24 @@ step('第二十八轮：玩法数值与平衡（天赋品级特色差/词条流�
   ok('无运行时错误(第二十八轮)', errors.length === 0);
 });
 
+step('第二十九轮：核心体验补全（新手目标阶梯/战斗机制可视化/正反馈节奏）', () => {
+  G('boot(); newRun(); applyClass("sword"); S.equippedTags=[]; S.equip={weapon:null,armor:null,trinket:null}; S._locDone={}; S._questDone=[]; S.flag.gate_defeated=false; S.roster=[]; S._worldEntered=false; S.echoes=0; S.gold=0; S._permFateBonus=0; S._permXp=0;');
+  ok('QUESTS 定义 4 个轮回目标', G('(function(){ return QUESTS.length===4 && QUESTS[0].id==="q_street" && QUESTS[1].id==="q_gate" && QUESTS[2].id==="q_mate" && QUESTS[3].id==="q_world"; })()'));
+  ok('questState 三态（未达成→todo）', G('(function(){ S._locDone.street=[]; return questState(QUESTS[0])==="todo" && questState(QUESTS[3])==="todo"; })()'));
+  ok('q_street 达成检测（打开街区补给箱）', G('(function(){ S._locDone.street=["loot_street"]; return questState(QUESTS[0])==="claim"; })()'));
+  ok('claimQuest q_street 奖励+去重', G('(function(){ S.echoes=0; S._permFateBonus=0; claimQuest("q_street"); var e=S.echoes, f=S._permFateBonus; S.echoes=0; claimQuest("q_street"); return e===3 && f===1 && S._questDone.indexOf("q_street")>=0 && S.echoes===0; })()'));
+  ok('q_gate 达成+奖励（归档者K）', G('(function(){ S.flag.gate_defeated=true; var st=questState(QUESTS[1]); S.gold=0; S.echoes=0; claimQuest("q_gate"); return st==="claim" && S.echoes===5 && S.gold===80; })()'));
+  ok('q_mate 达成+奖励（老猫入队）', G('(function(){ S.roster=["maomao"]; var st=questState(QUESTS[2]); S._permFateBonus=0; S.tagBag=[]; claimQuest("q_mate"); return st==="claim" && S._permFateBonus===1 && (S.tagBag||[]).indexOf("echo")>=0; })()'));
+  ok('q_world 达成+奖励（踏入异世界）', G('(function(){ S._worldEntered=true; var st=questState(QUESTS[3]); S.echoes=0; claimQuest("q_world"); return st==="claim" && S.echoes===4 && Math.abs((S._permXp||0)-0.1)<0.001; })()'));
+  ok('NODE_ARRIVAL c2_gate_win 置 gate_defeated', G('(function(){ S.flag.gate_defeated=false; NODE_ARRIVAL["c2_gate_win"](); return S.flag.gate_defeated===true; })()'));
+  ok('renderQuest 渲染含目标+领取按钮', G('(function(){ S._locDone.street=["loot_street"]; S._questDone=[]; renderQuest(); var el=document.getElementById("quest-panel"); var h=el?el.innerHTML:""; return h.indexOf("轮回目标")>=0 && h.indexOf("领取")>=0 && h.indexOf("q-claim")>=0; })()'));
+  ok('renderQuest done 态显示完成标记', G('(function(){ S._questDone=["q_street","q_gate","q_mate","q_world"]; renderQuest(); var el=document.getElementById("quest-panel"); var h=el?el.innerHTML:""; return h.indexOf("q-done")>=0 && h.indexOf("领取")<0; })()'));
+  ok('checkQuestAuto 可领取时 HUD 红点', G('(function(){ var b=document.getElementById("btn-quest"); if(!b) return false; S._locDone.street=["loot_street"]; S.flag.gate_defeated=false; S.roster=[]; S._worldEntered=false; S._questDone=[]; checkQuestAuto(); var c=b.classList.contains("claimable"); S._locDone.street=[]; S._questDone=[]; checkQuestAuto(); var c2=!b.classList.contains("claimable"); return c && c2; })()'));
+  ok('newRun 应用永久命运点奖励', G('(function(){ S._permFateBonus=1; S.echoes=0; newRun(); return S.fate===5; })()'));
+  ok('gainXp 应用经验加成（轮回目标+10%）', G('(function(){ S._permXp=0.1; S._gradePerkApplied=false; S.level=50; S.xp=0; gainXp(100); var got=S.xp; return got===110; })()'));
+  ok('无运行时错误(第二十九轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
