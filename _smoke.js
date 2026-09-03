@@ -1070,6 +1070,25 @@ step('第二十二轮：重掷趣味化（双模式/递增/彩蛋）', () => {
   ok('无运行时错误(第二十二轮)', errors.length === 0);
 });
 
+
+step('第二十三轮：探索事件权重动态化（行为驱动/可视化/干预/极端连锁）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  // moodState 档位
+  ok('moodState 五档', G('(function(){ S._mood=0; var a=moodState().txt; S._mood=-5; var b=moodState().txt; S._mood=5; var c=moodState().txt; S._mood=0; return a==="平静如常"&&b==="安魂低语"&&c==="锈雨将至"; })()'));
+  // eventWeight 方向：混乱→战斗重、安宁→剧情重
+  ok('权重方向（混乱战斗重/安宁剧情重）', G('(function(){ S._mood=5; S._acts={comfort:0,smite:0,loot:0}; var wf=eventWeight({kind:"fight"}); var ws=eventWeight({kind:"story"}); S._mood=-5; var wf2=eventWeight({kind:"fight"}); var ws2=eventWeight({kind:"story"}); S._mood=0; return wf>ws && ws2>wf2; })()'));
+  // pickWeightedEvent 边界
+  ok('加权抽取边界', G('(function(){ var bak=Math.random; var pool=[{kind:"story",name:"A"},{kind:"loot",name:"B"}]; S._mood=5; S._acts={comfort:0,smite:0,loot:0}; Math.random=function(){return 0;}; var a=pickWeightedEvent(pool).name; Math.random=function(){return 0.999;}; var b=pickWeightedEvent(pool).name; Math.random=bak; S._mood=0; return typeof a==="string" && typeof b==="string"; })()'));
+  // recordAct 行为驱动
+  ok('行为驱动（story成功→安宁·comfort++）', G('(function(){ S._mood=0; S._acts={comfort:0,smite:0,loot:0}; recordAct("story",true); var m1=S._mood; recordAct("fight",false); return m1===-1 && S._acts.comfort===1 && S._acts.smite===1 && S._mood===1; })()'));
+  // 特殊连锁：回响围剿 / 记忆洪流
+  ok('极端连锁·回响围剿', G('(function(){ S._mood=5; renderRandomEvent({id:"street",name:"旧日街区"}); var h=document.getElementById("view-scene").innerHTML; S._mood=0; return h.indexOf("回响围剿")>=0; })()'));
+  ok('极端连锁·记忆洪流', G('(function(){ S._mood=-5; renderRandomEvent({id:"street",name:"旧日街区"}); var h=document.getElementById("view-scene").innerHTML; S._mood=0; return h.indexOf("记忆洪流")>=0; })()'));
+  // 跨周目继承
+  ok('跨周目继承', G('(function(){ S._mood=3; showDeathSettlement(); var lg=S._legacyMood; S._legacyMood=4; newRun(); return lg===3 && S._mood===2; })()'));
+  ok('无运行时错误(第二十三轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
