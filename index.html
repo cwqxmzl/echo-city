@@ -669,6 +669,20 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
 @keyframes qblink{0%,100%{opacity:1;}50%{opacity:.3;}}
 .cact.ult-pulse{animation:ultpulse 1.1s infinite;}
 @keyframes ultpulse{0%,100%{box-shadow:0 0 6px rgba(255,213,74,.5);border-color:var(--gold,#ffd54a);}50%{box-shadow:0 0 18px rgba(255,213,74,.9);transform:scale(1.03);}}
+  .ach-title{color:var(--gold);font-size:15px;letter-spacing:.1em;text-shadow:0 0 10px rgba(255,205,110,.5)}
+  .ach-card{position:relative}
+  .a-tier{position:absolute;top:6px;right:6px;font-size:10px;padding:1px 6px;border-radius:8px;letter-spacing:.1em}
+  .a-tier-d{background:rgba(168,120,255,.22);color:#c9a5ff;border:1px solid rgba(168,120,255,.4)}
+  .a-tier-h{background:rgba(255,205,110,.18);color:var(--gold);border:1px solid rgba(255,205,110,.45)}
+  .ach-card.a-hard{box-shadow:inset 0 0 18px rgba(168,120,255,.12)}
+  .ach-card.a-hide{box-shadow:inset 0 0 22px rgba(255,205,110,.16)}
+  .ach-card.a-hide.a-on{box-shadow:0 0 16px rgba(255,205,110,.35)}
+.story-fold{border:1px dashed rgba(255,205,110,.35);border-radius:10px;padding:14px 16px;background:rgba(255,205,110,.06);color:var(--gold);font-size:15px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.story-fold .c-desc{color:#9aa;font-size:12px}
+.story-fold .cact{background:linear-gradient(135deg,#b8860b,#e6a817);border:none;color:#1b0f00;font-weight:700;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:13px}
+.story-fold .cact:hover{filter:brightness(1.15)}
+.rate{color:#7dffb0;font-weight:700;font-variant-numeric:tabular-nums}
+.choice-warn .rate{color:#ffd27d}
 </style>
 </head>
 <body>
@@ -7875,14 +7889,14 @@ const S = {
   favor:{}, trust:{},
   roster:[], party:[],
   shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
-  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0, _phase:0, _weather:'calm', _codex:{}, _codexLineDone:{},
+  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _seenNodes:[], _curNode:null, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0, _phase:0, _weather:'calm', _codex:{}, _codexLineDone:{},
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S.favor=d.favor||{}; S.trust=d.trust||{}; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; S._codex=d._codex||{}; S._codexLineDone=d._codexLineDone||{}; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S.favor=d.favor||{}; S.trust=d.trust||{}; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; S._codex=d._codex||{}; S._codexLineDone=d._codexLineDone||{}; S._deaths=d._deaths||0; S._rerolls=d._rerolls||0; S._clsClears=d._clsClears||{}; S.title=d.title||''; S._seenNodes=d._seenNodes||[]; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{}})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{},_deaths:S._deaths||0,_rerolls:S._rerolls||0,_clsClears:S._clsClears||{},title:S.title||'',_seenNodes:S._seenNodes||[]})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -8130,6 +8144,25 @@ function checkBonus(name){
   }
   return b;
 }
+/* 第三十二轮：判定成功率透明化（展示用估算，含动态难度/属性/天赋/词条/环境修正） */
+function checkSuccessRate(stat, dc){
+  if(dc>500) return 100;
+  const effDc = dynDcAdjust(dc);
+  const mod = statValue(stat) + checkBonus(stat) + zoneCheckMod();
+  const pct = (100 - effDc + mod) + critRange();
+  return Math.max(3, Math.min(97, Math.round(pct)));
+}
+/* 第三十二轮：展开已折叠的已读剧情 */
+function unfoldScene(){
+  const v=$('view-scene'); const n=NODES[S._curNode];
+  if(!v || !n) return;
+  const fold=v.querySelector('.story-fold');
+  if(!fold) return;
+  const st=document.createElement('div');
+  st.className='story';
+  st.innerHTML=fillText(n.text);
+  fold.replaceWith(st);
+}
 function combatBonus(){
   let b=12;  // 天命加身：基础命中加成
   if(S.talents.includes('wit')) b+=12;
@@ -8203,6 +8236,7 @@ function newRun(){
   S.revealedSelf=false;
   S.reEcho=0; S.bp=0;
   S._runGold0=S.gold; S._runEcho0=S.echoes;
+  S._runDeath=false; S._rerollsThisRun=0;
 }
 function resetRun(){ newRun(); S.run++; checkAchievements(); }
 
@@ -8414,6 +8448,16 @@ const ACHIEVEMENTS = [
   {id:'crit-3', n:'欧皇附体', d:'连续掷出 3 次大成功', fate:2},
   {id:'fumb-5', n:'非酋见证', d:'累计遭遇 5 次大失败', fate:2},
   {id:'perma-10', n:'烙印初成', d:'碎片烙印累计 +10 全属性', echo:8},
+  // —— 困难档（高奖励 · 紫色）——
+  {id:'deathless-run', n:'一命通关', d:'单局 0 死亡通关一个世界', echo:15, fate:2, tier:2, title:'无伤轮回者'},
+  {id:'dgrade-clear', n:'白手起家', d:'使用 D/C 级天赋通关一个世界', echo:12, fate:2, tier:2},
+  {id:'solo-3', n:'独行侠', d:'单职业累计通关 3 个世界', echo:15, tier:2},
+  {id:'world-20', n:'寰宇征服', d:'累计通关 20 个世界', echo:30, tier:2, title:'万界归宗'},
+  {id:'gold-2000', n:'富可敌国', d:'金币达到 2000', echo:10, tier:2},
+  {id:'nofate-1', n:'顺天而行', d:'全程不用重掷通关一个世界', echo:20, fate:3, tier:2, title:'顺天者'},
+  // —— 隐藏档（彩蛋 · 金色）——
+  {id:'fumb-streak', n:'三连非酋', d:'连续 3 次大失败（非酋的慰藉）', fate:3, tier:3, title:'非酋之王'},
+  {id:'reroll-30', n:'命运拨弄者', d:'累计重掷 30 次命运', echo:15, fate:2, tier:3, title:'时间线拧麻花大师'},
 ];
 function achDone(id){ return (S.achievements||[]).includes(id); }
 function toastBanner(title, desc, color){
@@ -8430,6 +8474,7 @@ function grantAch(id){
   S.achievements.push(id);
   if(a.echo) S.echoes+=a.echo;
   if(a.fate) S.fate+=a.fate;
+  if(a.title) S.title=a.title;   // 称号系统：解锁即佩戴（后解锁覆盖，取最新成就称号）
   saveSave(); updateHUD();
   let rw=''; if(a.echo) rw+='回响碎片 +'+a.echo+' '; if(a.fate) rw+='命运点 +'+a.fate;
   toastBanner('🏆 成就解锁 · '+a.n, a.d+(rw? '（'+rw+'）':''));
@@ -8459,7 +8504,8 @@ function renderAchievements(){
   ACHIEVEMENTS.forEach(function(a){
     const done=achDone(a.id);
     let rw=''; if(a.echo) rw+='碎片 +'+a.echo+' '; if(a.fate) rw+='命运 +'+a.fate;
-    html+=`<div class="ach-card${done?' a-on':''}">${done?'🏆':'🔒'}<div class="a-n">${esc(a.n)}</div><div class="a-d">${esc(a.d)}</div><div class="a-r">${rw}</div>${done?'<div class="a-ok">已达成</div>':''}</div>`;
+    const tierTxt = a.tier===3?'<span class="a-tier a-tier-h">隐藏</span>':a.tier===2?'<span class="a-tier a-tier-d">困难</span>':'';
+    html+=`<div class="ach-card${done?' a-on':''}${a.tier===3?' a-hide':a.tier===2?' a-hard':''}">${done?'🏆':'🔒'}${tierTxt}<div class="a-n">${esc(a.n)}</div><div class="a-d">${esc(a.d)}</div><div class="a-r">${rw}</div>${done?'<div class="a-ok">已达成</div>':''}</div>`;
   });
   html+=`</div>
     <div class="choices"><div class="choice" id="ach-close"><span class="c-tag">【返回】</span>返回</div></div>
@@ -8482,6 +8528,7 @@ function diceEaster(kind){
     S._fumbStreak=(S._fumbStreak||0)+1; S._critStreak=0; S._fumbTotal=(S._fumbTotal||0)+1;
     if(S._fumbStreak>=3){
       S._fumbStreak=0;
+      grantAch('fumb-streak');   // 第三十一轮：隐藏成就「三连非酋」
       S._consolation=true; S.echoes=(S.echoes||0)+2; saveSave(); updateHUD();
       toastBanner('😢 非酋的慰藉', '三连大失败，连系统都看不下去了——硬塞给你一颗「下次判定必定大成功」的后悔药，外加 2 枚回响碎片压压惊。', '#7fe0d0');
       checkAchievements();
@@ -8733,6 +8780,14 @@ const NODE_ARRIVAL = {
 
 function renderScene(n){
   const v = $('view-scene');
+  S._curNode=n.id;
+  if(!S._seenNodes) S._seenNodes=[];
+  const _wasSeen = S._seenNodes.includes(n.id);
+  if(!_wasSeen) S._seenNodes.push(n.id);
+  const _fold = _wasSeen && (n.choices||[]).length>0;
+  const _storyHtml = _fold
+    ? `<div class="story-fold">📖 这段剧情你看过了，已折叠<span class="c-desc">多周目自动折叠已读剧情，只看选择</span><button class="cact" onclick="unfoldScene()">展开剧情</button></div>`
+    : `<div class="story">${fillText(n.text)}</div>`;
   v.innerHTML = `
     <div class="panel">
       <div class="scene-chap">${esc(n.chap||'')}</div>
@@ -8740,7 +8795,7 @@ function renderScene(n){
       <div class="scene-tagline">${esc((n.tagline||'').replace('{run}',S.run))}</div>
       ${S._pendingTransit? `<div class="scene-transit">${esc(S._pendingTransit)}</div>`:''}
       <div class="dice-log" id="dice-log"></div>
-      <div class="story">${fillText(n.text)}</div>
+      ${_storyHtml}
       ${wxFlavor(n.id)}
       <div class="choices" id="scene-choices"></div>
     </div>`;
@@ -8757,6 +8812,7 @@ function renderScene(n){
     let tag = c.tag? `<span class="c-tag">${c.kind==='check'&&c.dc>=65?'⚠ ':''}【${esc(c.tag)}】</span>`:'';
     let desc = c.desc? `<div class="c-desc">${esc(c.desc)}</div>`:'';
     if(c.kind==='check' && !/难度/.test(desc)){ desc += `<div class="c-desc">难度：${dcWord(c.dc||50)}</div>`; }
+    if(c.kind==='check'){ const _rate = checkSuccessRate(c.stat||'per', c.dc||50); desc += `<div class="c-desc">成功率 <span class="rate">${_rate}%</span></div>`; }
     b.innerHTML = `${tag}${esc(c.text)}${desc}`;
     b.onclick = ()=>resolveChoice(c);
     box.appendChild(b);
@@ -8854,6 +8910,7 @@ function fatePrice(){
 }
 function doFateReroll(ck, mode, onDone){
   S._rerollCount = (S._rerollCount||0)+1;
+  S._rerolls=(S._rerolls||0)+1; S._rerollsThisRun=(S._rerollsThisRun||0)+1;   // 第三十一轮：累计重掷计数（命运拨弄者/顺天而行）
   let res2;
   if(mode==='gamble' && Math.random()<0.3){
     // 逆命·天胡：30% 强制大成功
@@ -10758,6 +10815,14 @@ function opWorldReward(){
   const w = OP.world;
   const first = !S.worldsCleared.includes(w.id);
   if(first) S.worldsCleared.push(w.id);
+  /* —— 第三十一轮：梯度成就（困难档）通关判定 —— */
+  if(first){
+    if(!S._runDeath) grantAch('deathless-run');                                    // 一命通关
+    if(!S._rerollsThisRun) grantAch('nofate-1');                                   // 顺天而行（零重掷）
+    if((S.talents||[]).length>0 && (S.talents||[]).every(function(t){ var g=TALENTS.find(function(x){return x.id===t;}); return g && (g.grade==='D'||g.grade==='C'); })) grantAch('dgrade-clear');  // 白手起家
+    S._clsClears = S._clsClears||{}; S._clsClears[S.cls]=(S._clsClears[S.cls]||0)+1;
+    if(S._clsClears[S.cls]>=3) grantAch('solo-3');                                 // 独行侠
+  }
   const got=[];
   if(w.reward.type==='skill'){
     if(!S.skillPool.includes(w.reward.id)){ S.skillPool.push(w.reward.id); got.push(`技能「${w.reward.name}」`); }
@@ -11438,7 +11503,7 @@ function renderChar(){
   const statNames = {str:'力量',agi:'敏捷',int:'智力',cha:'魅力',con:'体质',per:'感知'};
   let html = `<div class="panel">
     <div class="scene-chap">角色 · 第 ${S.run} 周目</div>
-    <div class="scene-title">${esc(c? c.name : '未定')} · Lv.${S.level}</div>
+    <div class="scene-title">${esc(c? c.name : '未定')} · Lv.${S.level}${S.title? ` <span class="ach-title" title="成就称号">【${esc(S.title)}】</span>`:''}</div>
     <div class="scene-tagline">${esc(c? c.role : '')} ｜ 经验 ${S.xp}/${xpNeed(S.level)} ｜ 已完成世界 ${S.worldsCleared.length}/${WORLDS.length}</div>
     <div class="char-tabs" id="char-tabs">
       <div class="ctab active" data-sec="stats">属性</div>
@@ -11584,6 +11649,7 @@ function closeChar(){
 
 /* ---------- 死亡与轮回 ---------- */
 function renderDeath(){
+  S._deaths=(S._deaths||0)+1; S._runDeath=true;   // 第三十一轮：跨周目死亡计数（一命通关/图鉴）
   showGuide('die');
   combatAutoStop();
   S._keepGold = S.gold;  // 取消限制：死亡不再清空金币，全部带进下一轮
