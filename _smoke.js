@@ -459,7 +459,7 @@ step('外挂系统', () => {
 });
 step('词条工作台', () => {
   G('S.tagBag=[]; S.equippedTags=[]');
-  ok('词条池10个', G('TAG_POOL.length===10'));
+  ok('词条池18个', G('TAG_POOL.length===18'));
   G('grantTag("harvest",true); grantTag("alert",true); grantTag("insight",true)');
   ok('词条入背包', G('S.tagBag.length===3'));
   G('S.equippedTags=["harvest","alert","insight"]');
@@ -1135,7 +1135,7 @@ step('第二十八轮：玩法数值与平衡（天赋品级特色差/词条流�
   ok('applyTalent 低品级保底入账', G('(function(){ boot(); newRun(); S.gold=40; S.fate=4; S._gradePerkApplied=false; applyTalent(TALENTS.find(function(t){return t.id==="mem"})); var f=S.fate; return f===5 && S._gradePerkApplied===true; })()'));
   ok('applyTalent 高品级代价入账', G('(function(){ boot(); newRun(); S.gold=40; S.fate=4; S._gradePerkApplied=false; applyTalent(TALENTS.find(function(t){return t.id==="eternal"})); return S.gold===30 && S._gradePerkApplied===true; })()'));
   ok('gainXp 高品级经验补偿', G('(function(){ S.talents=["eternal"]; S._gradePerkApplied=true; S.level=50; S.xp=0; gainXp(100); var got=S.xp; S.talents=[]; S._gradePerkApplied=false; return got===115; })()'));
-  ok('词条流派标记（10枚含流派）', G('(function(){ return TAG_POOL.length===10 && TAG_POOL.every(function(t){ return !!t.set; }); })()'));
+  ok('词条流派标记（18枚含流派）', G('(function(){ return TAG_POOL.length===18 && TAG_POOL.every(function(t){ return !!t.set; }); })()'));
   ok('流派激活（同流派2枚触发）', G('(function(){ S.equippedTags=["rage","luck"]; var a=tagSetActive(); S.equippedTags=[]; return a.length===1 && a[0]==="crit"; })()'));
   ok('万般词条万能计数', G('(function(){ S.equippedTags=["omni","vamp"]; var a=tagSetActive(); S.equippedTags=[]; return a.indexOf("leech")>=0 && a.indexOf("crit")<0; })()'));
   ok('万界金宝箱 wealth +25%', G('(function(){ S.equippedTags=["harvest","insight"]; S.gold=0; var bak=Math.random; Math.random=function(){return 0;}; var r=grantTreasure({kind:"gold",min:100,max:100,n:"金币"},null); Math.random=bak; S.equippedTags=[]; return S.gold===125; })()'));
@@ -1166,6 +1166,24 @@ step('第二十九轮：核心体验补全（新手目标阶梯/战斗机制可�
   ok('newRun 应用永久命运点奖励', G('(function(){ S._permFateBonus=1; S.echoes=0; newRun(); return S.fate===5; })()'));
   ok('gainXp 应用经验加成（轮回目标+10%）', G('(function(){ S._permXp=0.1; S._gradePerkApplied=false; S.level=50; S.xp=0; gainXp(100); var got=S.xp; return got===110; })()'));
   ok('无运行时错误(第二十九轮)', errors.length === 0);
+});
+
+step('第三十轮：词条 Build 流派体系扩展（4套→8套·破军/流光/回春/幻灵）', () => {
+  G('boot(); newRun(); applyClass("sword"); S.equippedTags=[]; S.equip={weapon:null,armor:null,trinket:null};');
+  ok('TAG_SETS 扩展为 8 套流派', G('(function(){ var k=Object.keys(TAG_SETS); return k.length===8 && k.indexOf("punch")>=0 && k.indexOf("swift")>=0 && k.indexOf("regen")>=0 && k.indexOf("summon")>=0; })()'));
+  ok('TAG_POOL 新增 8 枚词条（共 18）', G('(function(){ return TAG_POOL.length===18 && ["thrust","agile","mend","spirit","heavy","afterimage","vital","wraith"].every(function(id){ var t=tagById(id); return t && t.set; }); })()'));
+  ok('破军流激活（thrust+heavy）', G('(function(){ S.equippedTags=["thrust","heavy"]; var a=tagSetActive(); S.equippedTags=[]; return a.indexOf("punch")>=0; })()'));
+  ok('流光流激活（agile+afterimage）', G('(function(){ S.equippedTags=["agile","afterimage"]; var a=tagSetActive(); S.equippedTags=[]; return a.indexOf("swift")>=0; })()'));
+  ok('回春流激活（mend+vital）', G('(function(){ S.equippedTags=["mend","vital"]; var a=tagSetActive(); S.equippedTags=[]; return a.indexOf("regen")>=0; })()'));
+  ok('幻灵流激活（spirit+wraith）', G('(function(){ S.equippedTags=["spirit","wraith"]; var a=tagSetActive(); S.equippedTags=[]; return a.indexOf("summon")>=0; })()'));
+  ok('D级单枚不误激活流派（需组合）', G('(function(){ S.equippedTags=["thrust"]; var a=tagSetActive(); S.equippedTags=[]; return a.length===0; })()'));
+  ok('万般词条计入新流派（omni+thrust 激活破军）', G('(function(){ S.equippedTags=["omni","thrust"]; var a=tagSetActive(); S.equippedTags=[]; return a.indexOf("punch")>=0 && a.indexOf("crit")<0; })()'));
+  ok('healOnHit 回春回复（vital 6%）', G('(function(){ S.equippedTags=["mend","vital"]; S.maxHp=200; S.hp=100; var h=healOnHit(30); S.equippedTags=[]; return h>=12 && S.hp===112; })()'));
+  ok('healOnHit 无词条不回复', G('(function(){ S.equippedTags=[]; S.maxHp=200; S.hp=100; var h=healOnHit(30); return h===0 && S.hp===100; })()'));
+  ok('swiftCounter 闪避反击触发', G('(function(){ S.equippedTags=["agile","afterimage"]; S.stats.str=20; CB={id:"ghost",hp:500,max:500}; var old=window.rand; window.rand=function(){ return 10; }; swiftCounter(); window.rand=old; S.equippedTags=[]; return CB.hp<500; })()'));
+  ok('summonOpenStrike 开场幻灵（wraith 翻倍）', G('(function(){ S.equippedTags=["spirit","wraith"]; S.stats.str=20; CB={id:"ghost",hp:500,max:500}; var d=summonOpenStrike(); S.equippedTags=[]; return d>=30 && CB.hp===500-d; })()'));
+  ok('summonAssistTurn 每回合助战', G('(function(){ S.equippedTags=["spirit","wraith"]; S.stats.str=20; CB={id:"ghost",hp:500,max:500}; var d=summonAssistTurn(); S.equippedTags=[]; return d>0 && CB.hp===500-d; })()'));
+  ok('无运行时错误(第三十轮)', errors.length === 0);
 });
 
 console.log('\n== 汇总 ==');
