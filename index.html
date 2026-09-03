@@ -643,6 +643,32 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
 
 .gamble-choice{color:#ffd27a;border-color:rgba(255,190,80,.55)!important;background:rgba(255,180,60,.06);}
 .gamble-choice .c-tag{color:#ffb84d;}
+
+/* ===== 第二十九轮：轮回目标 / 战斗可视化 ===== */
+#quest-panel{position:fixed;inset:0;z-index:120;pointer-events:none;display:flex;justify-content:flex-end;}
+#quest-panel .quest-wrap{pointer-events:auto;width:min(420px,92vw);height:100%;background:rgba(12,16,24,.96);border-left:1px solid rgba(255,213,74,.35);padding:22px 18px;overflow-y:auto;box-shadow:-12px 0 40px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .28s ease;}
+#quest-panel.show .quest-wrap{transform:translateX(0);}
+.quest-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.quest-tt{font-size:16px;letter-spacing:.12em;color:var(--gold,#ffd54a);font-weight:700;}
+.quest-x{cursor:pointer;color:var(--ink-dim,#9aa5b1);font-size:15px;padding:2px 8px;}
+.quest-x:hover{color:#fff;}
+.quest-item{display:flex;gap:10px;padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);}
+.q-ic{font-size:20px;flex:0 0 28px;text-align:center;line-height:1.4;}
+.q-body{flex:1;}
+.q-t{font-size:14px;color:#fff;margin-bottom:3px;}
+.q-d{font-size:12px;color:var(--ink-dim,#9aa5b1);line-height:1.5;margin-bottom:4px;}
+.q-r{font-size:12px;color:var(--gold,#ffd54a);}
+.quest-item.q-claim{border-color:rgba(255,213,74,.55);background:rgba(255,213,74,.06);}
+.quest-item.q-done{border-color:rgba(120,220,140,.4);background:rgba(120,220,140,.05);}
+.quest-item.q-done .q-t{color:#7fdd8b;text-decoration:line-through;text-decoration-color:rgba(127,221,139,.5);}
+.q-btn{padding:6px 14px;font-size:12px;border-radius:8px;border:1px solid var(--gold,#ffd54a);color:var(--gold,#ffd54a);background:transparent;cursor:pointer;align-self:center;flex:0 0 auto;}
+.q-btn:hover{background:rgba(255,213,74,.15);}
+.quest-foot{margin-top:14px;font-size:11px;color:var(--ink-dim,#9aa5b1);text-align:center;}
+#btn-quest.claimable{box-shadow:0 0 0 1px var(--gold,#ffd54a),0 0 12px rgba(255,213,74,.55);color:var(--gold,#ffd54a);}
+#btn-quest.claimable::after{content:'·';color:#ff6b6b;font-weight:900;animation:qblink 1.2s infinite;}
+@keyframes qblink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.cact.ult-pulse{animation:ultpulse 1.1s infinite;}
+@keyframes ultpulse{0%,100%{box-shadow:0 0 6px rgba(255,213,74,.5);border-color:var(--gold,#ffd54a);}50%{box-shadow:0 0 18px rgba(255,213,74,.9);transform:scale(1.03);}}
 </style>
 </head>
 <body>
@@ -655,6 +681,7 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
     <div class="hud-block"><span>轮回</span><b id="hud-run">1</b></div>
     <div class="hud-block"><span>章节</span><b id="hud-chap">--</b></div>
     <div class="hud-right">
+      <span class="chip" id="btn-quest" style="cursor:pointer" title="轮回目标 · 完成即领永久奖励">🎯 目标</span>
       <span class="chip" id="btn-map" style="cursor:pointer" title="开放地图 · 箱庭区域">🗺 地图</span>
       <span class="chip" id="btn-inv" style="cursor:pointer" title="角色 / 背包 / 技能">◫ 角色</span>
       <span class="chip" id="hud-fate" title="命运点：可重掷骰子">◆ 0</span>
@@ -6721,6 +6748,56 @@ function dynDcAdjust(dc){
   return Math.max(1, d);
 }
 
+/* ===== 第二十九轮：核心体验补全（新手目标阶梯 / 战斗机制可视化 / 正反馈节奏） ===== */
+const QUESTS = [
+  {id:'q_street', ic:'🏘', t:'踏遍旧日街区', d:'逛遍旧日街区的每个角落，打开街区补给箱，认识街角的回响与灰袍商人。', reward:'回响碎片 +3 · 永久初始命运点 +1',
+   check(){ return !!(((S._locDone||{}).street)||[]).includes('loot_street'); }},
+  {id:'q_gate', ic:'🏢', t:'攻克首个区域首领', d:'突破中枢塔第一道防线——击败「数据洪流闸门」的归档者·K。', reward:'回响碎片 +5 · 金币 +80',
+   check(){ return !!S.flag.gate_defeated; }},
+  {id:'q_mate', ic:'🐱', t:'结识第一位伙伴', d:'在塔顶遇见系统维护员老猫，让它加入你的队伍。', reward:'永久初始命运点 +1 · 词条 +1',
+   check(){ return !!(S.roster && S.roster.length>0); }},
+  {id:'q_world', ic:'🌏', t:'踏入第一个异世界', d:'从万界枢纽进入任意一个小说 / 游戏世界，开启你的跨世界冒险。', reward:'回响碎片 +4 · 经验 +10%',
+   check(){ return !!S._worldEntered; }}
+];
+function questState(q){
+  if((S._questDone||[]).includes(q.id)) return 'done';
+  return q.check() ? 'claim' : 'todo';
+}
+const QUEST_REWARD = {
+  q_street(){ S.echoes=(S.echoes||0)+3; S._permFateBonus=(S._permFateBonus||0)+1; },
+  q_gate(){ S.echoes=(S.echoes||0)+5; S.gold=(S.gold||0)+80; },
+  q_mate(){ S._permFateBonus=(S._permFateBonus||0)+1; grantTag('echo', true); },
+  q_world(){ S.echoes=(S.echoes||0)+4; S._permXp=(S._permXp||0)+0.1; }
+};
+function claimQuest(id){
+  const q=QUESTS.find(x=>x.id===id); if(!q || questState(q)!=='claim') return;
+  S._questDone=S._questDone||[]; S._questDone.push(id);
+  (QUEST_REWARD[id]||function(){})();
+  saveSave();
+  toastBanner('目标达成 · '+q.t, '奖励已发放：'+q.reward+'（跨周目保留）', '#ffd54a');
+  updateHUD(); renderQuest();
+}
+function renderQuest(){
+  let el=document.getElementById('quest-panel');
+  if(!el){ el=document.createElement('div'); el.id='quest-panel'; document.body.appendChild(el); }
+  el.innerHTML = '<div class="quest-wrap"><div class="quest-head"><span class="quest-tt">🎯 轮回目标</span><span class="quest-x" onclick="closeQuest()">✕</span></div>'+
+    QUESTS.map(q=>{
+      const st=questState(q);
+      const cls=st==='done'?'q-done':(st==='claim'?'q-claim':'q-todo');
+      const mark=st==='done'?'✅':(st==='claim'?'⚡':q.ic);
+      return '<div class="quest-item '+cls+'"><div class="q-ic">'+mark+'</div><div class="q-body"><div class="q-t">'+q.t+'</div><div class="q-d">'+q.d+'</div><div class="q-r">奖励：'+q.reward+'</div></div>'+
+        (st==='claim'?'<button class="cact q-btn" onclick="claimQuest(\''+q.id+'\')">领取</button>':'')+'</div>';
+    }).join('')+
+    '<div class="quest-foot">目标跨周目保留 · 完成即领永久奖励，越轮回越强</div></div>';
+  el.classList.add('show');
+}
+function closeQuest(){ const el=document.getElementById('quest-panel'); if(el) el.classList.remove('show'); }
+function checkQuestAuto(){
+  const claimable = QUESTS.some(q=>questState(q)==='claim');
+  const b=document.getElementById('btn-quest');
+  if(b) b.classList.toggle('claimable', claimable);
+}
+
 function tagBagList(){ return (S.tagBag||[]).map(tagById).filter(Boolean); }
 function equippedTagsList(){ return (S.equippedTags||[]).map(tagById).filter(Boolean); }
 function hasTagFx(fx){ return equippedTagsList().some(t=>t.fx===fx || (t.fx==='omni' && ['gold','mit','crit','luck'].indexOf(fx)>=0)); }
@@ -6748,6 +6825,7 @@ function grantTag(id, silent){
   if((S.tagBag||[]).length >= TAG_BAG_MAX) return null;
   S.tagBag = S.tagBag||[]; S.tagBag.push(id);
   if(!silent && S.tagBag.length===1) showGuide('tag');
+  if(!silent && (t.grade==='A'||t.grade==='S') && !S._rareTagShown){ S._rareTagShown=true; setTimeout(function(){ try{ toastBanner('✨ 稀有词条入库', '「'+t.name+'」——到词条工作台合成升级，越铸越强！', '#c9a6ff'); }catch(_){} }, 200); }
   if(!silent) updateHUD();
   return t;
 }
@@ -6857,6 +6935,7 @@ function combatUltimate(){
   if(CB.auto) combatAutoStop();
   CB.turn++;
   S.reEcho = 0; updateHUD();
+  if(!S._ultUsed){ S._ultUsed=true; setTimeout(function(){ try{ toastBanner('⚡ 终结技首秀', '回响能量满溢——你的最强一击已解锁！', '#ffd54a'); }catch(_){} }, 300); }
   const u = ULTIMATES[S.cls] || ULTIMATES.sword;
   if(S.cls==='medic'){
     const hv=Math.round(S.maxHp*0.4);
@@ -6914,6 +6993,7 @@ function afterHit(dmg, crit){
   CB.tough = Math.max(0, CB.tough - Math.max(1, Math.round(dmg*0.1)));
   if(CB.tough<=0 && !CB._broken){
     CB._broken = true;
+    toastBanner('💥 破防！', (ENEMIES[CB.id]?ENEMIES[CB.id].name:'敌人')+' 的防线被击穿——全队追击！', '#ff6b6b');
     totalAttack();
     if(CB.hp<=0){ combatVictory(); return true; }
     endEnemyTurn();
@@ -8093,7 +8173,7 @@ function newRun(){
   if((S.totalRuns||0)>=20 && !(S._milestones||[]).includes('r20')){ S._milestones=S._milestones||[]; S._milestones.push('r20'); for(const k in S.stats) S.stats[k]+=2; }
   S.gold = 40 + (S._keepGold||0); S._keepGold = 0;
   if((S.totalRuns||0)>=10 && !(S._milestones||[]).includes('r10')){ S._milestones=S._milestones||[]; S._milestones.push('r10'); S.gold+=20; }  // 「存档作弊」外挂可把上一局一半金币带进下一轮
-  S.fate = Math.min(12, 4 + Math.floor(S.echoes/2));   // 命运点经济：开局命运点上限 12，防回声碎片无限叠加通胀
+  S.fate = Math.min(12, 4 + Math.floor(S.echoes/2) + (S._permFateBonus||0));   // 命运点经济：开局命运点上限 12，防回声碎片无限叠加通胀；轮回目标奖励永久加成
   if((S.totalRuns||0)>=5 && !(S._milestones||[]).includes('r5')){ S._milestones=S._milestones||[]; S._milestones.push('r5'); S.fate+=1; }  // 灵魂烙印越深，降世的底气越足
   S.items = [];
   S.talents = [];
@@ -8173,6 +8253,7 @@ function renderClassSelect(){
 function gainXp(amount){
   if(hasBooster('exp')) amount = Math.floor(amount*2);  // 「升级加速」外挂：经验 +100%
   if(S._gradePerkApplied) amount = Math.round(amount * talentGradePerk().expMult);  // 高品级天赋：经验 +15%/个（代价的补偿）
+  if(S._permXp) amount = Math.round(amount * (1 + S._permXp));  // 轮回目标奖励：经验 +10%
   S.xp += amount;
   let ups=0;
   const learned=[];
@@ -8300,6 +8381,9 @@ function updateHUD(){
     if(S.nodeId==='map' || S.nodeId==='hub'){ return; }
     if(S.nodeId && S.nodeId!=='title') renderHub();
   };
+  const qBtn=$('btn-quest');
+  if(qBtn){ qBtn.onclick=()=>{ if(S.nodeId && S.nodeId!=='title') renderQuest(); }; }
+  checkQuestAuto();
 }
 
 /* ---------- 骰子系统（安科） ---------- */
@@ -8608,6 +8692,7 @@ function showDeathSettlement(){
   $('ds-save').onclick=()=>renderTitle();
 }
 const NODE_ARRIVAL = {
+  'c2_gate_win': ()=>{ S.flag.gate_defeated=true; },
   'c1_ghost_peace': ()=>{ S.flag.old_key=true; npcTouch('linwan',10,5); const _n=NODES['c1_ghost_peace']; if(_n) _n.text+='\n\n{mono}你心里对她少了几分戒备。原来她，也只是个等不到人的可怜人。{/mono}'; codexAdd('lw_key'); },
   'c1_ghost_give': ()=>{ S.flag.old_key=true; npcTouch('linwan',20,10); const _n=NODES['c1_ghost_give']; if(_n) _n.text+='\n\n{mono}你想帮一个人，哪怕她只是一串记忆。{/mono}'; codexAdd('lw_key'); codexAdd('lw_give'); },
   'c1_e1a': ()=>patchCorner(),
@@ -9024,8 +9109,8 @@ function renderCombat(){
     sg.appendChild(b);
   });
   const act = $('combat-actions');
-  const mk = (txt,sub,fn)=>{
-    const b=document.createElement('div'); b.className='cact';
+  const mk = (txt,sub,fn,cls)=>{
+    const b=document.createElement('div'); b.className='cact'+(cls?' '+cls:'');
     b.innerHTML = `${txt}${sub?`<span class="ca-sub">${sub}</span>`:''}`;
     b.onclick = fn; act.appendChild(b);
   };
@@ -9034,7 +9119,7 @@ function renderCombat(){
   mk('重击','伤害更高 · 命中-15', man(()=>combatPlayerAttack(true)));
   mk('防御','本回合减伤50%', man(()=>combatGuard()));
   mk('蓄力','BP +1 · 本回合不攻击（最高3）', man(()=>combatCharge()));
-  if((S.reEcho||0)>=100) mk('⚡终结技', ULTIMATES[S.cls]?ULTIMATES[S.cls].n+' · 回响满':'', man(()=>combatUltimate()));
+  if((S.reEcho||0)>=100) mk('⚡终结技', ULTIMATES[S.cls]?ULTIMATES[S.cls].n+' · 回响满':'', man(()=>combatUltimate()), 'ult-pulse');
   if(countItem('potion')>0) mk('回响药剂',`剩余${countItem('potion')}`, man(()=>combatItem('potion')));
   if(countItem('mpotion')>0) mk('灵气药剂',`剩余${countItem('mpotion')}`, man(()=>combatItem('mpotion')));
   if(S.fate>0) mk('命运之力',`消耗1点·必中且暴击 (${S.fate})`, man(()=>combatFate()));
@@ -9612,6 +9697,7 @@ function renderWorlds(){
 /* ---------- 世界入场（入场剧情 + 特色玩法 → 选外挂进入） ---------- */
 function renderWorldIntro(wid){
   const w = worldById(wid) || WORLDS[0];
+  S._worldEntered = true;
   S.nodeId='worldintro';
   updateHUD();
   const v=$('view-worlds');
