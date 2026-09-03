@@ -1049,6 +1049,27 @@ step('第二十一轮：死亡结算/动态仁慈/选项动作化/隐性预告',
   ok('无运行时错误(第二十一轮)', errors.length === 0);
 });
 
+
+step('第二十二轮：重掷趣味化（双模式/递增/彩蛋）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  // 递增价格
+  ok('递增消耗1→2→4→8', G('(function(){ S._rerollCount=0; var a=fatePrice(); S._rerollCount=1; var b=fatePrice(); S._rerollCount=2; var c=fatePrice(); S._rerollCount=3; var d=fatePrice(); return a===1&&b===2&&c===4&&d===8; })()'));
+  // 双模式渲染：判定失败重掷栏含回溯+逆命
+  G('S.nodeId="c1_intro"; S._rerollPending=true; S._lastCheck={stat:"per",dc:60,label:"测试判定"}; S.fate=5; S._rerollCount=0; renderScene(NODES["c1_intro"]);');
+  ok('回溯重掷显示', G('document.getElementById("scene-choices").innerHTML.indexOf("命运·回溯")>=0'));
+  ok('逆命重掷显示', G('document.getElementById("scene-choices").innerHTML.indexOf("逆命·赌徒")>=0'));
+  // 逆命 30% 天胡
+  G('var _bakRandom=Math.random; Math.random=function(){ return 0.2; };');
+  ok('逆命30%天胡大成功', G('(function(){ var ck={stat:"per",dc:60,label:"T"}; var r; doFateReroll(ck,"gamble",function(x){r=x;}); return r.crit===true && r.gamble===true; })()'));
+  // 命运垂青：连续 2 次大成功 → 回响碎片 +1
+  ok('命运垂青彩蛋', G('(function(){ var ck={stat:"per",dc:60,label:"T2"}; S.echoes=0; S._critStreak=0; doFateReroll(ck,"gamble",function(){}); doFateReroll(ck,"gamble",function(){}); return S.echoes>=1; })()'));
+  // 非酋慰藉：连续 3 次重掷失败 → 下次必大成功
+  G('Math.random=function(){ return 0.99; };');
+  ok('非酋慰藉彩蛋', G('(function(){ var bak=runCheck; runCheck=function(){ return {stat:"per",dc:60,label:"T3",roll:20,mod:0,total:20,crit:false,fumb:false,success:false,rerolled:false}; }; try{ S._consolation=false; S._badStreak=0; var ck={stat:"per",dc:60,label:"T3"}; doFateReroll(ck,"back",function(){}); doFateReroll(ck,"back",function(){}); doFateReroll(ck,"back",function(){}); return S._consolation===true; } finally { runCheck=bak; } })()'));
+  G('Math.random=_bakRandom;');
+  ok('无运行时错误(第二十二轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
