@@ -136,6 +136,9 @@ h1.title-name{
   margin-bottom:4px;line-height:1.4;
 }
 .scene-tagline{font-size:12px;color:var(--ink-faint);margin-bottom:14px}
+.zone-bar{display:flex;align-items:center;gap:8px;margin:10px 0 14px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:13px;background:rgba(20,22,30,.55);line-height:1.5}
+.zone-bar .zone-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.zone-bar .zone-desc{margin-left:auto;color:#9aa2b0;font-size:12px}
 .story{
   font-family:var(--serif);font-size:16px;line-height:2;color:#d7dfef;
   white-space:pre-wrap;
@@ -6883,61 +6886,61 @@ const EVENTS = {
   street:[
     {ic:'🥤', name:'翻倒的自动售货机',
      desc:'街角一台售货机歪倒，冰可乐滚了一地，一名数据清洁工正骂骂咧咧。他看见你，眼睛一亮：“喂！搭把手，扶正了分你两罐！”',
-     action:'上前帮忙抬正机器', check:{stat:'str',dc:55},
+     action:'上前帮忙抬正机器', kind:'loot', check:{stat:'str',dc:55},
      succ:{text:'你一把抬正售货机，清洁工感激地塞给你金币和两罐“回响可乐”。', gold:15, hp:8},
      fail:{text:'机器太重，你反而被压了个趔趄。清洁工赶紧扶你，还塞给你一瓶药：“没白摔，医疗费我出了。”', hp:-5, item:'potion'}},
     {ic:'🎰', name:'老虎机的诱惑',
      desc:'游戏厅门口的老虎机突然亮灯，屏幕滚动着一行字：“本机反赌。若有人试图赢走我的钱，我就把它的种子代码全删掉。”你觉得它在挑衅你。',
-     action:'赌一把，拉杆！', check:{stat:'per',dc:60},
+     action:'赌一把，拉杆！', kind:'flavor', check:{stat:'per',dc:60},
      succ:{text:'你看穿它在虚张声势——拉杆，叮！它不情不愿地吐出一把金币。', gold:22},
      fail:{text:'你信了它的鬼话投了币，结果它直接黑屏，你的金币被吞了个干净。', gold:-10}},
     {ic:'🐱', name:'迷路的机械猫',
      desc:'一只缺了耳朵的机械猫蹲在墙角，用两格像素眼看你。铭牌上写着：“旧城区·第七分局·编号47”。见你走近，它转身就跑，还回头看你。',
-     action:'跟上去', check:{stat:'agi',dc:50},
+     action:'跟上去', kind:'loot', check:{stat:'agi',dc:50},
      succ:{text:'你跟上了它！它带你钻进一条死巷，从废墟里刨出一个生锈的铁盒——里面是满满的金币。', gold:25},
      fail:{text:'你追了两条街，机械猫跳上高墙消失。你累得直喘，但墙根下滚出一枚金币——算安慰奖。', gold:5, hp:-3}},
     {ic:'📡', name:'广播站的怪声',
      desc:'街角广播突然爆出一阵电流音，随后传来一个男声：“……如果有人听到，请转告 47 号档案室：它们要来了。它们，不是它们。”随后沙沙声消失。你莫名打了个寒颤。',
-     action:'凝神记住这串编号', check:{stat:'int',dc:55},
+     action:'凝神记住这串编号', kind:'story', check:{stat:'int',dc:55},
      succ:{text:'你牢牢记住“47号档案室”——直觉告诉你，这串编号总有一天派得上用场。', fate:1},
      fail:{text:'你试图破译电波，但脑袋一团浆糊。广播再也没响过。', hp:-4}}
   ],
   tower:[
     {ic:'🌊', name:'数据洪流',
      desc:'走廊深处传来轰隆声——一股乳白色的数据洪流正顺着光缆倒灌而来！守卫大喊：“快，找掩体！”',
-     action:'闪进维修夹层', check:{stat:'agi',dc:58},
+     action:'闪进维修夹层', kind:'trap', check:{stat:'agi',dc:58},
      succ:{text:'你灵巧地闪进维修夹层躲过洪流。等一切平息，你在夹层里摸到前人留下的补给。', item:'mpotion', gold:10},
      fail:{text:'你被数据洪流兜头浇了一身，四肢像灌了铅。', hp:-8}},
     {ic:'🚨', name:'黑塔帮收保护费',
      desc:'两个纹着电路纹身的暴徒拦住你：“塔内通行费，一枚记忆卡或者 20 金币，自己选。”你扫了一眼，他们腰间别着褪色的玩具枪。',
-     action:'跟他们讲讲道理', check:{stat:'cha',dc:55},
+     action:'跟他们讲讲道理', kind:'story', check:{stat:'cha',dc:55},
      succ:{text:'你三言两语把两个暴徒侃晕了，他们反过来请你喝了杯数据咖啡，还送你一枚记忆卡当“兄弟费”。', item:'memcard', gold:8},
      fail:{text:'暴徒不买账，你破财消灾，恨恨地记住了这号人。', gold:-15}},
     {ic:'🗄', name:'故障电梯',
      desc:'你按下电梯按钮，门开了——里面居然是一间临时档案室，堆满落灰的纸箱。最上面那个箱子上写着：“小心：会咬人的备份。”',
-     action:'小心翻找', check:{stat:'per',dc:50},
+     action:'小心翻找', kind:'loot', check:{stat:'per',dc:50},
      succ:{text:'你避开“会咬人的备份”，从最底层翻出一叠记忆卡和一些金币。', item:'memcard', gold:15},
      fail:{text:'你惊动了它——一沓文件扑出来糊了你一脸，你还丢了几枚金币。', gold:-8, hp:-4}},
     {ic:'🕯', name:'故障投影',
      desc:'走廊尽头的投影仪开始循环播放一段没有画面的“欢迎词”：“欢迎来到中枢塔。本塔采用世界领先的稳定系统。免责声明：本系统不保证您的意识完整。”灯光忽明忽暗。',
-     action:'细品免责声明', check:{stat:'int',dc:55},
+     action:'细品免责声明', kind:'story', check:{stat:'int',dc:55},
      succ:{text:'你品出了免责声明背后的猫腻——这座塔的“稳定”，其实一直用来困住谁。一道明悟如微光闪过。', fate:1},
      fail:{text:'你被绕晕了，一头撞上玻璃门，引来巡逻守卫的侧目。', hp:-3}}
   ],
   abyss:[
     {ic:'👁', name:'回响残影',
      desc:'深渊边缘立着一道半透明的身影，像某个玩家的残像。它反复念叨同一句话：“别……别让我……再被读档了……”',
-     action:'稳住心神', check:{stat:'con',dc:55},
+     action:'稳住心神', kind:'story', check:{stat:'con',dc:55},
      succ:{text:'你没有回应它。残影渐渐消散，化作一缕温和的微光汇入你体内，暖意蔓延。', hp:12},
      fail:{text:'你忍不住回了句“别怕”，残影猛地转头，死死抓住你的手腕——冰冷刺骨。', hp:-9}},
     {ic:'📦', name:'废弃补给舱',
      desc:'深渊边嵌着一只锈蚀的补给舱，舱门半开，里面滚出一罐写着“末日应急口粮·生产于第七次轮回”的罐头。',
-     action:'翻一翻', check:{stat:'per',dc:50},
+     action:'翻一翻', kind:'loot', check:{stat:'per',dc:50},
      succ:{text:'你翻开罐头，下面压着一叠药剂和一枚金币。', item:'potion', gold:12},
      fail:{text:'罐头是空的，里面夹了张纸条：“别什么都往嘴里塞。”你被逗笑了。', hp:2}},
     {ic:'🪞', name:'镜子里的自己',
      desc:'深渊岩壁上嵌着一面巨大的镜面，里面映出另一个你。镜中的你朝你挥手，然后缓缓比了个“嘘”的手势。',
-     action:'朝镜中的自己点头', check:{stat:'cha',dc:55},
+     action:'朝镜中的自己点头', kind:'story', check:{stat:'cha',dc:55},
      succ:{text:'镜中的你咧嘴一笑，消失前在你耳边留下一句：“加油，替我把结局打完。”你感到一阵莫名的力量。', fate:1, hp:6},
      fail:{text:'你伸手去碰镜面，镜中的你突然用力拍打镜面——整面镜震得嗡嗡响，你被震退了好几步。', hp:-6}}
   ]
@@ -7694,7 +7697,7 @@ const S = {
   favor:{}, trust:{},
   roster:[], party:[],
   shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
-  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0,
+  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0,
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
@@ -7983,6 +7986,7 @@ function talentByGrade(g){
 
 /* ---------- 每局初始化 ---------- */
 function newRun(){
+  S._mood = moodClamp(Math.round((S._legacyMood||0)*0.5)); S._acts = {comfort:0,smite:0,loot:0};
   S.stats = newStats();
   if(S.permaStat) for(const k in S.permaStat) S.stats[k]+=(S.permaStat[k]||0);
   if((S.totalRuns||0)>=20 && !(S._milestones||[]).includes('r20')){ S._milestones=S._milestones||[]; S._milestones.push('r20'); for(const k in S.stats) S.stats[k]+=2; }
@@ -8471,6 +8475,7 @@ function patchCorner(){
 
 /* ===== 第二十一轮：死亡结算正向化 ===== */
 function showDeathSettlement(){
+  S._legacyMood = (S._legacyMood||0) + (S._mood||0);
   const first = !S._diedBefore; S._diedBefore = true;
   if(first){ S.fate=(S.fate||0)+1; }
   const gGain = Math.max(0,(S.gold||0)-(S._runGold0||0));
@@ -10751,6 +10756,7 @@ function renderLocation(l){
     <div class="scene-chap">箱庭区域 · 第 ${S.run} 周目</div>
     <div class="scene-title">${l.icon} ${esc(l.name)}</div>
     <div class="scene-tagline">${esc(l.desc)}</div>
+    ${zoneStateHtml()}
     <div class="spot-list">`;
   l.spots.forEach(s=>{
     const done = spotDone(l,s);
@@ -10802,30 +10808,127 @@ function applyEventReward(ev, success){
   if(r.item) S.items.push(r.item);
   updateHUD();
 }
+
+/* ---------- 探索节点事件权重动态化（第二十三轮） ---------- */
+function eventKind(ev){ return ev.kind || 'flavor'; }
+function moodClamp(m){ return Math.max(-6, Math.min(6, m)); }
+function moodState(){
+  const m = S._mood||0;
+  if(m<=-4) return {txt:'安魂低语', desc:'整条街都很安静，回响几乎听不见呼吸。', color:'#7fb8d8'};
+  if(m<=-1) return {txt:'雨势渐缓', desc:'空气里有种难得的安宁，连路灯都柔和了。', color:'#9fd0b0'};
+  if(m<=2)  return {txt:'平静如常', desc:'街角的回响，不咸不淡地重复着旧日。', color:'#b0b8c0'};
+  if(m<=4)  return {txt:'回响躁动', desc:'你打散的回响越多，这片街区的执念就越躁动。', color:'#e0a060'};
+  return {txt:'锈雨将至', desc:'整条街的回响都醒了，它们在暗处盯着你。', color:'#d06050'};
+}
+function zoneHint(){ return moodState().desc; }
+function eventWeight(ev){
+  let w = (ev.w!=null? ev.w : 10);
+  const m = S._mood||0, a = S._acts||{}, lg = S._legacyMood||0;
+  const k = eventKind(ev);
+  if(k==='fight') w *= 1 + 0.25*m;
+  if(k==='trap')  w *= 1 + 0.2*Math.max(0,m);
+  if(k==='story') w *= 1 - 0.18*m;
+  if(k==='loot')  w *= 1 + 0.12*(a.loot||0) + (m>0? 0.1*m : 0);
+  if(k==='story' && (a.comfort||0)>=2) w *= 1.3;
+  if(k==='fight' && (a.smite||0)>=2)   w *= 1.3;
+  if(k==='loot'  && (a.loot||0)>=2)    w *= 1.3;
+  if(k==='fight' && lg>0) w *= 1 + 0.05*lg;
+  if(k==='story' && lg<0) w *= 1 - 0.05*lg;
+  return Math.max(1, Math.round(w));
+}
+function pickWeightedEvent(pool){
+  return weightedPick(pool.map(e=>[e, eventWeight(e)]));
+}
+function recordAct(kind, ok){
+  const a = S._acts = S._acts||{comfort:0,smite:0,loot:0};
+  const k = kind||'flavor';
+  if(k==='story'){ a.comfort++; if(ok) S._mood = moodClamp((S._mood||0)-1); }
+  else if(k==='fight'||k==='trap'){ a.smite++; S._mood = moodClamp((S._mood||0)+1); }
+  else if(k==='loot'){ a.loot++; }
+  if(!ok && k!=='flavor') S._mood = moodClamp((S._mood||0)+1);
+}
+function zoneStateHtml(){
+  const z = moodState();
+  return `<div class="zone-bar" style="border-color:${z.color}"><span class="zone-dot" style="background:${z.color}"></span><b>街区状态 · ${z.txt}</b><span class="zone-desc">${esc(z.desc)}</span></div>`;
+}
+function renderSpecialEncounter(l){
+  const m = S._mood||0;
+  const v=$('view-scene');
+  if(m>=5){
+    v.innerHTML = `<div class="panel">
+      <div class="scene-chap">随机际遇 · 回响围剿 · 第 ${S.run} 周目</div>
+      <div class="scene-title">⚔️ 回响围剿</div>
+      <div class="scene-tagline">你打散的回响太多，整片街区的执念聚成了怒潮——它们不让你走。</div>
+      <div class="story">街角的雾气骤然凝实，无数半透明的身影从锈红里浮出来，将你团团围住。它们空洞的眼窝里，映着同一个倒影：你。</div>
+      <div class="story">领头的「归档者·K」数据流滚动：\n“乱码清除协议 · 启动。\n作为补偿——本次战利，翻倍。”它甚至礼貌地补了一句。</div>
+      <div class="choices">
+        <div class="choice" id="sp-fight"><span class="c-tag">【迎战】</span>迎战围剿（战利翻倍）</div>
+        <div class="choice" id="sp-run"><span class="c-tag">【遁走】</span>撕一张数据帘幕遁走（放弃战利，街区冷却）</div>
+      </div></div>`;
+    showView('scene');
+    $('view').scrollTop=0; window.scrollTo({top:0});
+    $('sp-fight').onclick=()=>{
+      const e=ENEMIES.keeper;
+      S.gold += e.gold; gainXp(e.xp);
+      toastBanner('战利翻倍','已预支【归档者·K】双倍战利的一部分','#ffd27a');
+      S._locReturn = l.id;
+      S._mood = moodClamp(m-4);
+      startCombat('keeper','__loc__','death',{opMode:false});
+    };
+    $('sp-run').onclick=()=>{ S._mood = moodClamp(m-2); toastBanner('遁走','你避开了围剿，街区的躁动稍稍平息','#9fd0b0'); renderLocation(locById(l.id)); };
+    return;
+  }
+  v.innerHTML = `<div class="panel">
+    <div class="scene-chap">随机际遇 · 记忆洪流 · 第 ${S.run} 周目</div>
+    <div class="scene-title">🌊 记忆洪流</div>
+    <div class="scene-tagline">你倾听的回响太多，她们的记忆汇成了洪流——这一次，轮到它们向你倾泻。</div>
+    <div class="story">你放轻脚步，整条街的回响竟然都安静下来，朝你“望”过来。</div>
+    <div class="story">然后，记忆涌来了。无数声音重叠成潮水：\n“替我……告诉老马，我那天不是想跑……”\n“我把女儿的伞藏在了钟楼第三格……”\n“我们不是怪物，我们只是……还没说完。”</div>
+    <div class="story">潮水退去，你胸口发烫。你记住了这座城市的一部分——那些被埋葬的、普通人的愿望。</div>
+    <div class="choices">
+      <div class="choice" id="sp-cont"><span class="c-tag">【收下】</span>收下这段记忆（回响碎片 +3）</div>
+    </div></div>`;
+  showView('scene');
+  $('view').scrollTop=0; window.scrollTo({top:0});
+  $('sp-cont').onclick=()=>{
+    S.echoes += 3; S._memoryVisions = (S._memoryVisions||0)+1; S._mood = moodClamp(m+4);
+    toastBanner('记忆洪流','你记下了这座城市被埋葬的心愿，回响碎片 +3','#7fb8d8');
+    renderLocation(locById(l.id));
+  };
+}
 function renderRandomEvent(l){
+  const _mood = S._mood||0;
+  if(_mood>=5 || _mood<=-5){ renderSpecialEncounter(l); return; }
   const pool = EVENTS[l.id] || EVENTS.street;
-  const ev = pool[rand(pool.length)];
+  const ev = pickWeightedEvent(pool);
+
   const v=$('view-scene');
   v.innerHTML = `<div class="panel">
     <div class="scene-chap">随机际遇 · ${esc(l.name)} · 第 ${S.run} 周目</div>
     <div class="scene-title">${ev.ic} ${esc(ev.name)}</div>
+    ${zoneStateHtml()}
     <div class="dice-log" id="dice-log"></div>
     <div class="story">${esc(ev.desc)}</div>
     <div class="choices">
       <div class="choice" id="ev-go"><span class="c-tag">【${ev.check? '判定' : '行动'}】</span>${esc(ev.action||'上前试一试')}${ev.check? `<span class="c-desc">难度 ${ev.check.dc} · ${ev.check.stat==='str'?'力量':ev.check.stat==='agi'?'敏捷':ev.check.stat==='int'?'智力':ev.check.stat==='cha'?'魅力':ev.check.stat==='con'?'体质':'感知'}</span>`:''}</div>
+      <div class="choice" id="ev-soothe"><span class="c-tag">【倾听】</span>静心听一听这座城的低语（-1 回响碎片 · 安抚街区）</div>
+      <div class="choice" id="ev-provoke"><span class="c-tag">【挑衅】</span>向黑暗放一句狠话（-1 命运点 · 激怒街区）</div>
       <div class="choice" id="ev-leave">绕开走人，不管闲事</div>
     </div></div>`;
   showView('scene');
   $('view').scrollTop=0; window.scrollTo({top:0});
-  $('ev-leave').onclick=()=>{ renderLocation(locById(l.id)); };
+  $('ev-leave').onclick=()=>{ recordAct('flavor', true); renderLocation(locById(l.id)); };
   $('ev-go').onclick=()=>{
-    if(!ev.check){ applyEventReward(ev, true); showEventResult(ev, ev.succ, l); return; }
+    if(!ev.check){ applyEventReward(ev, true); recordAct(eventKind(ev), true); showEventResult(ev, ev.succ, l); return; }
     const res = runCheck(ev.check.stat, ev.check.dc, '际遇判定');
     diceLog(res);
     const success = res.success;
     applyEventReward(ev, success);
+    recordAct(eventKind(ev), success);
     showEventResult(ev, success? ev.succ : ev.fail, l);
   };
+  const _so=$('ev-soothe'); if(_so) _so.onclick=()=>{ if((S.echoes||0)<1){ toastBanner('回响碎片不足','静心倾听需要 1 枚回响碎片','#ff9c8c'); return; } S.echoes-=1; S._mood=moodClamp((S._mood||0)-2); toastBanner('安魂低语','你静心倾听了街区的低语，躁动平息了些','#7fb8d8'); renderLocation(locById(l.id)); };
+  const _pr=$('ev-provoke'); if(_pr) _pr.onclick=()=>{ if((S.fate||0)<1){ toastBanner('命运点不足','向黑暗挑衅需要 1 点命运','#ff9c8c'); return; } S.fate-=1; S._mood=moodClamp((S._mood||0)+2); toastBanner('锈雨将至','你向黑暗掷了句狠话，回响躁动起来','#d06050'); renderLocation(locById(l.id)); };
 }
 function showEventResult(ev, r, l){
   const v=$('view-scene');
