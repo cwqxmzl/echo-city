@@ -1089,6 +1089,20 @@ step('第二十三轮：探索事件权重动态化（行为驱动/可视化/干
   ok('无运行时错误(第二十三轮)', errors.length === 0);
 });
 
+
+step('第二十四轮：箱庭天气时间（四时段/六天气/连锁预测/天气事件）', () => {
+  G('boot(); newRun(); applyClass("sword")');
+  ok('时段状态', G('(function(){ S._phase=0; var a=phaseState().t; S._phase=3; var b=phaseState().t; S._phase=0; return a==="清晨"&&b==="深夜"; })()'));
+  ok('天气状态', G('(function(){ S._weather="rain"; var a=weatherState().t; S._weather="echo"; var b=weatherState().t; S._weather="calm"; return a==="锈雨"&&b==="回响潮"; })()'));
+  ok('判定修正（清晨+3/深夜-6/锈雨-5）', G('(function(){ S._phase=0;S._weather="calm";var a=zoneCheckMod(); S._phase=3;var b=zoneCheckMod(); S._phase=1;S._weather="rain";var c=zoneCheckMod(); S._phase=0;S._weather="calm"; return a===3&&b===-6&&c===-5; })()'));
+  ok('命中修正（正午+10/浓雾-10）', G('(function(){ S._phase=1;S._weather="calm";var a=zoneHitMod(); S._phase=0;S._weather="fog";var b=zoneHitMod(); S._phase=0;S._weather="calm"; return a===10&&b===-10; })()'));
+  ok('掉落加成（深夜2.0/锈雨1.2）', G('(function(){ S._phase=3;S._weather="calm";var a=zoneLootMult(); S._phase=0;S._weather="rain";var b=zoneLootMult(); S._phase=0;S._weather="calm"; return a===2.0&&b===1.2; })()'));
+  ok('时段推进回卷', G('(function(){ S._phase=3; advanceClock(); var p=S._phase; return p===0; })()'));
+  ok('天气专属事件入池+状态条', G('(function(){ S._weather="rain"; S._phase=0; renderRandomEvent({id:"street",name:"旧日街区"}); var h=document.getElementById("view-scene").innerHTML; S._weather="calm"; return h.indexOf("weather-bar")>=0; })()'));
+  ok('NPC环境文本（深夜街角回响）', G('(function(){ S._phase=3; S._weather="calm"; var f=wxFlavor("c1_e1a"); S._phase=0; return f.indexOf("灯下")>=0; })()'));
+  ok('无运行时错误(第二十四轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
