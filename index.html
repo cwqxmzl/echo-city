@@ -6688,6 +6688,14 @@ const TAG_POOL = [
   {id:'luck',    n:'词条·天运', g:'A', desc:'大成功区间 +6（更容易大成功）', fx:'luck', set:'crit',lore:'有人把一辈子的好运都押在了最后一掷上。'},
   {id:'vamp',    n:'词条·噬魂', g:'A', desc:'攻击恢复 20% 造成伤害的生命', fx:'vamp', set:'leech',lore:'吞噬是为了不消散。它只是，太怕消失了。'},
   {id:'loot',    n:'词条·聚宝', g:'A', desc:'撤离奖励 +50%', fx:'loot', set:'wealth',lore:'守财奴的执念：带不走，也要攥在手里。'},
+  {id:'thrust',  n:'词条·突刺', g:'D', desc:'普通攻击伤害 +18%', fx:'punch', set:'punch',lore:'一往无前的冲锋者，把最后的锐气凝成这一刺。'},
+  {id:'agile',   n:'词条·轻盈', g:'D', desc:'闪避 +8，闪避成功 30% 概率反击', fx:'agile', set:'swift',lore:'曾轻盈如风的人，不愿被这片锈土留住。'},
+  {id:'mend',    n:'词条·愈合', g:'D', desc:'受击后回复 3% 最大生命', fx:'regen', set:'regen',lore:'一只被治好的伤鸟的执念：疼过的地方，会长出新的羽毛。'},
+  {id:'spirit',  n:'词条·幻灵', g:'D', desc:'战斗开始召唤幻灵（开场对敌造成伤害）', fx:'summon', set:'summon',lore:'一缕未散的执念，愿化作影子陪你并肩。'},
+  {id:'heavy',   n:'词条·重击', g:'B', desc:'普通攻击伤害 +18%，破防削减 +30%', fx:'punch', set:'punch',lore:'抡下最后一锤的铁匠，把余力全敲进了这枚词条。'},
+  {id:'afterimage', n:'词条·残影', g:'A', desc:'闪避 +12，闪避成功 40% 概率反击', fx:'agile', set:'swift',lore:'身影快到连自己都追不上的人，留下了一串不肯停下的影子。'},
+  {id:'vital',   n:'词条·气血', g:'A', desc:'受击后回复 6% 最大生命', fx:'regen', set:'regen',lore:'气血两旺的武师，把生机刻进了最后一口气。'},
+  {id:'wraith',  n:'词条·执念', g:'A', desc:'幻灵更强：开场伤害翻倍，且每回合助战', fx:'summon', set:'summon',lore:'最深的执念从不消散——它只是，换了一种方式存在。'},
   {id:'omni',    n:'词条·万般', g:'S', desc:'全能：金币+15%、减伤10%、暴击+10%、大成功+2、撤离奖励+15%', fx:'omni', set:'omni',lore:'万般皆空，唯执念不空。它什么都记得。'}
 ];
 const TAG_ORDER = ['D','B','A','S'];
@@ -6708,7 +6716,11 @@ const TAG_SETS = {
   wealth:{n:'财源滚滚', desc:'探索金币 +25%'},
   guard:{n:'不动如山', desc:'受击伤害 -8%'},
   crit:{n:'刀刀烈火', desc:'暴击伤害 +35%'},
-  leech:{n:'嗜血成性', desc:'吸血效果 +12%'}
+  leech:{n:'嗜血成性', desc:'吸血效果 +12%'},
+  punch:{n:'破军无双', desc:'普通攻击伤害 +18%'},
+  swift:{n:'流光幻影', desc:'闪避 +8，闪避成功 30% 概率反击'},
+  regen:{n:'回春不息', desc:'受击后回复生命'},
+  summon:{n:'幻灵助阵', desc:'战斗开始召唤幻灵，每回合助战'}
 };
 function tagSetActive(){
   const c={};
@@ -9046,6 +9058,7 @@ function startCombat(enemyId, winNode, loseNode, opts){
     CB.tough = Math.max(0, CB.tough - Math.round(pd/2));
     combatLog(`🐾 灵兽·雷光幼犬抢先扑出，一记雷光爪撕在守卫身上——伤害 ${pd}，韧性 -${Math.round(pd/2)}。`);
   }
+  if(summonOpenStrike()>0 && CB.hp<=0){ return; }
   renderCombat();
   /* 机制：敌人 spd 参与先手判定——spd 越高越可能抢先进攻
      搜打撤模式走它自己的「被伏击先手」逻辑，不重复判定 */
@@ -9136,6 +9149,7 @@ function combatLog(html, cls){
 function combatPlayerAttack(heavy){
   if(!CB) return;
   CB.turn++;
+  if(summonAssistTurn()>0 && CB.hp<=0){ return; }
   // 斩杀天赋
   if(S.talents.includes('feast') && CB.hp <= CB.max*0.30){
     combatLog(`「致命盛宴」发动！对低血量目标执行斩杀！`, 'crit');
@@ -9166,6 +9180,7 @@ function combatPlayerAttack(heavy){
   if(crit && tagSetActive().includes('crit')) dmg = Math.round(dmg*1.35);   // 词条流派·刀刀烈火：暴击伤害 +35%
   if(crit && setBonus().includes('wuxia')) dmg = Math.round(dmg*1.2);       // 装备套装·武侠：暴击伤害 +20%
   if(CB.buff.rage>0) dmg = Math.round(dmg*1.25);
+  if(tagSetActive().includes('punch')) dmg = Math.round(dmg*1.18);   // 词条流派·破军无双：普攻 +18%
   if(S.talents.includes('eye')) dmg += 10;
   CB.hp -= dmg;
   combatLog(`${ENEMIES[CB.id].name}闷哼着被击退，数据碎屑如墨般溅开——<b>${dmg}</b> 点伤害！`, 'pl');
@@ -9278,6 +9293,40 @@ function foeMove(e){
   const map={'回响幽灵':'尖啸着挥出半透明的利爪','数据腐化者':'乱码眼瞳一闪，甩出狰狞的数据锁链','归档者·K':'机械臂嗡鸣，弹出一柄数据长刀当头劈落','黑塔帮暴徒':'抡起乱码钢管直砸你的面门','黑塔帮枪手':'端起能量枪，三点连射封锁你的退路','守望者·裁决':'圣光在剑锋上凝成白焰，一剑斩落','回响之核':'无数只眼睛同时睁开，光芒如潮水向你压下','灰袍商人':'慢条斯理地掸了掸袖子，指尖却凝出一道寒光'};
   return map[e.name] || '低吼着扑了上来';
 }
+function swiftCounter(){
+  if(!CB || !tagSetActive().includes('swift')) return;
+  const p = equippedTagsList().some(t=>t.id==='afterimage') ? 0.4 : 0.3;
+  if(rand(100)/100 > p) return;
+  const cd = Math.max(1, Math.round(S.stats.str*0.8 + rint(1,5)));
+  CB.hp -= cd;
+  combatLog(`【流光幻影】残影借势反打——你抓住空隙回身一刺，${ENEMIES[CB.id].name}吃下 ${cd} 点反击伤害！`, 'crit');
+  if(CB.hp<=0) combatVictory();
+}
+function healOnHit(dmg){
+  if(!hasTagFx('regen') || !dmg || dmg<=0) return 0;
+  const rg = Math.max(1, Math.round(S.maxHp * (equippedTagsList().some(t=>t.id==='vital')?0.06:0.03)));
+  const before = S.hp;
+  S.hp = Math.min(S.maxHp, S.hp + rg);
+  if(S.hp>before) combatLog(`【词条·回春】受击的瞬间，一缕暖意自体内涌出——回复 ${S.hp-before} 点生命。`, 'ok');
+  return S.hp - before;
+}
+function summonOpenStrike(){
+  if(!CB || !tagSetActive().includes('summon')) return 0;
+  const hasWraith = equippedTagsList().some(t=>t.id==='wraith');
+  const sc = Math.max(1, Math.round((hasWraith? S.stats.str*1.2+6 : S.stats.str*0.7+4)));
+  CB.hp -= sc;
+  combatLog(`【幻灵助阵】一缕执念凝成虚影，在战斗打响的瞬间抢先出手——对 ${ENEMIES[CB.id].name} 造成 ${sc} 点伤害！`, 'crit');
+  if(CB.hp<=0) combatVictory();
+  return sc;
+}
+function summonAssistTurn(){
+  if(!CB || CB.hp<=0 || !tagSetActive().includes('summon')) return 0;
+  const sc2 = Math.max(1, Math.round((equippedTagsList().some(t=>t.id==='wraith')? S.stats.str*0.8+4 : S.stats.str*0.4+3)));
+  CB.hp -= sc2;
+  combatLog(`【幻灵助战】虚影环绕着你，对 ${ENEMIES[CB.id].name} 补上 ${sc2} 点伤害。`, 'ally');
+  if(CB.hp<=0) combatVictory();
+  return sc2;
+}
 function combatEnemyTurn(){
   if(!CB) return;
   if(CB.frozen){ CB.frozen=false; combatLog(`${ENEMIES[CB.id].name}被冻结，无法行动！`, 'ok'); endEnemyTurn(); return; }
@@ -9286,11 +9335,13 @@ function combatEnemyTurn(){
   const mod = e.atk;
   const total = roll + mod;
   let need = 50 + Math.round(S.stats.agi*0.8) + (S.talents.includes('blink')&&CB.turn<=1?8:0);
+  if(hasTagFx('agile')) need += equippedTagsList().some(t=>t.id==='afterimage')?12:8;   // 词条流派·流光幻影：闪避 +8/12
   if(CB.buff.haste) need += 20;
   let hit = total>=need;
   combatLog(`${e.name}${foeMove(e)}——<small>【1d100 = ${roll} + ${mod} = ${total} ／ 闪避 ${need}】</small>`, 'en');
   if(!hit){
     combatLog(`你侧身让开——${e.name}的攻击擦着衣角掠过，掀起一片数据尘埃。<small>【闪避成功】</small>`, 'ok');
+    swiftCounter();
     endEnemyTurn(); return;
   }
   const target = pickEnemyTarget();
@@ -9312,6 +9363,7 @@ function combatEnemyTurn(){
     if(S.talents.includes('eternal')) dmg = Math.round(dmg*0.5);     // 「永恒防御 · 钢铁之躯·金」：受击 -50%
     dmg = Math.max(1, dmg);
     S.hp -= dmg;
+    healOnHit(dmg);
     gainEcho(8); gainBp(1); updateHUD();
     combatLog(`${e.name}的攻势咬进你的防线，你闷哼着后退半步——<b>${dmg}</b> 点伤害！（生命 ${Math.max(0,S.hp)}/${S.maxHp}）`, 'en');
     if(S.talents.includes('eternal')){ const rb = Math.max(1, Math.round(e.atk*0.3)); CB.hp -= rb; combatLog(`【反甲·金】「永恒防御」把 ${e.name} 的攻击原样弹了回去——反弹 ${rb} 点伤害！`, 'crit'); if(CB.hp<=0){ combatVictory(); return; } }
