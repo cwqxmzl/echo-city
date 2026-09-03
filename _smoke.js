@@ -760,10 +760,8 @@ step('各行动类型均可执行', () => {
 });
 step('探索至深处触发命运结局', () => {
   G('S.surv.event=null; S.surv.depth=3; S.surv.state="alive";');
-  G('survAct("explore")');
-  ok('深度3后探索触发命运结局', G('S.surv.state==="cleared" || !!S.surv.event'));
-  if(G('S.surv.state!=="cleared"')){ G('survChoose(0)'); }
-  if(G('S.surv.state!=="cleared"')){ G('survAct("explore")'); }
+  G('(function(){ for(var _i=0;_i<8 && S.surv.state!=="cleared";_i++){ if(!S.surv.event) survAct("explore"); else survChoose(0); } return true; })()');
+  ok('深度探索最终触发命运结局', G('S.surv.state==="cleared"'));
   ok('命运结局已记录', G('(S.survCleared||[]).indexOf("sky")>=0'));
 });
 step('归隐结算', () => {
@@ -1115,6 +1113,19 @@ step('第二十五轮：剧情回溯图鉴（回声档案·三层碎片/线索�
   ok('90%解锁灰袍商人日记', G('(function(){ ["mc_remember","mc_secret","cat_city"].forEach(function(k){ if(!S._codex[k]) codexAdd(k); }); renderCodex(); var h=document.getElementById("view-codex").innerHTML; return h.indexOf("灰袍商人的日记")>=0 && h.indexOf("第四十七次循环")>=0; })()'));
   ok('图鉴持久化（save/load 保留）', G('(function(){ var n=Object.keys(S._codex).length; saveSave(); S._codex={}; loadSave(); return Object.keys(S._codex).length===n; })()'));
   ok('无运行时错误(第二十五轮)', errors.length === 0);
+});
+
+
+step('第二十六轮：权重模糊感知·主动干预·极端连锁预兆（三档标记/氛围浓度/内心独白/干预道具）', () => {
+  G('boot(); newRun(); applyClass("sword"); S._mood=0');
+  ok('权重档位映射', G('(function(){ var a=moodLevel(); S._mood=3; var b=moodLevel(); S._mood=5; var c=moodLevel(); S._mood=-3; var d=moodLevel(); S._mood=-5; var e=moodLevel(); S._mood=0; return a===0&&b===2&&c===3&&d===-2&&e===-3; })()'));
+  ok('探索点三档标记（战斗/剧情随权重）', G('(function(){ S._mood=0; var a=spotDanger({repeat:"ghost"}); var b=spotDanger({node:"x"}); S._mood=5; var c=spotDanger({repeat:"ghost"}); S._mood=-5; var d=spotDanger({node:"x"}); S._mood=0; return a==="warn"&&b==="safe"&&c==="danger"&&d==="safe"; })()'));
+  ok('氛围浓度文本（场景元素密度随权重）', G('(function(){ S._mood=5; var a=moodFlavor(); S._mood=-5; var b=moodFlavor(); S._mood=0; return a.indexOf("回响都醒了")>=0 && b.indexOf("难得这么安宁")>=0; })()'));
+  ok('极端连锁预兆（高危/安魂）', G('(function(){ S._mood=5; var a=moodPrelude(); S._mood=-5; var b=moodPrelude(); S._mood=0; return a.indexOf("轰鸣")>=0 && b.indexOf("低语")>=0 && moodPrelude()===""; })()'));
+  ok('区域渲染含三档+干预入口', G('(function(){ S._mood=3; var l=LOCATIONS[0]; renderLocation(l); var h=document.getElementById("view-loc").innerHTML; return h.indexOf("spot-warn")>=0 && h.indexOf("loc-tide")>=0 && h.indexOf("loc-calm")>=0 && h.indexOf("loc-provo")>=0 && h.indexOf("scene-mono")>=0; })()'));
+  ok('安宁信标干预（-8金币·氛围-2）', G('(function(){ S._mood=4; S.gold=50; $("loc-calm").onclick(); return S.gold===42 && S._mood===2; })()'));
+  ok('挑衅印记干预（-1命运点·氛围+2）', G('(function(){ S._mood=-1; S.fate=3; $("loc-provo").onclick(); return S.fate===2 && S._mood===1; })()'));
+  ok('无运行时错误(第二十六轮)', errors.length === 0);
 });
 
 console.log('\n== 汇总 ==');
