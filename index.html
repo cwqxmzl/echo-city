@@ -138,6 +138,14 @@ h1.title-name{
 .scene-tagline{font-size:12px;color:var(--ink-faint);margin-bottom:14px}
 .zone-bar{display:flex;align-items:center;gap:8px;margin:10px 0 14px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:13px;background:rgba(20,22,30,.55);line-height:1.5}
 .weather-bar{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:13px;background:rgba(20,22,30,.55);line-height:1.5}
+.spot-item.spot-safe{border-color:rgba(90,167,232,.35)}
+.spot-item.spot-warn{border-color:rgba(240,160,76,.5)}
+.spot-item.spot-danger{border-color:rgba(255,106,106,.65);box-shadow:0 0 10px rgba(255,106,106,.12)}
+.scene-flavor{font-size:13px;color:#b6bcc8;line-height:1.7;margin:6px 0 10px}
+.scene-mono{font-size:13px;font-style:italic;color:#8a93a6;line-height:1.7;margin:4px 0 8px}
+.prelude{font-size:12px;padding:8px 12px;border-radius:8px;margin:8px 0;line-height:1.6}
+.prelude.danger{color:#ffb3a0;background:rgba(255,106,106,.08);border:1px solid rgba(255,106,106,.35)}
+.prelude.story{color:#a8d8ff;background:rgba(90,167,232,.08);border:1px solid rgba(90,167,232,.35)}
 .codex-bar{height:10px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin:14px 0 6px}
 .codex-fill{height:100%;background:linear-gradient(90deg,#5aa7e8,#b78df0);border-radius:6px;transition:width .4s}
 .codex-pct{color:#9aa2b0;font-size:12px;margin-bottom:14px}
@@ -10779,23 +10787,31 @@ function renderLocation(l){
     <div class="scene-chap">箱庭区域 · 第 ${S.run} 周目</div>
     <div class="scene-title">${l.icon} ${esc(l.name)}</div>
     <div class="scene-tagline">${esc(l.desc)}</div>
+    ${moodFlavor()}
+    ${moodMono()}
+    ${moodPrelude()}
     ${weatherBarHtml()}
     ${zoneStateHtml()}
     <div class="spot-list">`;
   l.spots.forEach(s=>{
     const done = spotDone(l,s);
     const locked = spotLocked(l,s);
-    html += `<div class="spot-item ${done?'done':''}" data-spot="${s.key||s.node||s.repeat}">
+    const _dgr = done||locked? '' : spotDanger(s);
+    const _tag = locked? `🔒 ${esc(s.needTxt||'')}` : done? '✓' : (_dgr==='danger'? '⚠️ 高危' : _dgr==='warn'? '🟡 警戒' : '🟢 安全');
+    html += `<div class="spot-item ${done?'done':''} ${_dgr?('spot-'+_dgr):''}" data-spot="${s.key||s.node||s.repeat}">
       <div class="sp-ic">${s.ic}</div>
       <div class="sp-main">
         <div class="sp-name">${esc(s.name)}</div>
         <div class="sp-desc">${done? '· 已探索 ·' : esc(s.desc)}</div>
       </div>
-      ${locked? `<span class="sp-tag">🔒 ${esc(s.needTxt||'')}</span>` : (done? '<span class="sp-tag">✓</span>' : (s.once? '<span class="sp-tag">一次性</span>' : (s.repeat? '<span class="sp-tag">可反复</span>' : '<span class="sp-tag">探索</span>')))}
+      <span class="sp-tag">${_tag}</span>
     </div>`;
   });
   html += `</div>
     <div class="choices">
+      <div class="choice" id="loc-tide"><span class="c-tag">【潮汐】</span>回响潮汐 · 彻底打乱街区氛围（-2 回响碎片）</div>
+      <div class="choice" id="loc-calm"><span class="c-tag">【安宁】</span>安宁信标 · 安抚街区，危险下降（-8 金币 · 氛围-2）</div>
+      <div class="choice" id="loc-provo"><span class="c-tag">【挑衅】</span>挑衅印记 · 引动回响，战斗与掉落提升（-1 命运点 · 氛围+2）</div>
       <div class="choice" id="loc-rest"><span class="c-tag">【休整】</span>原地休整，睡到次日清晨（回复生命）</div>
       <div class="choice" id="loc-back"><span class="c-tag">【地图】</span>返回箱庭地图</div>
     </div></div>`;
@@ -10809,6 +10825,9 @@ function renderLocation(l){
       activateSpot(l,s);
     };
   });
+  $('loc-tide').onclick=()=>{ if((S.echoes||0)<2){ toastBanner('回响碎片不足','需要 2 枚回响碎片','#ff6b6b'); return; } S.echoes-=2; S._mood=moodClamp(rand(13)-6); toastBanner('回响潮汐','街区氛围彻底打乱，新的变数正在成形','#b78df0'); renderLocation(l); };
+  $('loc-calm').onclick=()=>{ if(S.gold<8){ toastBanner('金币不足','需要 8 金币','#ff6b6b'); return; } S.gold-=8; S._mood=moodClamp((S._mood||0)-2); toastBanner('安宁信标','街区氛围趋向安宁，危险下降','#5aa7e8'); renderLocation(l); };
+  $('loc-provo').onclick=()=>{ if((S.fate||0)<1){ toastBanner('命运点不足','需要 1 命运点','#ff6b6b'); return; } S.fate-=1; S._mood=moodClamp((S._mood||0)+2); toastBanner('挑衅印记','回响被引动，战斗与掉落同步提升','#ff8a6b'); renderLocation(l); };
   $('loc-rest').onclick=()=>{ S._phase=0; S.hp = Math.max(1, Math.min(S.maxHp, S.hp + Math.round(S.maxHp*0.25))); S.mp = Math.min(S.maxMp, S.mp + Math.round(S.maxMp*0.2)); toastBanner('一夜好眠','你睡到了次日清晨，生命与法力得到恢复','#b8cfe0'); renderLocation(l); };
   $('loc-back').onclick=()=>{ renderMap(); };
   $('view').scrollTop=0; window.scrollTo({top:0});
@@ -10840,7 +10859,39 @@ function applyEventReward(ev, success){
 
 
 
+
+/* ---------- 权重模糊感知 · 主动干预 · 极端连锁预兆（第二十六轮） ---------- */
+function moodLevel(){ const m=S._mood||0; return m>=4?3 : m>=2?2 : m<=-4?-3 : m<=-2?-2 : 0; }
+function spotDanger(s){
+  const lv=moodLevel();
+  const base = (s.repeat && ENEMIES[s.repeat]) ? 1 : 0;
+  const eff = base + (lv>=2?1 : lv<=-2?-1 : 0);
+  return eff>=2?'danger' : eff>=1?'warn' : 'safe';
+}
+function moodFlavor(){
+  const m=S._mood||0;
+  if(m>=4) return '破碎的回响残影几乎铺满街角，废弃的武器残骸散了一地，空气里飘着躁动的气息——整条街的回响都醒了。';
+  if(m>=2) return '破碎的回响残影在墙根游荡，几处废弃的武器残骸还没人收走。街口隐约传来低沉的嘶吼。';
+  if(m<=-4) return '路灯下多了几道徘徊的人形轮廓，几间店铺难得敞着门。空气里几乎听不见回响的杂音，这座城市难得这么安宁。';
+  if(m<=-2) return '街角安静得出奇，几道人形轮廓在灯下徘徊，像是想跟你搭话。';
+  return '街道以寻常的姿态伸向远方，偶尔有细碎的光点在窗后晃动。';
+}
+function moodMono(){
+  const m=S._mood||0;
+  if(m>=4) return '<div class="scene-mono">你按了按胸口。这条街已经绷到极限了——再压一下，怕是要炸开。</div>';
+  if(m>=2) return '<div class="scene-mono">总觉得哪里不对。今天的回响，比昨天躁。</div>';
+  if(m<=-4) return '<div class="scene-mono">难得这么安静。你几乎想在这条街多待一会儿。</div>';
+  if(m<=-2) return '<div class="scene-mono">安静得不太真实。不过……这趟能省点心。</div>';
+  return '';
+}
+function moodPrelude(){
+  const m=S._mood||0;
+  if(m>=4) return '<div class="prelude danger">⚠ 远处传来阵阵轰鸣，空气开始莫名震颤——有什么东西，正循着躁动聚拢过来。</div>';
+  if(m<=-4) return '<div class="prelude story">空气中漂浮着细碎的低语，像很多声音在同时说同一句话——有什么被遗忘的故事，正要浮现。</div>';
+  return '';
+}
 /* ---------- 剧情回溯图鉴 · 回声档案（第二十五轮） ---------- */
+
 const CODEX_ITEMS = {
   lw_key:{ic:'🗝', name:'半把钥匙', line:'林晚', hint:'安抚街角的回响，接过她递来的钥匙',
     desc:'锈迹里缠着一根发绳。它不是在等人开门，是在等一个人回来。'},
