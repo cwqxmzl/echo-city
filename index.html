@@ -137,6 +137,8 @@ h1.title-name{
 }
 .scene-tagline{font-size:12px;color:var(--ink-faint);margin-bottom:14px}
 .zone-bar{display:flex;align-items:center;gap:8px;margin:10px 0 14px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:13px;background:rgba(20,22,30,.55);line-height:1.5}
+.weather-bar{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:13px;background:rgba(20,22,30,.55);line-height:1.5}
+.weather-bar .weather-fc{margin-left:auto;color:#9aa2b0;font-size:12px}
 .zone-bar .zone-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .zone-bar .zone-desc{margin-left:auto;color:#9aa2b0;font-size:12px}
 .story{
@@ -7697,7 +7699,7 @@ const S = {
   favor:{}, trust:{},
   roster:[], party:[],
   shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
-  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0,
+  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0, _phase:0, _weather:'calm',
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
@@ -7987,6 +7989,7 @@ function talentByGrade(g){
 /* ---------- 每局初始化 ---------- */
 function newRun(){
   S._mood = moodClamp(Math.round((S._legacyMood||0)*0.5)); S._acts = {comfort:0,smite:0,loot:0};
+  S._phase = rand(4); S._weather = ['calm','calm','fog','rain'][rand(4)];
   S.stats = newStats();
   if(S.permaStat) for(const k in S.permaStat) S.stats[k]+=(S.permaStat[k]||0);
   if((S.totalRuns||0)>=20 && !(S._milestones||[]).includes('r20')){ S._milestones=S._milestones||[]; S._milestones.push('r20'); for(const k in S.stats) S.stats[k]+=2; }
@@ -8316,7 +8319,7 @@ function runCheck(stat, dc, label){
   if(roll>=98 && S.talents.includes('fate')){ rerolled=true; roll=roll100(); }
   const crit = roll<=critRange();
   const fumb = roll>=98;  // 天命护体：大失败只余 2%
-  const mod = statValue(stat) + checkBonus(stat);
+  const mod = statValue(stat) + checkBonus(stat) + zoneCheckMod();
   const total = roll + mod;
   let success = crit ? true : (total>=effDc);
   if(!success && !crit && h.fail>=3 && !rerolled && !fumb){
@@ -8542,6 +8545,7 @@ function renderScene(n){
       ${S._pendingTransit? `<div class="scene-transit">${esc(S._pendingTransit)}</div>`:''}
       <div class="dice-log" id="dice-log"></div>
       <div class="story">${fillText(n.text)}</div>
+      ${wxFlavor(n.id)}
       <div class="choices" id="scene-choices"></div>
     </div>`;
   if(S._pendingDice){ const dl0 = $('dice-log'); if(dl0){ dl0.innerHTML=S._pendingDice; dl0.classList.add('show'); } S._pendingDice=null; }
@@ -8961,7 +8965,7 @@ function combatPlayerAttack(heavy){
   if(CB.buff.aim){ CB.buff.aim=false; }
   const mod = combatBonus();
   const total = roll + mod;
-  let need = CB.dc + (heavy?15:0) - (CB.opBonus||0);
+  let need = CB.dc + (heavy?15:0) - (CB.opBonus||0) - zoneHitMod();
   if(CB.buff.haste) need -= 20;
   if(CB.buff.aim===false && total<need && false){} // no-op
   const hit = crit || total>=need || (CB.buff.aim===false && roll>=0 && roll===100);
@@ -10756,6 +10760,7 @@ function renderLocation(l){
     <div class="scene-chap">箱庭区域 · 第 ${S.run} 周目</div>
     <div class="scene-title">${l.icon} ${esc(l.name)}</div>
     <div class="scene-tagline">${esc(l.desc)}</div>
+    ${weatherBarHtml()}
     ${zoneStateHtml()}
     <div class="spot-list">`;
   l.spots.forEach(s=>{
@@ -10772,6 +10777,7 @@ function renderLocation(l){
   });
   html += `</div>
     <div class="choices">
+      <div class="choice" id="loc-rest"><span class="c-tag">【休整】</span>原地休整，睡到次日清晨（回复生命）</div>
       <div class="choice" id="loc-back"><span class="c-tag">【地图】</span>返回箱庭地图</div>
     </div></div>`;
   v.innerHTML = html;
@@ -10784,10 +10790,12 @@ function renderLocation(l){
       activateSpot(l,s);
     };
   });
+  $('loc-rest').onclick=()=>{ S._phase=0; S.hp = Math.max(1, Math.min(S.maxHp, S.hp + Math.round(S.maxHp*0.25))); S.mp = Math.min(S.maxMp, S.mp + Math.round(S.maxMp*0.2)); toastBanner('一夜好眠','你睡到了次日清晨，生命与法力得到恢复','#b8cfe0'); renderLocation(l); };
   $('loc-back').onclick=()=>{ renderMap(); };
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
 function activateSpot(l, s){
+  advanceClock();
   if(s.node){ if(s.transit) S._pendingTransit = s.transit; gotoNode(s.node); return; }
   if(s.repeat==='loot'){ openLoot(l, s); return; }
   if(s.repeat==='event'){ renderRandomEvent(l); return; }
@@ -10800,16 +10808,86 @@ function activateSpot(l, s){
 function applyEventReward(ev, success){
   const r = success? ev.succ : ev.fail;
   if(!r) return;
-  if(r.gold) S.gold += r.gold;
+  if(r.gold) S.gold += Math.round(r.gold * zoneLootMult());
   if(r.hp){ S.hp = Math.max(1, Math.min(S.maxHp, S.hp + r.hp)); }
   if(r.mp){ S.mp = Math.max(0, Math.min(S.maxMp, S.mp + r.mp)); }
   if(r.fate) S.fate += r.fate;
   if(r.xp) gainXp(r.xp);
+  if(r.echo) S.echoes += r.echo;
   if(r.item) S.items.push(r.item);
   updateHUD();
 }
 
+
+/* ---------- 箱庭动态天气与时间（第二十四轮） ---------- */
+const PHASES=[
+ {t:'清晨', desc:'雾气未散，万物将醒。状态略好，判定+3。', mod:{check:3}, color:'#b8cfe0'},
+ {t:'正午', desc:'光线充足，视野最好。战斗命中+10%，普通事件最多。', mod:{hit:10}, color:'#e0d0a0'},
+ {t:'黄昏', desc:'光线变暗，回响开始活跃。战斗难度+5，判定-3，掉落+10%。', mod:{dc:5, check:-3, loot:10}, color:'#d09060'},
+ {t:'深夜', desc:'霓虹接管城市，精英回响出没。危险最高，判定-6，稀有掉落翻倍。', mod:{dc:8, check:-6, loot:100}, color:'#5a6a90'}
+];
+const WEATHERS={
+ calm:{t:'平静', desc:'无风无雨，最稳定的一天。', mod:{}, color:'#b0b8c0'},
+ rain:{t:'锈雨', desc:'锈红色的雨。回响活跃，判定-5，战斗难度+5。', mod:{check:-5, dc:5, echo:20}, color:'#5b7ea8'},
+ fog:{t:'浓雾', desc:'浓雾封锁视野。命中-10%、判定+3，随机事件概率翻倍。', mod:{hit:-10, check:3, evx2:true}, color:'#8a97a8'},
+ storm:{t:'电磁风暴', desc:'信号紊乱。判定-5，词条合成成功率+20%。', mod:{check:-5, synth:20}, color:'#8a7fd0'},
+ dust:{t:'锈尘', desc:'空气浑浊。黑市商人出没，售卖稀有道具。', mod:{}, color:'#c0a060'},
+ echo:{t:'回响潮', desc:'全城回响共鸣。判定-8，大成功/大失败概率翻倍，世界观节点。', mod:{check:-8, crit2:true}, color:'#d060c0'}
+};
+const WEATHER_EVENTS = {
+  rain:{ic:'🌧', name:'雨中回响', kind:'story',
+    desc:'锈雨里，街角的排水口站着一个抱着伞的小女孩回响。她没有等任何人，只是固执地撑着伞，不让雨淋湿脚下的一小块地面。',
+    action:'走过去，替她把伞扶正', check:{stat:'per',dc:55},
+    succ:{text:'她抬起脸，朝你笑了笑，把伞塞进你手里——雨忽然停了。她消散时，你听见一声轻快的“谢谢”。', gold:12, hp:10, echo:2},
+    fail:{text:'你伸手去扶伞，她却猛地后退，锈雨把你的手背灼得生疼。', hp:-6}},
+  echo:{ic:'🌊', name:'回响共鸣', kind:'story',
+    desc:'全城的回响同时发出一声低吟——不是哀嚎，更像合唱。你脚下的地面微微震颤，一座平时从不存在的门，从雾里浮现出来。',
+    action:'推开那扇门', check:{stat:'int',dc:60},
+    succ:{text:'门后是一座记忆画廊，你看见这座城市最繁华时的样子。墙上挂着一幅幅“未完成的心愿”。你带走了一缕光。', fate:1, echo:3},
+    fail:{text:'门后是空的。回响的合唱戛然而止，门无声地消失了，仿佛从未来过。', hp:-4}}
+};
+function phaseState(){ return PHASES[S._phase||0]; }
+function weatherState(){ return WEATHERS[S._weather]||WEATHERS.calm; }
+function zoneCheckMod(){ return (phaseState().mod.check||0) + (weatherState().mod.check||0); }
+function zoneHitMod(){ return (phaseState().mod.hit||0) + (weatherState().mod.hit||0); }
+function zoneLootMult(){
+  const ph=phaseState().mod, wx=weatherState().mod;
+  let m=1;
+  if(ph.loot) m += ph.loot/100;
+  if(wx.echo) m += wx.echo/100;
+  return Math.max(1, m);
+}
+function forecastWeather(){
+  const cur=S._weather||'calm';
+  const t={calm:['fog','rain','dust'], rain:['fog','calm'], fog:['calm','rain'], storm:['calm','dust'], dust:['calm','fog'], echo:['calm','rain']};
+  return WEATHERS[(t[cur]||['calm'])[0]].t;
+}
+function transitWeather(){
+  if(rand(100)<30) return;
+  const cur=S._weather||'calm';
+  const t={calm:['calm','fog','rain','dust'], rain:['fog','calm','echo'], fog:['calm','rain','echo'], storm:['calm','dust','echo'], dust:['calm','fog'], echo:['calm','rain']};
+  const arr=t[cur]||['calm'];
+  S._weather = arr[rand(arr.length)];
+}
+function advanceClock(){ S._phase=((S._phase||0)+1)%4; transitWeather(); }
+function weatherBarHtml(){
+  const ph=phaseState(), wx=weatherState();
+  return `<div class="weather-bar" style="border-color:${wx.color}"><span class="zone-dot" style="background:${wx.color}"></span><b>${ph.t} · ${wx.t}</b><span class="weather-fc">下一时段预测：${forecastWeather()}</span><span class="zone-desc">${esc(wx.desc)}</span></div>`;
+}
+function wxFlavor(id){
+  const ph=phaseState().t, wx=weatherState().t;
+  if(id==='c1_e1a'){
+    if(S._phase===2||S._phase===3) return `<div class="story">${ph}的灯下，她的身影比白天清晰了些——回响只在光线变暗时，才肯显出轮廓。</div>`;
+    if(S._phase===0) return `<div class="story">${ph}的雾气里，她几乎要融进墙里，只剩递钥匙的动作依稀可见。</div>`;
+  }
+  if(id==='c1_intro'){
+    if(S._phase===3) return `<div class="story">深夜的霓虹把整条街照成冷蓝，你胸口的烙印比平时更烫。</div>`;
+    if(wx==='锈雨') return `<div class="story">锈雨无声地下着，把锈红的天空又染深了一层。</div>`;
+  }
+  return '';
+}
 /* ---------- 探索节点事件权重动态化（第二十三轮） ---------- */
+
 function eventKind(ev){ return ev.kind || 'flavor'; }
 function moodClamp(m){ return Math.max(-6, Math.min(6, m)); }
 function moodState(){
@@ -10899,18 +10977,24 @@ function renderSpecialEncounter(l){
 function renderRandomEvent(l){
   const _mood = S._mood||0;
   if(_mood>=5 || _mood<=-5){ renderSpecialEncounter(l); return; }
-  const pool = EVENTS[l.id] || EVENTS.street;
-  const ev = pickWeightedEvent(pool);
+  const _wx = weatherState();
+  let _pool = (EVENTS[l.id] || EVENTS.street).slice();
+  if(_wx.mod.evx2) _pool = _pool.concat(_pool);
+  if(S._weather==='rain') _pool.push(WEATHER_EVENTS.rain);
+  if(S._weather==='echo') _pool.push(WEATHER_EVENTS.echo);
+  const ev = pickWeightedEvent(_pool);
 
   const v=$('view-scene');
   v.innerHTML = `<div class="panel">
     <div class="scene-chap">随机际遇 · ${esc(l.name)} · 第 ${S.run} 周目</div>
     <div class="scene-title">${ev.ic} ${esc(ev.name)}</div>
+    ${weatherBarHtml()}
     ${zoneStateHtml()}
     <div class="dice-log" id="dice-log"></div>
     <div class="story">${esc(ev.desc)}</div>
     <div class="choices">
       <div class="choice" id="ev-go"><span class="c-tag">【${ev.check? '判定' : '行动'}】</span>${esc(ev.action||'上前试一试')}${ev.check? `<span class="c-desc">难度 ${ev.check.dc} · ${ev.check.stat==='str'?'力量':ev.check.stat==='agi'?'敏捷':ev.check.stat==='int'?'智力':ev.check.stat==='cha'?'魅力':ev.check.stat==='con'?'体质':'感知'}</span>`:''}</div>
+      <div class="choice" id="ev-wx"><span class="c-tag">【天象】</span>仰望天象，扰动天气（-1 命运点 · 随机重演天象）</div>
       <div class="choice" id="ev-soothe"><span class="c-tag">【倾听】</span>静心听一听这座城的低语（-1 回响碎片 · 安抚街区）</div>
       <div class="choice" id="ev-provoke"><span class="c-tag">【挑衅】</span>向黑暗放一句狠话（-1 命运点 · 激怒街区）</div>
       <div class="choice" id="ev-leave">绕开走人，不管闲事</div>
