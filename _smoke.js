@@ -926,7 +926,7 @@ step('UI交互优化（快捷键/按钮态/过渡/骰子动画/存档提示·第
 
 step('第十八轮：面板标签导航/骰子彩蛋/战斗倍速/成就图鉴', () => {
   G('boot(); newRun(); applyClass("sword")');
-  ok('成就定义10项', G('ACHIEVEMENTS.length===10'));
+  ok('成就定义18项', G('ACHIEVEMENTS.length===18'));
   ok('成就面板函数', G('typeof renderAchievements==="function"'));
   // 面板标签导航
   G('renderChar();');
@@ -952,7 +952,7 @@ step('第十八轮：面板标签导航/骰子彩蛋/战斗倍速/成就图鉴',
   ok('万贯家财成就解锁', G('S.achievements.includes("gold-500")'));
   // 成就面板
   G('renderAchievements();');
-  ok('成就面板10卡', G('document.querySelectorAll(".ach-card").length===10'));
+  ok('成就面板18卡', G('document.querySelectorAll(".ach-card").length===18'));
   // 枢纽成就入口
   G('renderHub();');
   ok('枢纽成就卡', G('!!document.getElementById("hub-ach")'));
@@ -1184,6 +1184,46 @@ step('第三十轮：词条 Build 流派体系扩展（4套→8套·破军/流�
   ok('summonOpenStrike 开场幻灵（wraith 翻倍）', G('(function(){ S.equippedTags=["spirit","wraith"]; S.stats.str=20; CB={id:"ghost",hp:500,max:500}; var d=summonOpenStrike(); S.equippedTags=[]; return d>=30 && CB.hp===500-d; })()'));
   ok('summonAssistTurn 每回合助战', G('(function(){ S.equippedTags=["spirit","wraith"]; S.stats.str=20; CB={id:"ghost",hp:500,max:500}; var d=summonAssistTurn(); S.equippedTags=[]; return d>0 && CB.hp===500-d; })()'));
   ok('无运行时错误(第三十轮)', errors.length === 0);
+});
+
+step('第三十一轮：梯度成就体系扩展（困难/隐藏档·跨周目计数·称号系统）', () => {
+  G('boot(); newRun(); applyClass("sword"); S.achievements=[]; S.title=""; S._clsClears={};');
+  ok('成就扩展为 18 个（含困难/隐藏档）', G('(function(){ return ACHIEVEMENTS.length===18 && ACHIEVEMENTS.filter(function(a){return a.tier===2;}).length===6 && ACHIEVEMENTS.filter(function(a){return a.tier===3;}).length===2; })()'));
+  ok('困难档成就带高奖励', G('(function(){ var a=ACHIEVEMENTS.find(function(x){return x.id==="deathless-run";}); return a && a.echo===15 && a.fate===2; })()'));
+  ok('隐藏档成就带称号', G('(function(){ var a=ACHIEVEMENTS.find(function(x){return x.id==="fumb-streak";}); return a && a.tier===3 && a.title==="非酋之王"; })()'));
+  ok('renderDeath 死亡计数+局内标记', G('(function(){ S._deaths=3; S._runDeath=false; renderDeath(); return S._deaths===4 && S._runDeath===true; })()'));
+  ok('doFateReroll 累计重掷计数', G('(function(){ S._rerolls=0; S._rerollsThisRun=0; var ck={stat:"per",dc:60,label:"T"}; var b=Math.random; Math.random=function(){ return 0.2; }; doFateReroll(ck,"gamble",function(){}); Math.random=b; return (S._rerolls||0)>=1 && (S._rerollsThisRun||0)>=1; })()'));
+  ok('一命通关+顺天而行（0死亡0重掷通关）', G('(function(){ S.achievements=[]; S._runDeath=false; S._rerollsThisRun=0; S.talents=["mem"]; S.cls="sword"; S.worldsCleared=[]; S._clsClears={}; OP={world:{id:"sky31",reward:{type:"none"}}}; var r=opWorldReward(); return S.achievements.indexOf("deathless-run")>=0 && S.achievements.indexOf("nofate-1")>=0 && r.first===true; })()'));
+  ok('死亡过不触发一命（仍触发顺天）', G('(function(){ S.achievements=[]; S._runDeath=true; S._rerollsThisRun=0; S.worldsCleared=[]; OP={world:{id:"sky31b",reward:{type:"none"}}}; opWorldReward(); return S.achievements.indexOf("deathless-run")<0 && S.achievements.indexOf("nofate-1")>=0; })()'));
+  ok('白手起家（D/C级天赋通关）', G('(function(){ S.achievements=[]; S._runDeath=true; S._rerollsThisRun=1; S.talents=["mem"]; S.worldsCleared=[]; OP={world:{id:"sky31c",reward:{type:"none"}}}; opWorldReward(); return S.achievements.indexOf("dgrade-clear")>=0; })()'));
+  ok('独行侠（单职业累计3世界）', G('(function(){ S.achievements=[]; S._clsClears={sword:2}; S.cls="sword"; S.worldsCleared=[]; OP={world:{id:"sky31d",reward:{type:"none"}}}; opWorldReward(); return S.achievements.indexOf("solo-3")>=0 && S._clsClears.sword===3; })()'));
+  ok('三连非酋（连续3次大失败）', G('(function(){ S.achievements=[]; S._fumbStreak=0; diceEaster("fumb"); diceEaster("fumb"); diceEaster("fumb"); return S.achievements.indexOf("fumb-streak")>=0; })()'));
+  ok('grantAch 佩戴称号', G('(function(){ S.achievements=[]; S.title=""; grantAch("fumb-streak"); return S.title==="非酋之王"; })()'));
+  ok('普通成就不改称号', G('(function(){ S.title="旧称号"; S.achievements=[]; grantAch("first-blood"); return S.title==="旧称号"; })()'));
+  ok('角色面板显示称号', G('(function(){ S.title="非酋之王"; renderChar(); return document.getElementById("view-char").innerHTML.indexOf("非酋之王")>=0; })()'));
+  ok('成就图鉴显示困难/隐藏标记', G('(function(){ S.nodeId="hub"; renderAchievements(); var h=document.getElementById("view-char").innerHTML; return h.indexOf("a-tier-d")>=0 && h.indexOf("a-tier-h")>=0 && h.indexOf("困难")>=0 && h.indexOf("隐藏")>=0; })()'));
+  ok('新字段存档持久化', G('(function(){ S._deaths=7; S._rerolls=30; S._clsClears={sword:3}; S.title="非酋之王"; saveSave(); S._deaths=0; S._rerolls=0; S._clsClears={}; S.title=""; loadSave(); return S._deaths===7 && S._rerolls===30 && S._clsClears.sword===3 && S.title==="非酋之王"; })()'));
+  ok('无运行时错误(第三十一轮)', errors.length === 0);
+});
+
+step('第三十二轮：已读剧情跳过（多周目折叠）+ 判定成功率透明化', () => {
+  G('boot(); newRun(); applyClass("sword"); S._seenNodes=[]; S.stats.per=10;');
+  G('renderScene(NODES["c1_intro"]);');
+  ok('首次渲染不折叠已读剧情', G('document.getElementById("view-scene").innerHTML.indexOf("story-fold")<0'));
+  ok('首次渲染记录已读节点', G('S._seenNodes.indexOf("c1_intro")>=0'));
+  G('renderScene(NODES["c1_intro"]);');
+  ok('二次渲染折叠已读剧情', G('document.getElementById("view-scene").innerHTML.indexOf("story-fold")>=0'));
+  ok('折叠时选择项仍渲染', G('document.querySelectorAll("#scene-choices .choice").length>0'));
+  G('unfoldScene();');
+  ok('unfoldScene 展开恢复全文', G('(function(){ var h=document.getElementById("view-scene").innerHTML; return h.indexOf("story-fold")<0 && h.indexOf("story")>=0; })()'));
+  ok('checkSuccessRate 基础区间', G('(function(){ S.stats.per=10; S.talents=[]; var r=checkSuccessRate("per",50); return r>=3 && r<=97; })()'));
+  ok('checkSuccessRate 属性加成提升成功率', G('(function(){ var lo=checkSuccessRate("per",80); S.stats.per=40; var hi=checkSuccessRate("per",80); return hi>lo; })()'));
+  G('S._seenNodes=[]; S.stats.per=10;');
+  G('renderScene(NODES["c1_intro"]);');
+  ok('判定选项显示成功率', G('document.getElementById("view-scene").innerHTML.indexOf("成功率")>=0'));
+  ok('成功率含百分比数字', G('/成功率[^%]*%/.test(document.getElementById("view-scene").innerHTML)'));
+  ok('已读节点存档持久化', G('(function(){ S._seenNodes=["c1_intro","c1_gate"]; saveSave(); S._seenNodes=[]; loadSave(); return S._seenNodes.length===2 && S._seenNodes.indexOf("c1_gate")>=0; })()'));
+  ok('无运行时错误(第三十二轮)', errors.length === 0);
 });
 
 console.log('\n== 汇总 ==');
