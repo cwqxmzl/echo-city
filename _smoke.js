@@ -1128,6 +1128,28 @@ step('第二十六轮：权重模糊感知·主动干预·极端连锁预兆（�
   ok('无运行时错误(第二十六轮)', errors.length === 0);
 });
 
+step('第二十八轮：玩法数值与平衡（天赋品级特色差/词条流派/装备套装/动态难度/命运点经济上限）', () => {
+  G('boot(); newRun(); applyClass("sword"); S.equippedTags=[]; S.equip={weapon:null,armor:null,trinket:null}');
+  ok('低品级容错（每 D/C 天赋命运点+1）', G('(function(){ S.talents=["mem","bag"]; var p=talentGradePerk(); S.talents=[]; return p.fateBonus===2 && p.expMult===1 && p.goldPenalty===0; })()'));
+  ok('高品级代价与补偿（SS/SSS 金币-10·经验+15%/个）', G('(function(){ S.talents=["eternal","feast"]; var p=talentGradePerk(); S.talents=[]; return p.hasHigh && p.goldPenalty===20 && p.expMult===1.3; })()'));
+  ok('applyTalent 低品级保底入账', G('(function(){ boot(); newRun(); S.gold=40; S.fate=4; S._gradePerkApplied=false; applyTalent(TALENTS.find(function(t){return t.id==="mem"})); var f=S.fate; return f===5 && S._gradePerkApplied===true; })()'));
+  ok('applyTalent 高品级代价入账', G('(function(){ boot(); newRun(); S.gold=40; S.fate=4; S._gradePerkApplied=false; applyTalent(TALENTS.find(function(t){return t.id==="eternal"})); return S.gold===30 && S._gradePerkApplied===true; })()'));
+  ok('gainXp 高品级经验补偿', G('(function(){ S.talents=["eternal"]; S._gradePerkApplied=true; S.level=50; S.xp=0; gainXp(100); var got=S.xp; S.talents=[]; S._gradePerkApplied=false; return got===115; })()'));
+  ok('词条流派标记（10枚含流派）', G('(function(){ return TAG_POOL.length===10 && TAG_POOL.every(function(t){ return !!t.set; }); })()'));
+  ok('流派激活（同流派2枚触发）', G('(function(){ S.equippedTags=["rage","luck"]; var a=tagSetActive(); S.equippedTags=[]; return a.length===1 && a[0]==="crit"; })()'));
+  ok('万般词条万能计数', G('(function(){ S.equippedTags=["omni","vamp"]; var a=tagSetActive(); S.equippedTags=[]; return a.indexOf("leech")>=0 && a.indexOf("crit")<0; })()'));
+  ok('万界金宝箱 wealth +25%', G('(function(){ S.equippedTags=["harvest","insight"]; S.gold=0; var bak=Math.random; Math.random=function(){return 0;}; var r=grantTreasure({kind:"gold",min:100,max:100,n:"金币"},null); Math.random=bak; S.equippedTags=[]; return S.gold===125; })()'));
+  ok('套装检测（同世界2件触发）', G('(function(){ S.equip={weapon:"mastersword",armor:"dragon_scale",trinket:null}; var a=setBonus(); S.equip={weapon:null,armor:null,trinket:null}; return a.length===1 && a[0]==="fantasy"; })()'));
+  ok('初始装备不触发套装', G('(function(){ S.equip={weapon:"iron_sword",armor:"cloth",trinket:null}; var a=setBonus(); S.equip={weapon:null,armor:null,trinket:null}; return a.length===0; })()'));
+  ok('第一轮回新手友好（难度-5）', G('(function(){ S.run=1; var a=dynDcAdjust(50); return a===45; })()'));
+  ok('高周目更躁动（≥10 难度+3）', G('(function(){ S.run=5; S.totalRuns=12; var a=dynDcAdjust(50); S.totalRuns=0; return a===53; })()'));
+  ok('哨兵难度不受动态调整', G('dynDcAdjust(9999)===9999'));
+  ok('开局命运点上限12（防回声通胀）', G('(function(){ S.echoes=100; S.totalRuns=0; newRun(); return S.fate<=12; })()'));
+  ok('词条工作台显示流派联动', G('(function(){ S.tagBag=[]; S.equippedTags=[]; renderTagWorkshop(); var h=document.getElementById("view-char").innerHTML; return h.indexOf("流派联动")>=0; })()'));
+  ok('属性面板显示流派与套装', G('(function(){ renderChar(); var h=document.getElementById("view-char").innerHTML; return h.indexOf("词条流派")>=0 && h.indexOf("装备套装")>=0; })()'));
+  ok('无运行时错误(第二十八轮)', errors.length === 0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
