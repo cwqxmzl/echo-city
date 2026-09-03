@@ -683,6 +683,9 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
 .story-fold .cact:hover{filter:brightness(1.15)}
 .rate{color:#7dffb0;font-weight:700;font-variant-numeric:tabular-nums}
 .choice-warn .rate{color:#ffd27d}
+.spot-item.spot-mem{border:1px solid rgba(184,141,240,.4);background:linear-gradient(135deg,rgba(184,141,240,.08),rgba(255,205,110,.06))}
+.spot-item.spot-mem .sp-ic{filter:drop-shadow(0 0 6px rgba(184,141,240,.5))}
+.spot-mem .sp-tag{color:#c9a5ff;border:1px solid rgba(184,141,240,.45);background:rgba(184,141,240,.12);font-size:11px;padding:1px 7px;border-radius:9px}
 </style>
 </head>
 <body>
@@ -8386,6 +8389,13 @@ function useItem(itemId){
 function fillText(t){
   let h = esc(t);
   h = h.split('{run}').join(S.run);
+  h = h.split('{shards}').join(String(S.shards||0));
+  h = h.split('{gold}').join(String(S.gold||0));
+  h = h.split('{worlds}').join(String((S.worldsCleared||[]).length));
+  h = h.split('{deaths}').join(String(S._deaths||0));
+  h = h.split('{rerolls}').join(String(S._rerolls||0));
+  h = h.split('{title}').join(esc(S.title||'无名旅者'));
+  h = h.split('{hp}').join(String(Math.max(0,S.hp))+'/'+String(S.maxHp));
   h = h.split('{talents}').join(S.talents.map(id=>{
     const t=TALENTS.find(x=>x.id===id); return `「${t.name}」`; }).join('　'));
   h = h.replace(/\{echo\}([\s\S]*?)\{\/echo\}/g,'<span class="echo">$1</span>');
@@ -8867,6 +8877,16 @@ function filterChoices(choices){
     if(c.need==='gm' && !S.flag.gm) return false;
     if(c.need==='terminal' && !S.flag.touched_terminal) return false;
     if(c.need==='mystery' && !S.flag.mystery_key) return false;
+    if(c.need && typeof c.need==='object'){
+      if(c.need.stat!==undefined && statValue(c.need.stat) < (c.need.min||0)) return false;
+      if(c.need.shards!==undefined && (S.shards||0) < c.need.shards) return false;
+      if(c.need.run!==undefined && (S.run||1) < c.need.run) return false;
+      if(c.need.worlds!==undefined && (S.worldsCleared||[]).length < c.need.worlds) return false;
+      if(c.need.gold!==undefined && (S.gold||0) < c.need.gold) return false;
+      if(c.need.item!==undefined && !(S.items||[]).includes(c.need.item)) return false;
+      if(c.need.tag!==undefined && !hasTagFx(c.need.tag)) return false;
+      if(c.need.talent!==undefined && !(S.talents||[]).includes(c.need.talent)) return false;
+    }
     return true;
   });
 }
@@ -10953,6 +10973,82 @@ function spotDone(l, s){
   if(!s.once || !s.key) return false;
   return !!(S._locDone[l.id] && S._locDone[l.id].includes(s.key));
 }
+/* ===== 第三十三轮：高周目专属事件池（事件池分层：普通/稀有/专属，高周目解锁新事件） ===== */
+const MEMORY_EVENTS = [
+  {loc:'street', id:'mem_rift', ic:'🌀', minRun:2, name:'轮回裂隙 · 记忆残响', desc:'上周目的你留了一段话，想跟你聊聊', node:'c1_mem1'},
+  {loc:'street', id:'mem_old', ic:'📜', minRun:4, name:'灰袍的旧账', desc:'商人递来一张泛黄欠条——写着你（上周目）的名字', node:'c1_mem2'},
+  {loc:'street', id:'mem_void', ic:'🌌', minRun:6, name:'湮灭之痕', desc:'街尾裂开一道黑缝，里面有什么东西在等', node:'c1_mem3'},
+];
+function highRunSpots(l){
+  return MEMORY_EVENTS.filter(e=>e.loc===l.id && (S.run||1)>=e.minRun);
+}
+/* —— 轮回裂隙 · 记忆残响（第 2 周目解锁）—— */
+N({id:'c1_mem1',chap:'旧日街区 · 轮回记忆',title:'轮回裂隙',tagline:'记忆 · 上周目的留言',
+text:'街角的数据流裂开一道不规则的缝，像一台卡带的旧电视。\n\n裂缝里走出一个和你一模一样的轮廓——{deaths} 次死亡、{rerolls} 次重掷，换来的「上周目的你」。\n\n“第 {run} 次了。”他/她开口，声音带着电流杂音，“我每次在这里等你，都像在跟镜子吵架。谢天谢地，这次你顶着【{title}】的名号来了，不像上周目那个无名之辈。”\n\n“既然来了，交点学费。”\n\n他/她摊开手，掌心里躺着一枚发光的记忆碎片。',
+choices:[
+  {text:'接过碎片，和上周目的自己共鸣',tag:'共鸣',desc:'同频共振，记忆融合（难度 · 轻而易举）',kind:'check',stat:'per',dc:30,
+   succ:'c1_mem1_win',fail:'c1_mem1_mid',succCrit:'c1_mem1_win',failFumb:'c1_mem1_mid',
+   succText:'（1d100+感知 判定成功）碎片融入掌心，上周目的记忆如潮水涌来——你知道了这座城的另一个秘密角落，以及一笔“上周目存下的外快”。'},
+  {text:'“打个折，直接打钱。”',tag:'嘴贫',desc:'高周目主角的自觉：跟自己也砍价',kind:'effect',apply:(s)=>{ s.echoes+=3; s.fate+=1; s.gold+=50; },goto:'c1_mem1_reward'}
+]});
+N({id:'c1_mem1_win',chap:'旧日街区 · 轮回记忆',title:'记忆共鸣',tagline:'事件 · 收获',
+text:'共鸣成功的瞬间，你和上周目的自己短暂重合。\n\n他/她拍了拍你的肩：“干得漂亮。这点小钱，当是上周目给你的零花钱——别拿去乱花，这城市，物价黑着呢。”\n\n身影散去前，最后一句飘进你耳朵：“下次见。或者，别让我等到第 {run} 次。”',
+choices:[
+  {text:'收下记忆馈赠',tag:'奖励',kind:'effect',apply:(s)=>{ s.echoes+=3; s.gold+=50; grantTag('insight'); },goto:'__stay__'}
+]});
+N({id:'c1_mem1_mid',chap:'旧日街区 · 轮回记忆',title:'记忆不稳',tagline:'事件 · 小波折',
+text:'碎片没能完全融合，上周目的你撇了撇嘴：“行吧，勉强算你共鸣了。拿这点辛苦费，别嫌少——你上周目也没多靠谱。”\n\n他/她把一枚小碎片丢给你，转身没入裂缝。',
+choices:[
+  {text:'收下碎片',tag:'奖励',kind:'effect',apply:(s)=>{ s.echoes+=2; s.gold+=25; },goto:'__stay__'}
+]});
+N({id:'c1_mem1_reward',chap:'旧日街区 · 轮回记忆',title:'爽快交易',tagline:'事件 · 收获',
+text:'上周目的你愣了半秒，随即大笑：“对味了！这才是干了 {run} 局的熟练工。”\n\n他/她甩给你一枚记忆币：“拿好，下周目还来找我——你值得更贵的学费。”',
+choices:[
+  {text:'收下记忆币',tag:'奖励',kind:'effect',apply:(s)=>{ s.echoes+=3; s.fate+=1; s.gold+=50; },goto:'__stay__'}
+]});
+/* —— 灰袍的旧账（第 4 周目解锁）—— */
+N({id:'c1_mem2',chap:'旧日街区 · 轮回记忆',title:'灰袍的旧账',tagline:'事件 · 老熟人',
+text:'灰袍商人难得主动拦下你，从怀里摸出一张泛黄的纸条。\n\n“你（上周目）欠我三杯咖啡，外加一条命。”他抖了抖纸条，“不过……看在你连【{title}】这种名号都混出来的份上，这账，我记下了，但不收。”\n\n他把纸条叠好放回怀里，又补了一句：“下周目记得带咖啡来。要现磨的。”',
+choices:[
+  {text:'“下周目一定带，外加两块糖。”',tag:'约定',desc:'商人很吃这一套',kind:'effect',apply:(s)=>{ s.favor.gray=(s.favor.gray||0)+15; s.echoes+=4; grantTag('harvest'); },goto:'c1_mem2_done'},
+  {text:'“先赊着，我这周目挺穷。”',tag:'讨价还价',desc:'商人眯起眼睛（难度 · 有点棘手）',kind:'check',stat:'cha',dc:48,
+   succ:'c1_mem2_done',fail:'c1_mem2_debt',succCrit:'c1_mem2_done',failFumb:'c1_mem2_debt',
+   succText:'（1d100+魅力 判定成功）灰袍商人盯着你看了三秒，忽然笑出声：“行，你是头一个敢跟我赊账的轮回者。记上了——利息是下周目带两杯。”'}
+]});
+N({id:'c1_mem2_done',chap:'旧日街区 · 轮回记忆',title:'旧账两清',tagline:'事件 · 收获',
+text:'灰袍商人点了点头，从摊子底下摸出一袋东西丢给你：“收着。算是我替上周目的你，把欠你的补齐了。”\n\n他压低声音：“这座城市亏待过很多人。但你不一样——你是唯一一个，愿意一遍遍回来的。”',
+choices:[
+  {text:'收下谢礼',tag:'奖励',kind:'effect',apply:(s)=>{ s.echoes+=3; s.fate+=1; },goto:'__stay__'}
+]});
+N({id:'c1_mem2_debt',chap:'旧日街区 · 轮回记忆',title:'旧账未清',tagline:'事件 · 记下了',
+text:'灰袍商人没接话，只是慢悠悠地把欠条收回去：“行，记下了。下周目带两杯现磨的，不然……我让这整条街的回响都知道，你是个欠咖啡钱的轮回者。”\n\n他嘴上这么说，临走还是丢了点零钱给你。',
+choices:[
+  {text:'收下零钱',tag:'奖励',kind:'effect',apply:(s)=>{ s.gold+=30; s.echoes+=2; },goto:'__stay__'}
+]});
+/* —— 湮灭之痕（第 6 周目解锁）—— */
+N({id:'c1_mem3',chap:'旧日街区 · 轮回记忆',title:'湮灭之痕',tagline:'事件 · 高周目试炼',
+text:'街尾的地面裂开一道漆黑的缝，缝隙里没有光，只有细碎的低语——像是整座城市在倒带。\n\n一只苍白的手从缝里伸出，掌心朝上。\n\n它不说话，但你知道它想要什么：一段被遗忘的记忆，换一段被记住的结局。\n\n高周目专属试炼，成了，收获极大；输了，代价也不轻。',
+choices:[
+  {text:'握住那只手，直面湮灭',tag:'直面',desc:'高周目专属试炼（难度 · 九死一生）',kind:'check',stat:'con',dc:80,
+   succ:'c1_mem3_win',fail:'c1_mem3_lose',succCrit:'c1_mem3_win',failFumb:'c1_mem3_lose',
+   succText:'（1d100+体质 判定成功）你握住那只手，汹涌的记忆灌入脑海——但你稳住了。裂缝深处传来一声叹息，像是对你的认可。\n\n那只手松开，掌心留下一枚漆黑发亮的碎片。'},
+  {text:'转身就走',tag:'理智',desc:'不是所有缝隙都值得跳',kind:'effect',apply:(s)=>{ s.echoes+=2; },goto:'c1_mem3_out'}
+]});
+N({id:'c1_mem3_win',chap:'旧日街区 · 轮回记忆',title:'直面湮灭',tagline:'事件 · 大收获',
+text:'漆黑碎片贴进你胸口，一缕凉意散开，随即被滚烫的执念取代。\n\n你听见裂缝里的低语渐渐远去，最后只剩一句：“你记住了我。那我也，记住你。”\n\n这一趟，值了。',
+choices:[
+  {text:'收下湮灭的馈赠',tag:'重赏',kind:'effect',apply:(s)=>{ s.echoes+=8; s.fate+=2; s.gold+=100; grantTag('wraith'); },goto:'__stay__'}
+]});
+N({id:'c1_mem3_lose',chap:'旧日街区 · 轮回记忆',title:'湮灭反噬',tagline:'事件 · 代价',
+text:'你没能稳住，一股巨力把你掀翻在地，胸口钝痛——但它到底留了手，只取走你一小段记忆，没有吞噬你。\n\n裂缝缓缓合拢，像是失望，又像是等待下一次。',
+choices:[
+  {text:'爬起来，记住这次教训',tag:'代价',kind:'effect',apply:(s)=>{ s.hp=Math.max(1,Math.floor(s.hp*0.7)); s.echoes+=1; },goto:'__stay__'}
+]});
+N({id:'c1_mem3_out',chap:'旧日街区 · 轮回记忆',title:'理智的代价',tagline:'事件 · 绕行',
+text:'你转身离开，裂缝在你身后无声合拢。\n\n低语停了。城市重新安静下来——像什么都没发生过。\n\n但你心里清楚，那条缝，下周目还会在。',
+choices:[
+  {text:'离开',tag:'继续',kind:'effect',apply:(s)=>{ s.echoes+=2; },goto:'__stay__'}
+]});
 function spotLocked(l, s){
   if(s.need==='old_key' && !S.flag.old_key) return true;
   return false;
@@ -11086,6 +11182,16 @@ function renderLocation(l){
       <span class="sp-tag">${_tag}</span>
     </div>`;
   });
+  highRunSpots(l).forEach(m=>{
+    html += `<div class="spot-item spot-mem" data-mem="${m.node}">
+      <div class="sp-ic">${m.ic}</div>
+      <div class="sp-main">
+        <div class="sp-name">${esc(m.name)}</div>
+        <div class="sp-desc">${esc(m.desc)}</div>
+      </div>
+      <span class="sp-tag">🌀 高周目</span>
+    </div>`;
+  });
   html += `</div>
     <div class="choices">
       <div class="choice" id="loc-tide"><span class="c-tag">【潮汐】</span>回响潮汐 · 彻底打乱街区氛围（-2 回响碎片）</div>
@@ -11103,6 +11209,9 @@ function renderLocation(l){
       if(!s || spotDone(l,s) || spotLocked(l,s)) return;
       activateSpot(l,s);
     };
+  });
+  document.querySelectorAll('#view-loc .spot-item[data-mem]').forEach(el=>{
+    el.onclick=()=>{ gotoNode(el.dataset.mem); };
   });
   $('loc-tide').onclick=()=>{ if((S.echoes||0)<2){ toastBanner('回响碎片不足','需要 2 枚回响碎片','#ff6b6b'); return; } S.echoes-=2; S._mood=moodClamp(rand(13)-6); toastBanner('回响潮汐','街区氛围彻底打乱，新的变数正在成形','#b78df0'); renderLocation(l); };
   $('loc-calm').onclick=()=>{ if(S.gold<8){ toastBanner('金币不足','需要 8 金币','#ff6b6b'); return; } S.gold-=8; S._mood=moodClamp((S._mood||0)-2); toastBanner('安宁信标','街区氛围趋向安宁，危险下降','#5aa7e8'); renderLocation(l); };
