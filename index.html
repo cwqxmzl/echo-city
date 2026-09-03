@@ -847,19 +847,19 @@ const ITEMS = [
   {id:'arcane_staff',name:'奥术法杖',type:'weapon',desc:'智力 +3',equip:{int:3}},
   {id:'steel_dagger',name:'淬毒匕首',type:'weapon',desc:'敏捷 +3',equip:{agi:3}},
   {id:'jade_talisman',name:'青玉符箓',type:'weapon',desc:'智力 +2 体质 +1',equip:{int:2,con:1}},
-  {id:'darksteel',name:'玄铁重剑',type:'weapon',desc:'力量 +4（武侠世界掉落）',equip:{str:4}},
+  {id:'darksteel',name:'玄铁重剑',type:'weapon',desc:'力量 +4（武侠世界掉落）',equip:{str:4},set:'wuxia'},
   /* 防具 */
   {id:'cloth',name:'旧式工装',type:'armor',desc:'体质 +1',equip:{con:1}},
   {id:'leather',name:'皮制护甲',type:'armor',desc:'敏捷 +1 体质 +1',equip:{agi:1,con:1}},
   {id:'robe',name:'符文长袍',type:'armor',desc:'智力 +1 体质 +1',equip:{int:1,con:1}},
-  {id:'coral_armor',name:'珊瑚鳞甲',type:'armor',desc:'体质 +3，受伤 -10%（海洋世界掉落）',equip:{con:3},mit:.10},
-  {id:'dragon_scale',name:'龙鳞甲',type:'armor',desc:'体质 +3，受伤 -15%（西幻世界掉落）',equip:{con:3},mit:.15},
+  {id:'coral_armor',name:'珊瑚鳞甲',type:'armor',desc:'体质 +3，受伤 -10%（海洋世界掉落）',equip:{con:3},mit:.10,set:'wuxia'},
+  {id:'dragon_scale',name:'龙鳞甲',type:'armor',desc:'体质 +3，受伤 -15%（西幻世界掉落）',equip:{con:3},mit:.15,set:'fantasy'},
   {id:'exo',name:'外骨骼装甲',type:'armor',desc:'力量 +2 体质 +2（科幻世界掉落）',equip:{str:2,con:2}},
   /* 饰品 */
   {id:'windfeather',name:'风羽护符',type:'trinket',desc:'敏捷 +3（空岛世界掉落）',equip:{agi:3}},
   {id:'spiritroot',name:'千年灵根',type:'trinket',desc:'智力 +3（仙侠世界掉落）',equip:{int:3}},
   {id:'core_shard',name:'核心残片',type:'trinket',desc:'全属性 +1（无限流世界掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1}},
-  {id:'mastersword',name:'驱魔之剑',type:'weapon',desc:'力量 +5，攻击判定 +10（旷野神域掉落）',equip:{str:5},atk:10},
+  {id:'mastersword',name:'驱魔之剑',type:'weapon',desc:'力量 +5，攻击判定 +10（旷野神域掉落）',equip:{str:5},atk:10,set:'fantasy'},
   {id:'kusanagi',name:'苇名村正',type:'weapon',desc:'敏捷 +4，攻击判定 +6（苇名国掉落）',equip:{agi:4},atk:6},
   {id:'golden_seal',name:'黄金律法印',type:'trinket',desc:'全属性 +1，受伤 -8%（交界之地掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1},mit:.08},
   {id:'wanzu_seal',name:'人族气运印',type:'trinket',desc:'全属性 +1，受伤 -10%（万族战场掉落）',equip:{str:1,agi:1,int:1,cha:1,con:1,per:1},mit:.10},
@@ -6652,19 +6652,75 @@ const TAG_BAG_MAX = 12;
 const TAG_SLOT_BASE = 3;
 const TAG_GRADES = {D:'普通', B:'稀有', A:'史诗', S:'传说'};
 const TAG_POOL = [
-  {id:'harvest', n:'词条·丰收', g:'D', desc:'探索收获的金币 +100%（翻倍）', fx:'gold',lore:'无数座粮仓最后的囤积，凝成一句执念——别让谁饿着。'},
-  {id:'alert',   n:'词条·警觉', g:'D', desc:'遭遇战与陷阱概率减半，且陷阱只损失 1 成', fx:'calm',lore:'第一声警报被反复回放，直到它自己变成了力量。'},
-  {id:'insight', n:'词条·洞察', g:'D', desc:'搜索更大概率进入收获区；每次搜索额外 +1 命运点', fx:'insight',lore:'一个观测者临死前的执念：再看清一点，再……看清一点。'},
-  {id:'tough',   n:'词条·坚韧', g:'B', desc:'战斗受到伤害 -20%', fx:'mit',lore:'曾被人守护过的人，死后把守护刻进了这枚词条。'},
-  {id:'rage',    n:'词条·狂暴', g:'B', desc:'暴击率 +25%', fx:'crit',lore:'最后一次爆发没能吼出口，怒火便在这里安了家。'},
-  {id:'echo',    n:'词条·回响', g:'B', desc:'战斗胜利额外 +2 回响碎片', fx:'echo',lore:'这座城市最深处的声音——你好像在哪里听过。'},
-  {id:'luck',    n:'词条·天运', g:'A', desc:'大成功区间 +6（更容易大成功）', fx:'luck',lore:'有人把一辈子的好运都押在了最后一掷上。'},
-  {id:'vamp',    n:'词条·噬魂', g:'A', desc:'攻击恢复 20% 造成伤害的生命', fx:'vamp',lore:'吞噬是为了不消散。它只是，太怕消失了。'},
-  {id:'loot',    n:'词条·聚宝', g:'A', desc:'撤离奖励 +50%', fx:'loot',lore:'守财奴的执念：带不走，也要攥在手里。'},
-  {id:'omni',    n:'词条·万般', g:'S', desc:'全能：金币+15%、减伤10%、暴击+10%、大成功+2、撤离奖励+15%', fx:'omni',lore:'万般皆空，唯执念不空。它什么都记得。'}
+  {id:'harvest', n:'词条·丰收', g:'D', desc:'探索收获的金币 +100%（翻倍）', fx:'gold', set:'wealth',lore:'无数座粮仓最后的囤积，凝成一句执念——别让谁饿着。'},
+  {id:'alert',   n:'词条·警觉', g:'D', desc:'遭遇战与陷阱概率减半，且陷阱只损失 1 成', fx:'calm', set:'guard',lore:'第一声警报被反复回放，直到它自己变成了力量。'},
+  {id:'insight', n:'词条·洞察', g:'D', desc:'搜索更大概率进入收获区；每次搜索额外 +1 命运点', fx:'insight', set:'wealth',lore:'一个观测者临死前的执念：再看清一点，再……看清一点。'},
+  {id:'tough',   n:'词条·坚韧', g:'B', desc:'战斗受到伤害 -20%', fx:'mit', set:'guard',lore:'曾被人守护过的人，死后把守护刻进了这枚词条。'},
+  {id:'rage',    n:'词条·狂暴', g:'B', desc:'暴击率 +25%', fx:'crit', set:'crit',lore:'最后一次爆发没能吼出口，怒火便在这里安了家。'},
+  {id:'echo',    n:'词条·回响', g:'B', desc:'战斗胜利额外 +2 回响碎片', fx:'echo', set:'leech',lore:'这座城市最深处的声音——你好像在哪里听过。'},
+  {id:'luck',    n:'词条·天运', g:'A', desc:'大成功区间 +6（更容易大成功）', fx:'luck', set:'crit',lore:'有人把一辈子的好运都押在了最后一掷上。'},
+  {id:'vamp',    n:'词条·噬魂', g:'A', desc:'攻击恢复 20% 造成伤害的生命', fx:'vamp', set:'leech',lore:'吞噬是为了不消散。它只是，太怕消失了。'},
+  {id:'loot',    n:'词条·聚宝', g:'A', desc:'撤离奖励 +50%', fx:'loot', set:'wealth',lore:'守财奴的执念：带不走，也要攥在手里。'},
+  {id:'omni',    n:'词条·万般', g:'S', desc:'全能：金币+15%、减伤10%、暴击+10%、大成功+2、撤离奖励+15%', fx:'omni', set:'omni',lore:'万般皆空，唯执念不空。它什么都记得。'}
 ];
 const TAG_ORDER = ['D','B','A','S'];
 function tagById(id){ return TAG_POOL.find(t=>t.id===id); }
+/* ===== 第二十八轮：玩法数值与平衡（天赋品级特色差 / 词条流派联动 / 装备套装 / 骰子动态难度 / 命运点经济上限） ===== */
+function talentById(id){ return TALENTS.find(t=>t.id===id); }
+const TALENT_GRADE_ROLE = {D:'容错·非酋救赎', C:'勤俭·以战养战', B:'均衡·稳健之选', A:'特化·专精一路', S:'强势·锋芒毕露', SS:'规则·改写战局', SSS:'神话·万中无一'};
+/* 天赋品级特色差：D/C 低品级 → 容错（每 1 个开局命运点 +1，非酋也有春天）；
+   SS/SSS 高品级 → 代价（开局金币 -10/个）与补偿（经验 +15%/个）——品级做特色差而非纯数值差 */
+function talentGradePerk(){
+  const ts = S.talents||[];
+  const low = ts.filter(id=>{ const t=talentById(id); return t&&(t.grade==='D'||t.grade==='C'); }).length;
+  const high = ts.filter(id=>{ const t=talentById(id); return t&&(t.grade==='SS'||t.grade==='SSS'); }).length;
+  return {fateBonus: low, expMult: 1 + high*0.15, goldPenalty: high*10, hasHigh: high>0, hasLow: low>0};
+}
+/* 词条 Build 流派：同流派 ≥2 个装备词条触发联动加成（低品级也能靠组合出彩） */
+const TAG_SETS = {
+  wealth:{n:'财源滚滚', desc:'探索金币 +25%'},
+  guard:{n:'不动如山', desc:'受击伤害 -8%'},
+  crit:{n:'刀刀烈火', desc:'暴击伤害 +35%'},
+  leech:{n:'嗜血成性', desc:'吸血效果 +12%'}
+};
+function tagSetActive(){
+  const c={};
+  for(const t of equippedTagsList()){
+    const key = t.set||'omni';
+    if(key==='omni'){ for(const k in TAG_SETS) c[k]=(c[k]||0)+1; }   // 「万般」词条计入所有流派
+    else c[key]=(c[key]||0)+1;
+  }
+  const act=[];
+  for(const k in c) if(c[k]>=2) act.push(k);
+  return act;
+}
+/* 装备套装：同世界 2 件高级装备凑成套，触发专属效果（初始装备不参与，越换越强） */
+const ARMOR_SETS = {
+  fantasy:{n:'西幻·圣武', perk:'受击伤害 -10%'},
+  wuxia:{n:'武侠·玄铁', perk:'暴击伤害 +20%'}
+};
+function setBonus(){
+  const c={};
+  ['weapon','armor','trinket'].forEach(slot=>{
+    const it=itemById(S.equip[slot]); if(it&&it.set) c[it.set]=(c[it.set]||0)+1;
+  });
+  const act=[];
+  for(const k in c) if(c[k]>=2) act.push(k);
+  return act;
+}
+/* 骰子动态难度曲线：第一轮回新手友好 -5；高周目（≥10）世界更躁动 +3；装备越强同场景难度微升 +2（防数值碾压）；
+   超过 500 的哨兵难度不做调整，保证测试与极端判定稳定 */
+function dynDcAdjust(dc){
+  if(dc>500) return dc;
+  let d=dc;
+  if((S.run||1)<=1) d-=5;
+  if((S.totalRuns||0)>=10) d+=3;
+  const eb=equipBonus();
+  const gear=(eb.str||0)+(eb.agi||0)+(eb.int||0)+(eb.con||0);
+  if(gear>=8) d+=2;
+  return Math.max(1, d);
+}
+
 function tagBagList(){ return (S.tagBag||[]).map(tagById).filter(Boolean); }
 function equippedTagsList(){ return (S.equippedTags||[]).map(tagById).filter(Boolean); }
 function hasTagFx(fx){ return equippedTagsList().some(t=>t.fx===fx || (t.fx==='omni' && ['gold','mit','crit','luck'].indexOf(fx)>=0)); }
@@ -6708,6 +6764,7 @@ function renderTagWorkshop(){
   let html = `<div class="panel">
     <div class="scene-chap">词条流 · 万般词条尽在掌握</div>
     <div class="scene-title" style="color:#ff6b6b">词条工作台 · 红色神器</div>
+    <div class="scene-tagline" style="color:var(--gold)">流派联动：同流派装备 ≥2 枚词条即触发套装效果（${tagSetActive().map(s=>TAG_SETS[s].n+'·'+TAG_SETS[s].desc).join(' ｜ ')||'当前未激活任何流派——集齐 2 枚同流派词条吧'}）</div>
     <div class="scene-tagline">词条就是力量。背包里的词条永不掉落；装备进生效槽（默认 ${TAG_SLOT_BASE} 格，携带「词条篡改」外挂解除插槽限制），合成与分解可以改写命运。</div>
     <div class="story">一道红色的面板在你眼前展开——\n\n【词条工作台（红色）：万般词条尽在掌握。】\n【效果一】词条背包：词条安全储存，死亡不掉落。\n【效果二】词条无限：插槽限制解除（携带「词条篡改」外挂后）。\n【效果三】词条合成：消耗经验池可以合成词条。\n【效果四】词条分解：消耗词条可以分解成经验。</div>`;
   html += `<div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">生效槽 ${eq.length}/${limit===99?'∞':limit}</div>
@@ -6716,7 +6773,7 @@ function renderTagWorkshop(){
     </div>
     <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">词条背包 ${bag.length}/${TAG_BAG_MAX}（死亡不掉落）</div>
     <div class="tag-bag">
-      ${bag.length? bag.map(t=>`<div class="tag-card" data-equip="${t.id}" style="border-color:${tagGradeColor(t.g)}"><div class="tag-n">${esc(t.n)}</div><div class="tag-g">${TAG_GRADES[t.g]}级</div><div class="tag-d">${esc(t.desc)}</div><div class="tag-lore">“${esc(t.lore||'一段被撕碎的记忆')}”</div><div class="tag-act">点击装备</div></div>`).join('') : '<div class="tag-empty">背包空空如也——去万界冒险或世界模拟器里搜刮词条吧。</div>'}
+      ${bag.length? bag.map(t=>`<div class="tag-card" data-equip="${t.id}" style="border-color:${tagGradeColor(t.g)}"><div class="tag-n">${esc(t.n)}</div><div class="tag-g">${TAG_GRADES[t.g]}级</div><div class="tag-set">${TAG_SETS[t.set]? '流派·'+TAG_SETS[t.set].n+'（'+TAG_SETS[t.set].desc+'）': '流派·'+TAG_SETS[t.set===undefined?'omni':t.set].n}</div><div class="tag-d">${esc(t.desc)}</div><div class="tag-lore">“${esc(t.lore||'一段被撕碎的记忆')}”</div><div class="tag-act">点击装备</div></div>`).join('') : '<div class="tag-empty">背包空空如也——去万界冒险或世界模拟器里搜刮词条吧。</div>'}
     </div>
     <div class="choices">
       <div class="choice ${synthReady?'tag-synth-ready':''}" id="tw-synth"><span class="c-tag">【合成】</span>3 个同品级词条 + 30 经验 → 合成更高品级${synthReady?' 🔥 可合成！':''}</div>
@@ -8007,6 +8064,20 @@ function applyTalent(t){
   if(m.str) S.stats.str+=m.str;
   if(m.maxhp){ S.maxHp+=m.maxhp; S.hp+=m.maxhp; }
   if(m.items){ for(let i=0;i<m.items;i++){ const it=ITEMS[rand(ITEMS.length)]; S.items.push(it.id); } }
+  // 天赋品级特色差：低品级容错（开局命运点+1/个）；高品级代价（开局金币-10/个）+ 经验补偿（在 gainXp 生效）
+  const _pk = talentGradePerk();
+  if(_pk.fateBonus>0) S.fate=(S.fate||0)+_pk.fateBonus;
+  if(_pk.goldPenalty>0) S.gold=Math.max(0, S.gold-_pk.goldPenalty);
+  S._gradePerkApplied = true;
+  if(_pk.hasLow||_pk.hasHigh){
+    setTimeout(()=>{ try{
+      toastBanner('天赋品级觉醒',
+        (_pk.hasLow? ('容错：命运点 +'+_pk.fateBonus+'（D/C 品级）') : '')+
+        (_pk.hasLow&&_pk.hasHigh?' ｜ ':'')+
+        (_pk.hasHigh? ('高品级代价：开局金币 -'+_pk.goldPenalty+'，经验 +'+Math.round(_pk.expMult*100-100)+'%') : ''),
+        '#ffd27a');
+    }catch(e){} }, 60);
+  }
 }
 function talentByGrade(g){
   const pool = TALENTS.filter(t=>t.grade===g);
@@ -8022,7 +8093,7 @@ function newRun(){
   if((S.totalRuns||0)>=20 && !(S._milestones||[]).includes('r20')){ S._milestones=S._milestones||[]; S._milestones.push('r20'); for(const k in S.stats) S.stats[k]+=2; }
   S.gold = 40 + (S._keepGold||0); S._keepGold = 0;
   if((S.totalRuns||0)>=10 && !(S._milestones||[]).includes('r10')){ S._milestones=S._milestones||[]; S._milestones.push('r10'); S.gold+=20; }  // 「存档作弊」外挂可把上一局一半金币带进下一轮
-  S.fate = 4 + Math.floor(S.echoes/2);
+  S.fate = Math.min(12, 4 + Math.floor(S.echoes/2));   // 命运点经济：开局命运点上限 12，防回声碎片无限叠加通胀
   if((S.totalRuns||0)>=5 && !(S._milestones||[]).includes('r5')){ S._milestones=S._milestones||[]; S._milestones.push('r5'); S.fate+=1; }  // 灵魂烙印越深，降世的底气越足
   S.items = [];
   S.talents = [];
@@ -8101,6 +8172,7 @@ function renderClassSelect(){
 /* ---------- 经验 / 升级 ---------- */
 function gainXp(amount){
   if(hasBooster('exp')) amount = Math.floor(amount*2);  // 「升级加速」外挂：经验 +100%
+  if(S._gradePerkApplied) amount = Math.round(amount * talentGradePerk().expMult);  // 高品级天赋：经验 +15%/个（代价的补偿）
   S.xp += amount;
   let ups=0;
   const learned=[];
@@ -8337,7 +8409,7 @@ function runCheck(stat, dc, label){
   S._checkHist = S._checkHist||{};
   const key = String(label)+'|'+dc;
   const h = S._checkHist[key] || {fail:0, succ:0};
-  let effDc = dc;
+  let effDc = dynDcAdjust(dc);
   if(h.fail>=2) effDc -= 5;
   if(h.fail>=4) effDc -= 5;
   if(h.succ>=3 && dc>=50) effDc += 3;
@@ -9006,6 +9078,8 @@ function combatPlayerAttack(heavy){
   if(heavy) dmg = Math.round(dmg*2.0);
   if(CB.buff.atkup>0) dmg = Math.round(dmg*1.6);
   if(crit) dmg = Math.round(dmg*(S.talents.includes('blink')?2.0:1.6));  // 十步一杀：暴击伤害 +100%
+  if(crit && tagSetActive().includes('crit')) dmg = Math.round(dmg*1.35);   // 词条流派·刀刀烈火：暴击伤害 +35%
+  if(crit && setBonus().includes('wuxia')) dmg = Math.round(dmg*1.2);       // 装备套装·武侠：暴击伤害 +20%
   if(CB.buff.rage>0) dmg = Math.round(dmg*1.25);
   if(S.talents.includes('eye')) dmg += 10;
   CB.hp -= dmg;
@@ -9144,6 +9218,8 @@ function combatEnemyTurn(){
     if(eb.mit>0) dmg = Math.round(dmg*(1-eb.mit));
     if(S.flag._allyMit) dmg = Math.round(dmg*(1-S.flag._allyMit));
     if(hasTagFx('mit')) dmg = Math.round(dmg*0.8);
+    if(tagSetActive().includes('guard')) dmg = Math.round(dmg*0.92);        // 词条流派·不动如山：受击 -8%
+    if(setBonus().includes('fantasy')) dmg = Math.round(dmg*0.9);           // 装备套装·西幻圣武：受击 -10%
     if(hasTagFx('omni')) dmg = Math.round(dmg*0.9);
     if(hasBooster('body')){ const bh=Math.max(1,Math.round(S.maxHp*0.05)); S.hp=Math.min(S.maxHp,S.hp+bh); combatLog('【肉身成圣】金身自动回血 +'+bh+'。','ok'); }
     if(S.talents.includes('iron')) dmg = Math.round(dmg*0.6);  // 铁壁之躯：受击 -40%
@@ -9429,7 +9505,7 @@ function drawTreasure(w){
 function grantTreasure(t, w){
   /* 按特色产物类型发奖，已拥有则折算金币 */
   const wName = w? '（'+w.name+'）' : '';
-  if(t.kind==='gold'){ const g = t.min + rand(t.max-t.min+1); S.gold += g; return `获得 ${t.n}${wName} —— 金币 +${g}`; }
+  if(t.kind==='gold'){ let g = t.min + rand(t.max-t.min+1); if(tagSetActive().includes('wealth')) g = Math.round(g*1.25); S.gold += g; return `获得 ${t.n}${wName} —— 金币 +${g}`; }
   if(t.kind==='fate'){ const f = t.min + rand((t.max||t.min)-(t.min)+1); S.fate += f; return `获得 ${t.n}${wName} —— 命运点 +${f}`; }
   if(t.kind==='echo'){ const e = t.min + rand((t.max||t.min)-(t.min)+1); S.echoes += e; return `获得 ${t.n}${wName} —— 回响碎片 +${e}`; }
   if(t.kind==='item'){
@@ -11240,6 +11316,8 @@ function renderChar(){
       <div class="char-block"><div class="cb-k">法力</div><div class="cb-v">${S.mp}/${S.maxMp}</div></div>
       <div class="char-block"><div class="cb-k">金币</div><div class="cb-v">◎ ${S.gold}</div></div>
       <div class="char-block"><div class="cb-k">命运点</div><div class="cb-v">◆ ${S.fate}</div></div>
+      <div class="char-block" style="grid-column:1/-1"><div class="cb-k">词条流派</div><div class="cb-v" style="font-size:12px">${tagSetActive().map(s=>TAG_SETS[s].n+'（'+TAG_SETS[s].desc+'）').join(' ｜ ')||'未激活'}</div></div>
+      <div class="char-block" style="grid-column:1/-1"><div class="cb-k">装备套装</div><div class="cb-v" style="font-size:12px">${setBonus().map(s=>ARMOR_SETS[s].n+'（'+ARMOR_SETS[s].perk+'）').join(' ｜ ')||'未凑齐（同世界 2 件）'}</div></div>
     </div>
     <div class="char-block" style="margin-top:10px">
       <div class="cb-k">经验值（升级全属性+1，可习得新技能）</div>
@@ -11526,6 +11604,7 @@ function renderTalentSelect(){
     card.innerHTML = `
       <div class="t-glow" style="background:${g.color}"></div>
       <div class="t-grade grade-${t.grade}">${t.grade} · ${g.name}</div>
+      <div class="t-role">${TALENT_GRADE_ROLE[t.grade]||''} — 品级特色差：低品级容错保底，高品级强但有代价</div>
       <div class="t-name" style="color:${g.color}">${esc(t.name)}</div>
       <div class="t-type">${esc(t.type)}</div>
       <div class="t-desc">${esc(t.desc)}</div>
