@@ -609,6 +609,9 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
 .choice-warn .c-tag{color:#ff6b5e;}
 .choice-warm{color:#cfe8cf;border-color:rgba(130,220,140,.4)!important;background:rgba(130,220,140,.05);}
 .choice-warm .c-tag{color:#7fdd8b;}
+
+.gamble-choice{color:#ffd27a;border-color:rgba(255,190,80,.55)!important;background:rgba(255,180,60,.06);}
+.gamble-choice .c-tag{color:#ffb84d;}
 </style>
 </head>
 <body>
@@ -7691,7 +7694,7 @@ const S = {
   favor:{}, trust:{},
   roster:[], party:[],
   shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
-  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null,
+  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0,
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
@@ -8381,7 +8384,7 @@ function showSaveToast(){
 }
 
 function diceLog(res){
-  const e=$('dice-log');
+  const e=$('dice-log'); if(!e) return;
   let line = `【骰】${res.label}｜1d100 = ${res.roll}`;
   if(res.mod!==0) line += ` ${res.mod>0?'+':''}${res.mod}`;
   line += ` = ${res.total} ／ 难度 ${res.dc}`;
@@ -8556,19 +8559,34 @@ function renderScene(n){
   if(S._rerollPending){
     S._rerollPending=false;
     if(S._lastCheck && S.fate>0){
+      const ck = S._lastCheck;
+      const p = fatePrice();
       const rb = document.createElement('div');
       rb.className='choice';
-      rb.innerHTML = `<span class="c-tag">【命运】</span>消耗 1 点命运点，重掷一次<span class="c-desc">失败之后，命运还想再给你一次机会 · 你的命运点：${S.fate}</span>`;
+      rb.innerHTML = `<span class="c-tag">【命运·回溯】</span>${p} 命运点，重掷一次<span class="c-desc">同一判定连续重掷递增：1→2→4→8 · 你的命运点：${S.fate}</span>`;
       rb.onclick = ()=>{
-        S.fate--; updateHUD();
-        const ck = S._lastCheck;
-        const res2 = runCheck(ck.stat, ck.dc, ck.label);
-        diceLog(res2);
-        const t2 = res2.crit ? (ck.succCrit||ck.succ) : res2.success ? ck.succ : res2.fumb ? (ck.failFumb||ck.fail) : ck.fail;
-        S._rerollPending = (!res2.success) && S.fate>0;
-        gotoNode(t2);
+        if(S.fate < p){ toastBanner('命运点不足','命运点不够支付这次重掷','#ff9c8c'); return; }
+        S.fate -= p; updateHUD();
+        doFateReroll(ck,'back',(res2)=>{
+          const t2 = res2.crit ? (ck.succCrit||ck.succ) : res2.success ? ck.succ : res2.fumb ? (ck.failFumb||ck.fail) : ck.fail;
+          S._rerollPending = (!res2.success) && S.fate>0;
+          gotoNode(t2);
+        });
       };
       box.appendChild(rb);
+      if(S.fate >= p*2){
+        const gb = document.createElement('div');
+        gb.className='choice gamble-choice';
+        gb.innerHTML = `<span class="c-tag">【逆命·赌徒】</span>${p*2} 命运点 · 30% 天胡大成功 · 掷后必接受<span class="c-desc">破釜沉舟，高风险高回报</span>`;
+        gb.onclick = ()=>{
+          S.fate -= p*2; updateHUD();
+          doFateReroll(ck,'gamble',(res2)=>{
+            const t2 = res2.crit ? (ck.succCrit||ck.succ) : res2.success ? ck.succ : res2.fumb ? (ck.failFumb||ck.fail) : ck.fail;
+            gotoNode(t2);
+          });
+        };
+        box.appendChild(gb);
+      }
     }
   }
   showView('scene');
@@ -8614,7 +8632,8 @@ function resolveChoice(c){
     else if(res.success) target = c.succ;
     else if(res.fumb) target = c.failFumb || c.fail;
     else target = c.fail;
-    // 失败且有命运点 → 在剧情下方提供重掷（不再挡在剧情前）
+    // 失败且有命运点 → 在剧情下方提供重掷（不再挡在剧情前）；新判定重置重掷递增计数
+    S._rerollCount = 0;
     S._rerollPending = (!res.success) && S.fate>0;
     gotoNode(target);
     return;
@@ -8622,22 +8641,65 @@ function resolveChoice(c){
   if(c.kind==='combat'){ startCombat(c.enemy, c.win, c.lose); return; }
   if(c.kind==='ending'){ goEnding(c.ending); return; }
 }
+
+/* ===== 第二十二轮：重掷趣味化（双模式 / 递增 / 仪式感 / 彩蛋） ===== */
+function fatePrice(){
+  const rc = S._rerollCount||0;
+  return Math.min(8, Math.pow(2, Math.min(rc,3)));   // 同一判定连续重掷：1 → 2 → 4 → 8
+}
+function doFateReroll(ck, mode, onDone){
+  S._rerollCount = (S._rerollCount||0)+1;
+  let res2;
+  if(mode==='gamble' && Math.random()<0.3){
+    // 逆命·天胡：30% 强制大成功
+    const _c = Math.max(1, critRange());
+    res2 = {stat:ck.stat, dc:ck.dc, label:ck.label, roll:_c, mod:0, total:999, crit:true, fumb:false, success:true, rerolled:false, gamble:true};
+  } else {
+    res2 = runCheck(ck.stat, ck.dc, ck.label);
+    if(mode==='gamble') res2.gamble = true;
+  }
+  diceLog(res2);
+  // 连锁彩蛋：连续 2 次重掷大成功 → 命运垂青
+  if(res2.crit){ S._critStreak=(S._critStreak||0)+1; } else S._critStreak=0;
+  if(res2.crit && (S._critStreak||0)>=2){
+    S._critStreak=0;
+    S.echoes=(S.echoes||0)+1; updateHUD();
+    toastBanner('命运垂青','连续两次重掷大成功，回响碎片 +1','#ffd27a');
+  }
+  // 连锁彩蛋：连续 3 次重掷失败 → 非酋的慰藉（下次判定必大成功）
+  if(!res2.success && mode!=='gamble'){
+    S._badStreak=(S._badStreak||0)+1;
+    if(S._badStreak>=3){ S._badStreak=0; S._consolation=true; toastBanner('非酋的慰藉','命运拉了你一把，下次判定必定大成功','#7fd0ff'); }
+  } else S._badStreak=0;
+  onDone(res2);
+}
 function renderCheckFailWithReroll(res, c){
   const v=$('view-scene');
   const panel = v.querySelector('.panel');
   const bar = document.createElement('div');
   bar.className='choices'; bar.style.marginTop='10px';
+  const p = fatePrice();
   bar.innerHTML = `
-    <div class="choice" id="reroll-btn"><span class="c-tag">【命运】</span>消耗 1 点命运点，重掷一次<span class="c-desc">你的命运点：${S.fate}</span></div>
+    <div class="choice" id="reroll-btn"><span class="c-tag">【命运·回溯】</span>${p} 命运点，重掷一次<span class="c-desc">连续重掷递增：1→2→4→8 · 命运点：${S.fate}</span></div>
+    <div class="choice gamble-choice" id="gamble-btn"><span class="c-tag">【逆命·赌徒】</span>${p*2} 命运点 · 30% 天胡大成功 · 掷后必接受<span class="c-desc">破釜沉舟</span></div>
     <div class="choice" id="accept-btn">接受这个结果，继续前行</div>`;
   panel.appendChild(bar);
   $('reroll-btn').onclick=()=>{
-    S.fate--; updateHUD();
-    const res2 = runCheck(c.stat, c.dc, c.tag||'判定');
-    diceLog(res2);
-    bar.remove();
-    const target = res2.success ? c.succ : c.fail;
-    setTimeout(()=>gotoNode(target), 650);
+    if(S.fate < p){ toastBanner('命运点不足','命运点不够支付这次重掷','#ff9c8c'); return; }
+    S.fate -= p; updateHUD();
+    doFateReroll(c,'back',(res2)=>{
+      bar.remove();
+      const target = res2.success ? c.succ : c.fail;
+      setTimeout(()=>gotoNode(target), 650);
+    });
+  };
+  $('gamble-btn').onclick=()=>{
+    S.fate -= p*2; updateHUD();
+    doFateReroll(c,'gamble',(res2)=>{
+      bar.remove();
+      const target = res2.success ? c.succ : c.fail;
+      setTimeout(()=>gotoNode(target), 650);
+    });
   };
   $('accept-btn').onclick=()=>{
     const target = c.fail;
