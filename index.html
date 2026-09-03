@@ -138,6 +138,24 @@ h1.title-name{
 .scene-tagline{font-size:12px;color:var(--ink-faint);margin-bottom:14px}
 .zone-bar{display:flex;align-items:center;gap:8px;margin:10px 0 14px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:13px;background:rgba(20,22,30,.55);line-height:1.5}
 .weather-bar{display:flex;align-items:center;gap:8px;margin:8px 0 4px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:13px;background:rgba(20,22,30,.55);line-height:1.5}
+.codex-bar{height:10px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin:14px 0 6px}
+.codex-fill{height:100%;background:linear-gradient(90deg,#5aa7e8,#b78df0);border-radius:6px;transition:width .4s}
+.codex-pct{color:#9aa2b0;font-size:12px;margin-bottom:14px}
+.codex-journal{border:1px solid #ffd9a0;background:rgba(255,217,160,.08);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.7}
+.codex-line{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;background:rgba(20,22,30,.5)}
+.codex-line.done{border-color:#5aa7e8}
+.cl-head{font-size:14px;font-weight:700;margin-bottom:8px}
+.cl-prog{color:#9aa2b0;font-weight:400;margin-left:6px}
+.cl-cards{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.codex-card{flex:1;min-width:120px;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:8px 10px;font-size:12px;background:rgba(255,255,255,.04);display:flex;flex-direction:column;gap:4px}
+.codex-card.locked{color:#6a7284;justify-content:center;text-align:center}
+.codex-card.locked i{font-style:normal;font-size:11px;color:#4a5264}
+.codex-card b{font-size:13px}
+.cd-desc{color:#b6bcc8;font-size:11px;line-height:1.5}
+.cd-run{color:#7a8396;font-size:10px}
+.cd-arrow{color:#4a5264;align-self:center;font-size:13px}
+.cl-reward{color:#ffd9a0;font-size:12px}
+.cl-hint{color:#6a7284;font-size:12px;line-height:1.6}
 .weather-bar .weather-fc{margin-left:auto;color:#9aa2b0;font-size:12px}
 .zone-bar .zone-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .zone-bar .zone-desc{margin-left:auto;color:#9aa2b0;font-size:12px}
@@ -655,6 +673,7 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
     <div class="view" id="view-ai"></div>
     <div class="view" id="view-survival"></div>
     <div class="view" id="view-booster"></div>
+    <div class="view" id="view-codex"></div>
   </main>
 </div>
 <script>
@@ -7699,14 +7718,14 @@ const S = {
   favor:{}, trust:{},
   roster:[], party:[],
   shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
-  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0, _phase:0, _weather:'calm',
+  stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0, _phase:0, _weather:'calm', _codex:{}, _codexLineDone:{},
   flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S.favor=d.favor||{}; S.trust=d.trust||{}; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S.favor=d.favor||{}; S.trust=d.trust||{}; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; S._codex=d._codex||{}; S._codexLineDone=d._codexLineDone||{}; } }catch(e){}
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{}})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -8509,21 +8528,21 @@ function showDeathSettlement(){
   $('ds-save').onclick=()=>renderTitle();
 }
 const NODE_ARRIVAL = {
-  'c1_ghost_peace': ()=>{ S.flag.old_key=true; npcTouch('linwan',10,5); const _n=NODES['c1_ghost_peace']; if(_n) _n.text+='\n\n{mono}你心里对她少了几分戒备。原来她，也只是个等不到人的可怜人。{/mono}'; },
-  'c1_ghost_give': ()=>{ S.flag.old_key=true; npcTouch('linwan',20,10); const _n=NODES['c1_ghost_give']; if(_n) _n.text+='\n\n{mono}你想帮一个人，哪怕她只是一串记忆。{/mono}'; },
+  'c1_ghost_peace': ()=>{ S.flag.old_key=true; npcTouch('linwan',10,5); const _n=NODES['c1_ghost_peace']; if(_n) _n.text+='\n\n{mono}你心里对她少了几分戒备。原来她，也只是个等不到人的可怜人。{/mono}'; codexAdd('lw_key'); },
+  'c1_ghost_give': ()=>{ S.flag.old_key=true; npcTouch('linwan',20,10); const _n=NODES['c1_ghost_give']; if(_n) _n.text+='\n\n{mono}你想帮一个人，哪怕她只是一串记忆。{/mono}'; codexAdd('lw_key'); codexAdd('lw_give'); },
   'c1_e1a': ()=>patchCorner(),
-  'c1_ghost_peace_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',15,8); },
-  'c1_ghost_give_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',25,12); },
-  'c1_ghost_aggro': ()=>{ npcTouch('linwan',2,3); const _n=NODES['c1_ghost_aggro']; if(_n) _n.text+='\n\n{mono}这次没把握好。下次，也许该换个方式。{/mono}'; },
-  'c1_ghost_aggro_fumb': ()=>npcTouch('linwan',-8,4),
+  'c1_ghost_peace_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',15,8); codexAdd('lw_key'); codexAdd('lw_name'); },
+  'c1_ghost_give_crit': ()=>{ S.flag.old_key=true; npcTouch('linwan',25,12); codexAdd('lw_key'); codexAdd('lw_give'); },
+  'c1_ghost_aggro': ()=>{ npcTouch('linwan',2,3); const _n=NODES['c1_ghost_aggro']; if(_n) _n.text+='\n\n{mono}这次没把握好。下次，也许该换个方式。{/mono}'; codexAdd('lw_wait'); },
+  'c1_ghost_aggro_fumb': ()=>{ npcTouch('linwan',-8,4); codexAdd('lw_fear'); },
   'c1_ghost_kill': ()=>npcTouch('linwan',-15,5),
-  'c1_merchant_crystal': ()=>{ S.flag.mystery_key=true; },
+  'c1_merchant_crystal': ()=>{ S.flag.mystery_key=true; codexAdd('mc_secret'); },
   'c2_faction_none': ()=>{ S.flag.mystery_key=true; },
-  'c2_save_gm': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
-  'c2_save_gm_force': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
-  'c2_watch': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); },
-  'c1_merchant_friend': ()=>{ if(S.shards<3) S.shards++; },
-  'c1_intro': ()=>{ const r=S.run||1; const n=NODES['c1_intro']; if(!n) return;
+  'c2_save_gm': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); codexAdd('cat_city'); },
+  'c2_save_gm_force': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); codexAdd('cat_city'); },
+  'c2_watch': ()=>{ S.flag.gm=true; recruitTeammate('maomao'); codexAdd('cat_city'); },
+  'c1_merchant_friend': ()=>{ if(S.shards<3) S.shards++; codexAdd('mc_remember'); },
+  'c1_intro': ()=>{ const r=S.run||1; const n=NODES['c1_intro']; if(!n) return; if(r>=2) codexAdd('ct_cycle');
     if(!n._introBase){ n._introBase=n.text; }
     let mono='';
     if(r>=10) mono='\n\n{mono}又是锈红色的天。第'+r+'次醒来，连霓虹闪烁的频率你都背得下来。这一次，要不要改个结局？{/mono}\n\n';
@@ -10815,11 +10834,104 @@ function applyEventReward(ev, success){
   if(r.xp) gainXp(r.xp);
   if(r.echo) S.echoes += r.echo;
   if(r.item) S.items.push(r.item);
+  if(success && ev && ev.name && ev.name.indexOf('广播')>=0) codexAdd('ct_broad');
   updateHUD();
 }
 
 
+
+/* ---------- 剧情回溯图鉴 · 回声档案（第二十五轮） ---------- */
+const CODEX_ITEMS = {
+  lw_key:{ic:'🗝', name:'半把钥匙', line:'林晚', hint:'安抚街角的回响，接过她递来的钥匙',
+    desc:'锈迹里缠着一根发绳。它不是在等人开门，是在等一个人回来。'},
+  lw_name:{ic:'📛', name:'她的名字', line:'林晚', hint:'在「叫她的名字」判定中唤起既视感',
+    desc:'林晚。她不是鬼，只是一个没来得及说完再见的人。'},
+  lw_wait:{ic:'🚉', name:'车站的等待', line:'林晚', hint:'安抚时触怒她，窥见执念的裂缝',
+    desc:'她等的车，永远不会再进站。可她还是站在那里，数着每一班不存在的车。'},
+  lw_give:{ic:'🤝', name:'替她等', line:'林晚', hint:'高周目选择「替她等」，站到她的位置上',
+    desc:'你接过了钥匙，也接过了那份没说完的等待。轮回锚点在你手中发烫。'},
+  lw_fear:{ic:'🌪', name:'暴走的执念', line:'林晚', hint:'安抚大失败，见证回响暴走',
+    desc:'执念被刺痛时，会发出尖叫。她喊的不是痛，是「不要忘记」。'},
+  mc_remember:{ic:'🧥', name:'记得轮回者', line:'灰袍', hint:'与灰袍商人建立友谊（好感提升）',
+    desc:'他说「又见面了」，像记得你每一世的模样。在这座人人失忆的城里，他记得。'},
+  mc_secret:{ic:'💎', name:'神秘水晶', line:'灰袍', hint:'商人处获得回响水晶',
+    desc:'水晶里封着一小段旧录音。有人在录音里，喊过你的名字。'},
+  cat_city:{ic:'🐱', name:'城主的残识', line:'城', hint:'第三章救下塔顶的老猫',
+    desc:'那只猫的瞳孔里，倒映着整座城的过去。它不是宠物——它是某个人留下的眼睛。'},
+  ct_broad:{ic:'📡', name:'广播站的怪声', line:'城', hint:'听清街角广播站的编号（随机事件）',
+    desc:'「……请转告 47 号档案室：它们要来了。它们，不是它们。」'},
+  ct_cycle:{ic:'🌀', name:'循环的痕迹', line:'城', hint:'进行到第二周目及以后',
+    desc:'第 N 次醒来，你开始辨认这座城。每一块砖，都像在重复同一个梦。'}
+};
+const CODEX_LINES = {
+  '林晚':['lw_key','lw_name','lw_wait','lw_give','lw_fear'],
+  '灰袍':['mc_remember','mc_secret'],
+  '城':['cat_city','ct_broad','ct_cycle']
+};
+function codexAdd(id){
+  const it=CODEX_ITEMS[id]; if(!it) return;
+  S._codex=S._codex||{};
+  if(S._codex[id]) return;
+  S._codex[id]={run:S.run||1};
+  checkCodexLine(it.line);
+  try{ saveSave(); }catch(e){}
+  toastBanner('回声档案 · 新碎片', it.ic+'「'+it.name+'」 已收录', '#9fd0ff');
+}
+function checkCodexLine(line){
+  const need=CODEX_LINES[line]||[];
+  if(!need.length) return;
+  const have=need.filter(k=>S._codex&&S._codex[k]).length;
+  if(have===need.length && !(S._codexLineDone||{})[line]){
+    S._codexLineDone=S._codexLineDone||{};
+    S._codexLineDone[line]=true;
+    S.echoes=(S.echoes||0)+1;
+    S.fate=(S.fate||0)+1;
+    try{ saveSave(); }catch(e){}
+    toastBanner('线索串联完成！','「'+line+'」的故事拼上了。回响碎片+1，命运点+1', '#ffd9a0');
+  }
+}
+function codexProgress(){
+  const keys=Object.keys(CODEX_ITEMS);
+  const got=(S._codex?Object.keys(S._codex):[]).filter(k=>CODEX_ITEMS[k]).length;
+  return {total:keys.length, got};
+}
+function renderCodex(){
+  S.nodeId='codex';
+  const v=$('view-codex');
+  const {total,got}=codexProgress();
+  const pct=Math.round(got/total*100);
+  let linesHtml='';
+  for(const ln of Object.keys(CODEX_LINES)){
+    const need=CODEX_LINES[ln];
+    const have=need.filter(k=>S._codex&&S._codex[k]).length;
+    const done=have===need.length;
+    const cards=need.map(k=>{
+      const it=CODEX_ITEMS[k];
+      const unlocked=!!(S._codex&&S._codex[k]);
+      if(!unlocked) return `<span class="codex-card locked">？？？<i>${esc(it.hint)}</i></span>`;
+      const rd=S._codex[k];
+      return `<span class="codex-card">${it.ic}<b>${esc(it.name)}</b><span class="cd-desc">${esc(it.desc)}</span><span class="cd-run">第${rd.run}周目</span></span>`;
+    }).join('<span class="cd-arrow">→</span>');
+    linesHtml += `<div class="codex-line ${done?'done':''}"><div class="cl-head">${done?'✔':'◌'} ${esc(ln)} · 线索 ${have}/${need.length}</div><div class="cl-cards">${cards}</div>${done?`<div class="cl-reward">线索串联 · 已领取回响碎片+1 / 命运点+1</div>`:`<div class="cl-hint">解锁提示：${esc(need.filter(k=>!(S._codex&&S._codex[k])).map(k=>CODEX_ITEMS[k].hint).join(' ｜ '))}</div>`}</div>`;
+  }
+  const journal = (pct>=90) ? `<div class="codex-journal"><b>📔 灰袍商人的日记（收集度 90% 解锁）</b><p>「第四十七次循环，我终于确认了一件事：让这座城一遍遍重来的人，不是别人，是我自己。可我为什么要把所有人都关进来？大概……是因为我舍不得忘记他们。」</p><p style="margin-top:6px;opacity:.75">最后一页的角落，画着一只猫、一把钥匙，和一个小小的车站。</p></div>` : '';
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">回声档案 · Echo Codex</div>
+      <div class="scene-title">记忆的拼图</div>
+      <div class="scene-tagline">回响 = 执念的残留。你收集的每一块碎片，都是灾变那天某个人的一段记忆。拼回它，就拼回了这座城的真相。</div>
+      <div class="codex-bar"><div class="codex-fill" style="width:${pct}%"></div></div>
+      <div class="codex-pct">收集度 ${got}/${total}（${pct}%）${pct<90?` · 集齐 90% 解锁隐藏内容`:''}</div>
+      ${journal}
+      ${linesHtml}
+      <div class="choices" id="codex-back"></div>
+    </div>`;
+  showView('codex');
+  $('codex-back').innerHTML = `<div class="choice" id="codex-exit"><span class="c-tag">【返回】</span>回到主菜单</div>`;
+  $('codex-exit').onclick=()=>renderTitle();
+}
 /* ---------- 箱庭动态天气与时间（第二十四轮） ---------- */
+
 const PHASES=[
  {t:'清晨', desc:'雾气未散，万物将醒。状态略好，判定+3。', mod:{check:3}, color:'#b8cfe0'},
  {t:'正午', desc:'光线充足，视野最好。战斗命中+10%，普通事件最多。', mod:{hit:10}, color:'#e0d0a0'},
@@ -11305,6 +11417,7 @@ function renderTitle(){
       <div class="btn btn-primary" id="btn-start">开始轮回</div>
       <div class="btn btn-ghost" id="btn-help">玩法说明</div>
       <div class="btn btn-ghost" id="btn-custom">✍ 自定义剧本</div>
+      <div class="btn btn-ghost" id="btn-codex">📖 回声档案</div>
       ${(hasSlot('auto')||hasSlot('slot1')||hasSlot('slot2')||hasSlot('slot3'))? '<div class="btn btn-ghost" id="btn-loadsave">读取存档</div>':''}
       <div class="btn btn-ghost" id="btn-quality">🎛 画质 · ${qname[S.quality||'full']}</div>
     </div>
@@ -11334,6 +11447,7 @@ function renderTitle(){
   $('btn-custom').onclick=()=>renderCustomEditor();
   const lb=$('btn-loadsave'); if(lb) lb.onclick=()=>renderSave();
   const rb=$('btn-resume'); if(rb) rb.onclick=()=>{ if(loadSlot('auto')){ autoSave(); if(S.nodeId && NODES[S.nodeId]) gotoNode(S.nodeId); else if(S.nodeId==='map') renderMap(); else renderTitle(); } };
+  $('btn-codex').onclick=()=>renderCodex();
   $('btn-quality').onclick=()=>cycleQuality();
 }
 function renderTalentSelect(){
