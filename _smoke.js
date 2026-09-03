@@ -1226,6 +1226,25 @@ step('第三十二轮：已读剧情跳过（多周目折叠）+ 判定成功率
   ok('无运行时错误(第三十二轮)', errors.length === 0);
 });
 
+step('第三十三轮：事件池分层（高周目专属事件）+ 动态分支（动态占位符/动态条件选项）', () => {
+  G('boot(); newRun(); applyClass("sword"); S.shards=2; S.gold=123; S._deaths=7; S.title="非酋之王";');
+  ok('fillText 动态占位符替换', G('(function(){ var h=fillText("碎片 {shards} / 金币 {gold} / 死过 {deaths} 次 / 称号 {title}"); return h.indexOf("碎片 2")>=0 && h.indexOf("金币 123")>=0 && h.indexOf("死过 7")>=0 && h.indexOf("非酋之王")>=0; })()'));
+  ok('need.run 不满足过滤', G('(function(){ S.run=1; var c={text:"x",need:{run:3}}; return filterChoices([c]).length===0; })()'));
+  ok('need.run 满足显示', G('(function(){ S.run=5; var c={text:"x",need:{run:3}}; return filterChoices([c]).length===1; })()'));
+  ok('need.item 不满足过滤', G('(function(){ S.items=[]; var c={text:"x",need:{item:"old_key"}}; return filterChoices([c]).length===0; })()'));
+  ok('highRunSpots 按周目过滤', G('(function(){ S.run=1; var a=highRunSpots({id:"street"}); S.run=4; var b=highRunSpots({id:"street"}); return a.length===0 && b.length===2; })()'));
+  G('S.run=4; var loc=LOCATIONS.find(function(x){return x.id==="street";}); renderLocation(loc);');
+  ok('renderLocation 渲染高周目事件spot', G('document.querySelectorAll("#view-loc .spot-item.spot-mem").length>=2'));
+  ok('高周目spot带角标', G('document.getElementById("view-loc").innerHTML.indexOf("高周目")>=0'));
+  G('S.run=1; var loc=LOCATIONS.find(function(x){return x.id==="street";}); renderLocation(loc);');
+  ok('低周目不渲染高周目事件', G('document.querySelectorAll("#view-loc .spot-item.spot-mem").length===0'));
+  ok('c1_mem1 嘴贫奖励', G('(function(){ S.echoes=0; S.fate=0; S.gold=0; var ch=NODES["c1_mem1"].choices[1]; ch.apply(S); return S.echoes===3 && S.fate===1 && S.gold===50; })()'));
+  ok('c1_mem2 约定奖励', G('(function(){ S.echoes=0; S.favor={}; S.tagBag=[]; var ch=NODES["c1_mem2"].choices[0]; ch.apply(S); return (S.favor.gray||0)===15 && S.echoes===4 && S.tagBag.indexOf("harvest")>=0; })()'));
+  ok('c1_mem3 重赏奖励', G('(function(){ S.echoes=0; S.fate=0; S.gold=0; S.tagBag=[]; var ch=NODES["c1_mem3_win"].choices[0]; ch.apply(S); return S.echoes===8 && S.fate===2 && S.gold===100 && S.tagBag.indexOf("wraith")>=0; })()'));
+  ok('无运行时错误(第三十三轮)', errors.length === 0);
+});
+
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
