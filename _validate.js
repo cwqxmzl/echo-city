@@ -9,7 +9,7 @@ const sandbox = {
   console,
   document: { addEventListener(){}, querySelectorAll(){return[]}, getElementById(){return null} },
   localStorage: { getItem(){return null}, setItem(){} },
-  window: { scrollTo(){} }
+  window: { scrollTo(){}, addEventListener(){}, removeEventListener(){}, setTimeout, clearTimeout }
 };
 vm.createContext(sandbox);
 vm.runInContext(js, sandbox);
