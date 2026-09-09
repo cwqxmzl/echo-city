@@ -7965,10 +7965,17 @@ function cycleQuality(){
   renderTitle();
 }
 /* 全局错误捕获：记录并温和提示（不弹窗打断） */
-window.addEventListener('error', function(){
+window.addEventListener('error', function(e){
   try{
     window._errCount=(window._errCount||0)+1;
-    if(window._errCount<=3){ setTimeout(function(){ try{ toastBanner('⚠ 游戏遇到小故障', '已自动记录，可刷新页面恢复进度（存档不会丢）。', '#ffb64d'); }catch(_){} }, 400); }
+    const msg = (e && e.message ? String(e.message) : 'unknown')
+      + (e && e.filename ? ' @' + String(e.filename).split('/').pop() + ':' + (e.lineno||'?') : '');
+    window._errLog = window._errLog || [];
+    window._errLog.push({t:Date.now(), m:msg});
+    if(window._errLog.length>20) window._errLog.splice(0, window._errLog.length-20);
+    try{ const prev=JSON.parse(localStorage.getItem('echo_err_log')||'[]'); prev.push({t:Date.now(), m:msg}); while(prev.length>20) prev.shift(); localStorage.setItem('echo_err_log', JSON.stringify(prev)); }catch(_){}
+    if(typeof console!=='undefined' && console.error){ try{ console.error('[回响之城·故障]', msg); }catch(_){} }
+    if(window._errCount<=3){ setTimeout(function(){ try{ toastBanner('⚠ 游戏遇到小故障 #'+window._errCount, msg.slice(0,72)+'… 已记录，刷新可恢复进度。', '#ffb64d'); }catch(_){} }, 400); }
   }catch(_){}
 });
 /* 离开提示：进行中误关/误刷给一次确认 */
@@ -8226,6 +8233,7 @@ function newRun(){
   S.items = [];
   S.talents = [];
   S.flag = {};
+  S._revealed = {};
   S.level = 1; S.xp = 0; S.cls = null;
   S.skills = []; S.skillPool = [];
   S.equip = {weapon:null,armor:null,trinket:null};
@@ -8376,7 +8384,16 @@ function useItem(itemId){
     if(it.use==='heal'){ S.hp=Math.min(S.maxHp,S.hp+it.val); }
     else if(it.use==='mp'){ S.mp=Math.min(S.maxMp,S.mp+it.val); }
     else if(it.use==='fate'){ S.fate+=it.val; }
-    else if(it.use==='reveal'){ /* 揭示隐藏选项：标记已用 */ }
+    else if(it.use==='reveal'){
+      const _n = S.nodeId && NODES[S.nodeId];
+      const hasHidden = _n && (_n.choices||[]).some(c=>c.hidden);
+      if(!hasHidden){ toastBanner('记忆卡','当前场景没有隐藏选项可揭示，先留着。','#7fe0d0'); return false; }
+      S._revealed = S._revealed||{};
+      S._revealed[S.nodeId] = true;
+      toastBanner('记忆卡生效','「？？？？」的选项，浮现了出来。','#ffb64d');
+      updateHUD();
+      if(NODES[S.nodeId]) renderScene(NODES[S.nodeId]);
+    }
     const idx = S.items.indexOf(itemId);
     if(idx>=0) S.items.splice(idx,1);
     updateHUD();
@@ -8818,7 +8835,7 @@ function renderScene(n){
     let _risk='';
     if(c.kind==='check' && c.dc>=65) _risk=' choice-warn';
     else if(c.tag==='安抚'||c.tag==='共情'||c.tag==='救人'||c.tag==='对话'||c.tag==='温柔') _risk=' choice-warm';
-    b.className='choice'+(c.hidden?' hidden-mystery':'')+_risk;
+    b.className='choice'+((c.hidden && !(S._revealed||{})[S.nodeId])?' hidden-mystery':'')+_risk;
     let tag = c.tag? `<span class="c-tag">${c.kind==='check'&&c.dc>=65?'⚠ ':''}【${esc(c.tag)}】</span>`:'';
     let desc = c.desc? `<div class="c-desc">${esc(c.desc)}</div>`:'';
     if(c.kind==='check' && !/难度/.test(desc)){ desc += `<div class="c-desc">难度：${dcWord(c.dc||50)}</div>`; }
@@ -8876,7 +8893,7 @@ function filterChoices(choices){
     if(c.need==='old_key' && !S.flag.old_key) return false;
     if(c.need==='gm' && !S.flag.gm) return false;
     if(c.need==='terminal' && !S.flag.touched_terminal) return false;
-    if(c.need==='mystery' && !S.flag.mystery_key) return false;
+    if(c.need==='mystery' && !S.flag.mystery_key && !(S._revealed||{})[S.nodeId]) return false;
     if(c.need && typeof c.need==='object'){
       if(c.need.stat!==undefined && statValue(c.need.stat) < (c.need.min||0)) return false;
       if(c.need.shards!==undefined && (S.shards||0) < c.need.shards) return false;
@@ -10980,7 +10997,15 @@ const MEMORY_EVENTS = [
   {loc:'street', id:'mem_void', ic:'🌌', minRun:6, name:'湮灭之痕', desc:'街尾裂开一道黑缝，里面有什么东西在等', node:'c1_mem3'},
 ];
 function highRunSpots(l){
-  return MEMORY_EVENTS.filter(e=>e.loc===l.id && (S.run||1)>=e.minRun);
+  const pool = MEMORY_EVENTS.filter(e=>e.loc===l.id && (S.run||1)>=e.minRun);
+  if(!pool.length) return [];
+  const want = pool.length>=3 ? 2 : pool.length;
+  const cp = pool.slice(), out = [];
+  while(out.length<want && cp.length){
+    const r = (typeof rand==='function' ? rand(cp.length) : 0) % cp.length;
+    out.push(cp.splice(r,1)[0]);
+  }
+  return out;
 }
 /* —— 轮回裂隙 · 记忆残响（第 2 周目解锁）—— */
 N({id:'c1_mem1',chap:'旧日街区 · 轮回记忆',title:'轮回裂隙',tagline:'记忆 · 上周目的留言',
