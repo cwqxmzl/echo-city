@@ -10485,7 +10485,7 @@ function aiWorldPick(){
   const box=$('ai-scenepick');
   const list=Object.keys(AI_META).map(k=>{
     const m=AI_META[k];
-    return '<div class="ai-witem" onclick="aiStart('+JSON.stringify(k)+')"><b>'+esc(m.name)+'</b><span>'+esc(m.style)+' · '+(S.aiCleared&&S.aiCleared.indexOf(k)>=0?'已通关':'未通关')+'</span></div>';
+    return '<div class="ai-witem" onclick=\'aiStart('+JSON.stringify(k)+')\'><b>'+esc(m.name)+'</b><span>'+esc(m.style)+' · '+(S.aiCleared&&S.aiCleared.indexOf(k)>=0?'已通关':'未通关')+'</span></div>';
   }).join('');
   box.innerHTML='<h3>选择叙事场景（21 个）</h3><div class="ai-wlist">'+list+'</div><button onclick="aiWorldPickHide()">收起</button>';
   box.style.display = box.style.display==='none'?'block':'none';
