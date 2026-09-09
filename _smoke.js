@@ -1245,6 +1245,40 @@ step('第三十三轮：事件池分层（高周目专属事件）+ 动态分支
 });
 
 
+console.log('== 34. 稳定与诊断（记忆卡生效 / 错误可查 / 高周目随机浮现） ==');
+step('记忆卡无隐藏不消耗', () => {
+  G('boot(); newRun(); applyClass("sword"); S.talents=["mem"]; S.items=["memcard"]; S.nodeId="c1_intro"; S._revealed={};');
+  ok('无隐藏选项返回false且未消耗', G('(function(){ var r=useItem("memcard"); return r===false && S.items.indexOf("memcard")>=0; })()'));
+});
+step('记忆卡揭示隐藏选项', () => {
+  G('S.items=["memcard"]; S.nodeId="c3_memory"; S._revealed={}; S.flag.mystery_key=false;');
+  ok('返回true并消耗且标记揭示', G('(function(){ var r=useItem("memcard"); return r===true && S.items.indexOf("memcard")<0 && S._revealed["c3_memory"]===true; })()'));
+});
+step('揭示后隐藏选项可见', () => {
+  G('S._revealed={}; S._revealed["c3_memory"]=true; S.flag.mystery_key=false; S.nodeId="c3_memory";');
+  ok('mystery选项不再被过滤', G('(function(){ var c=filterChoices(NODES["c3_memory"].choices); return c.some(x=>x.hidden); })()'));
+  ok('渲染无 hidden-mystery 类', G('(function(){ renderScene(NODES["c3_memory"]); var el=document.querySelector("#scene-choices .choice.hidden-mystery"); return el===null; })()'));
+});
+step('未揭示时隐藏选项隐藏', () => {
+  G('S._revealed={}; S.flag.mystery_key=false;');
+  ok('mystery选项被过滤', G('(function(){ var c=filterChoices(NODES["c3_memory"].choices); return !c.some(x=>x.hidden); })()'));
+});
+step('错误捕获记录日志', () => {
+  ok('dispatch error 后 _errCount/_errLog 记录', G('(function(){ var b=window._errCount||0; var ev=new ErrorEvent("error",{message:"diag-boom",filename:"x.js",lineno:7}); window.dispatchEvent(ev); return (window._errCount||0)===b+1 && (window._errLog||[]).some(x=>String(x.m).indexOf("diag-boom")>=0); })()'));
+  ok('localStorage 错误日志写入', G('(function(){ var l=JSON.parse(localStorage.getItem("echo_err_log")||"[]"); return l.some(x=>String(x.m).indexOf("diag-boom")>=0); })()'));
+  errors.length = 0; // 清掉故意触发的 diag-boom，避免污染本轮无错误断言
+});
+step('高周目事件随机浮现', () => {
+  G('S.run=1;');
+  ok('run=1 无高周目事件', G('highRunSpots({id:"street"}).length===0'));
+  G('S.run=4;');
+  ok('run=4 展示全部已解锁', G('highRunSpots({id:"street"}).length===2'));
+  G('S.run=8;');
+  ok('run=8 随机抽2且在池内', G('(function(){ var r=highRunSpots({id:"street"}); return r.length===2 && r.every(x=>MEMORY_EVENTS.indexOf(x)>=0); })()'));
+});
+ok('无运行时错误(第三十四轮)', errors.length === 0);
+
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
