@@ -1313,6 +1313,22 @@ ok('视图容器存在', G('!!document.getElementById("view-customclass") && !!d
 ok('无运行时错误(第三十五轮)', errors.length === 0);
 
 
+
+step('36. 开局随机前置见闻', () => {
+  G('boot(); newRun();');
+  ok('开局事件池存在', G('OPENING_EVENTS && OPENING_EVENTS.length>=3'));
+  const _s = G('NODES["c1_intro"].choices[0].succ');
+  ok('判定成功分支接入前置事件', typeof _s==='string' && _s.indexOf('c1_open_')===0);
+  ok('原判定目标已保留', G('NODES["c1_intro"]._openRet && NODES["c1_intro"]._openRet[0]==="c1_per_ok"'));
+  ok('事件节点已注册且可渲染', G('(function(){ const id=NODES["c1_intro"].choices[0].succ; const n=NODES[id]; return !!n && !!n.choices && n.choices.length>=1 && n.text.length>0; })()'));
+  ok('事件链尾指回原判定目标', G('(function(){ const id=NODES["c1_intro"].choices[0].succ; const ch=NODES[id].choices; const last=ch[ch.length-1]; const g=last.goto||last.succ; return g==="c1_per_ok"; })()'));
+  ok('失败分支独立接入', G('(function(){ const f=NODES["c1_intro"].choices[0].fail; return typeof f==="string" && f.indexOf("c1_open_")===0 && f!==NODES["c1_intro"].choices[0].succ; })()'));
+  ok('重开重新抽事件仍合法', G('(function(){ newRun(); const a=NODES["c1_intro"].choices[0].succ; newRun(); const b=NODES["c1_intro"].choices[0].succ; return a.indexOf("c1_open_")===0 && b.indexOf("c1_open_")===0; })()'));
+  ok('周目≥3前置事件链为2个', G('(function(){ S.run=3; newRun(); const id=NODES["c1_intro"].choices[0].succ; const ch=NODES[id].choices; const g=ch[ch.length-1].goto||""; return g.indexOf("c1_open_")===0; })()'));
+  ok('直觉分支也接入事件', G('(function(){ const z=NODES["c1_intro"].choices[1].goto; return typeof z==="string" && z.indexOf("c1_open_")===0; })()'));
+  ok('无运行时错误(第三十六轮)', errors.length===0);
+});
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
