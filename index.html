@@ -686,6 +686,17 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
 .spot-item.spot-mem{border:1px solid rgba(184,141,240,.4);background:linear-gradient(135deg,rgba(184,141,240,.08),rgba(255,205,110,.06))}
 .spot-item.spot-mem .sp-ic{filter:drop-shadow(0 0 6px rgba(184,141,240,.5))}
 .spot-mem .sp-tag{color:#c9a5ff;border:1px solid rgba(184,141,240,.45);background:rgba(184,141,240,.12);font-size:11px;padding:1px 7px;border-radius:9px}
+/* 第三十五轮：自定义职业 / 技能工坊 */
+.tinput{width:100%;max-width:340px;background:rgba(10,16,28,.7);border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:14px;outline:none}
+.tinput:focus{border-color:var(--gold)}
+.cc-stat{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px}
+.cc-stat b{color:var(--gold)}
+.cc-skill{display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer;transition:all .15s;width:150px}
+.cc-skill.on{border-color:var(--gold);background:rgba(230,165,68,.08)}
+.cc-skill .sk-name{color:var(--ink);font-weight:600}
+.cc-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:13px}
+.ccard.cc-add{border-style:dashed;border-color:var(--gold-soft);background:rgba(230,165,68,.04);cursor:pointer}
+.ccard.cc-custom{border-color:var(--cyan-dim)}
 </style>
 </head>
 <body>
@@ -726,6 +737,8 @@ body[data-q="lite"] .dice-log.show, body[data-q="lite"] .view.active{animation-d
     <div class="view" id="view-survival"></div>
     <div class="view" id="view-booster"></div>
     <div class="view" id="view-codex"></div>
+    <div class="view" id="view-customclass"></div>
+    <div class="view" id="view-skillforge"></div>
   </main>
 </div>
 <script>
@@ -841,7 +854,43 @@ const CLASSES = [
    str:0,agi:0,int:1,cha:3,con:2,per:0,maxHp:8,
    weapon:'jade_talisman', armor:'robe',
    skills:['heal','holy','shield'],
-   pool:['heal','holy','shield','taunt','frost','warscry']}
+   pool:['heal','holy','shield','taunt','frost','warscry']},
+{id:'tide', name:'潮汐海盗', role:'近战 · 吸血续航（海洋世界）',
+   desc:'从深渊海沟爬出来的浪里白条，刀口舔血、血里回血。潮汐会记住每一个敢闯深海的疯子。',
+   str:2,agi:1,int:0,cha:0,con:1,per:0,maxHp:6,
+   weapon:'steel_dagger', armor:'leather',
+   skills:['tide','slash','sonar'],
+   pool:['tide','slash','sonar','cleave','bloodslash','haste']},
+  {id:'paladin', name:'圣骑士', role:'防御 · 龙威圣焰（西幻世界）',
+   desc:'从巨龙巢穴归来的守誓者，一手举盾一手燃着圣焰。队友倒下之前，他不会先倒。',
+   str:2,agi:0,int:0,cha:0,con:2,per:0,maxHp:8,
+   weapon:'iron_sword', armor:'cloth',
+   skills:['pierce','shield','roar'],
+   pool:['pierce','shield','roar','holyfire','warscry','rage']},
+  {id:'hunter', name:'逐风猎手', role:'敏捷 · 陷阱连发（旷野神域）',
+   desc:'旷野上追着灾厄跑了一百年的猎人，弓、刀、陷阱三件套。风是他的朋友，猎物是他下顿饭。',
+   str:0,agi:3,int:0,cha:0,con:0,per:1,maxHp:4,
+   weapon:'steel_dagger', armor:'leather',
+   skills:['aim','blade','trap'],
+   pool:['aim','blade','trap','cleave','catch','haste']},
+  {id:'warlock', name:'死灵术士', role:'法术 · 冥界爆破（冥界）',
+   desc:'与冥河做过交易的男人。以亡灵之姿行走人间，出手即是三界最阴间的法术。',
+   str:0,agi:0,int:3,cha:0,con:0,per:1,maxHp:3,
+   weapon:'arcane_staff', armor:'robe',
+   skills:['blitz','frost','steam'],
+   pool:['blitz','frost','steam','pale','heal','aim']},
+  {id:'tamer', name:'驯兽师', role:'辅助 · 收服万灵（精灵大陆）',
+   desc:'精灵大陆上最受欢迎的驯兽师，万物皆可收服。打不过的敌人？先收服，再让它打别人。',
+   str:0,agi:0,int:0,cha:3,con:1,per:0,maxHp:6,
+   weapon:'jade_talisman', armor:'robe',
+   skills:['catch','heal','shield'],
+   pool:['catch','heal','shield','aim','taunt','frost']},
+  {id:'rider', name:'诸天行者', role:'混合 · 万界穿梭（诸天）',
+   desc:'在诸天万界之间串门成瘾的旅行者。每个世界偷一手绝活，串成自己的看家本领。',
+   str:0,agi:2,int:1,cha:0,con:0,per:1,maxHp:5,
+   weapon:'iron_sword', armor:'leather',
+   skills:['zhutian','bladedance','cleave'],
+   pool:['zhutian','bladedance','cleave','haste','aim','fireball']},
 ];
 
 /* ---------- 技能库（三技能槽构筑） ---------- */
@@ -873,7 +922,14 @@ const SKILLS = {
   blitz:{name:'冥河冲刺',type:'atk',mp:15,power:1.5,hits:2,desc:'连刺两次，每次 1.5 倍伤害（冥界）'},
   guoyun:{name:'国运加护',type:'buff',mp:12,rage:true,desc:'举国气运入体，暴击率 +50%，持续 2 回合（国运）'},
   tarot:{name:'塔罗占卜',type:'heal',mp:14,heal:.3,int:true,desc:'窥探命运回响，回复 30% 生命（诡秘）'},
-  zhutian:{name:'诸天穿梭',type:'buff',mp:12,haste:true,desc:'穿梭诸天，本回合先手且闪避 +30（诸天）'}
+  zhutian:{name:'诸天穿梭',type:'buff',mp:12,haste:true,desc:'穿梭诸天，本回合先手且闪避 +30（诸天）'},
+  /* —— 第三十五轮：更多世界专属技能 —— */
+  sonar:{name:'声呐脉冲',type:'atk',mp:14,power:1.5,int:true,freeze:true,desc:'1.5 倍法术伤害，30% 冻结一回合（海洋）'},
+  roar:{name:'龙吼',type:'buff',mp:14,atkup:true,taunt:true,desc:'龙威震慑：攻击力 +50% 且下回合受击 -40%（西幻）'},
+  holyfire:{name:'圣焰',type:'heal',mp:18,heal:.5,int:true,desc:'圣焰护体，回复 50% 生命上限（西幻）'},
+  steam:{name:'蒸汽爆破',type:'atk',mp:18,power:1.9,int:true,desc:'1.9 倍智力伤害，高压蒸汽炸裂（末世）'},
+  trap:{name:'陷阱术',type:'atk',mp:12,power:1.2,arm:true,desc:'无视防御的 1.2 倍伤害（旷野神域）'},
+  bladedance:{name:'剑舞',type:'atk',mp:16,power:0.7,hits:4,desc:'四段剑舞，每次 0.7 倍伤害（仙侠）'}
 };
 
 /* ---------- 道具 ---------- */
@@ -7893,13 +7949,16 @@ const S = {
   roster:[], party:[],
   shards:0, _locDone:{}, permaStat:{}, _milestones:[], _guides:[],
   stats:{str:0,agi:0,int:0,cha:0,con:0,per:0}, voice:null, _lastCheck:null, _rerollPending:false, _pendingDice:null, _pendingTransit:null, _rerollCount:0, _critStreak:0, _badStreak:0, _seenNodes:[], _curNode:null, _mood:0, _legacyMood:0, _acts:{comfort:0,smite:0,loot:0}, _memoryVisions:0, _phase:0, _weather:'calm', _codex:{}, _codexLineDone:{},
-  flag:{}, nodeId:null, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
+  flag:{}, nodeId:null, customClasses:[], customSkills:{}, worldsCleared:[], tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], aiApi:null, surv:null, survBest:{}, survCleared:[]
 };
 function loadSave(){
-  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S.favor=d.favor||{}; S.trust=d.trust||{}; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; S._codex=d._codex||{}; S._codexLineDone=d._codexLineDone||{}; S._deaths=d._deaths||0; S._rerolls=d._rerolls||0; S._clsClears=d._clsClears||{}; S.title=d.title||''; S._seenNodes=d._seenNodes||[]; } }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(STORE_KEY)); if(d){ S.run=d.run||1; S.echoes=d.echoes||0; S.totalRuns=d.totalRuns||0; S.bestProgress=d.bestProgress||0; S.finishedEndings=d.finishedEndings||[]; S.tagBag=d.tagBag||[]; S.equippedTags=d.equippedTags||[]; S.worldStory=d.worldStory||{}; S.storyDone=d.storyDone||[]; S.wsVars=d.wsVars||{}; S.aiCleared=d.aiCleared||[]; S.survBest=d.survBest||{}; S.survCleared=d.survCleared||[]; S.voice=d.voice||null; S.permaStat=d.permaStat||{}; S._milestones=d._milestones||[]; S._guides=d._guides||[]; S.achievements=d.achievements||[]; S.quality=d.quality||'full'; S.favor=d.favor||{}; S.trust=d.trust||{}; S._wins=d._wins||0; S._fumbTotal=d._fumbTotal||0; S._permSum=d._permSum||0; S._runCrits=d._runCrits||0; S._codex=d._codex||{}; S._codexLineDone=d._codexLineDone||{}; S._deaths=d._deaths||0; S._rerolls=d._rerolls||0; S._clsClears=d._clsClears||{}; S.title=d.title||''; S._seenNodes=d._seenNodes||[]; S.customClasses=d.customClasses||S.customClasses||[]; S.customSkills=d.customSkills||S.customSkills||{}; } }catch(e){}
+  const _ccs=localStorage.getItem('echo_custom_classes'); if(_ccs){ try{ S.customClasses=JSON.parse(_ccs)||[]; }catch(_){} }
+  const _csk=localStorage.getItem('echo_custom_skills'); if(_csk){ try{ S.customSkills=JSON.parse(_csk)||{}; }catch(_){} }
+  if(S.cls && !classById(S.cls)){ S.cls=null; }  // 自定义职业资产缺失时自愈，避免渲染崩溃
 }
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{},_deaths:S._deaths||0,_rerolls:S._rerolls||0,_clsClears:S._clsClears||{},title:S.title||'',_seenNodes:S._seenNodes||[]})); }catch(e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{},_deaths:S._deaths||0,_rerolls:S._rerolls||0,_clsClears:S._clsClears||{},title:S.title||'',_seenNodes:S._seenNodes||[],customClasses:S.customClasses||[],customSkills:S.customSkills||{}})); }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -8073,8 +8132,8 @@ function renderSave(){
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
 const itemById = id => ITEMS.find(i=>i.id===id);
-const skillById = id => SKILLS[id];
-const classById = id => CLASSES.find(c=>c.id===id);
+const skillById = id => SKILLS[id] || (S.customSkills||{})[id];
+const classById = id => CLASSES.find(c=>c.id===id) || (S.customClasses||[]).find(c=>c.id===id);
 const worldById = id => WORLDS.find(w=>w.id===id);
 const teammateById = id => TEAMMATES.find(m=>m.id===id);
 function xpNeed(level){ return 50 + level*30; }
@@ -8261,7 +8320,7 @@ function applyClass(cid){
   S.maxMp = 50 + S.stats.int*3; S.mp = S.maxMp;
   S.skillPool = c.pool.slice();
   S.skills = c.skills.slice();
-  S.equip.weapon = c.weapon; S.equip.armor = c.armor;
+  S.equip.weapon = c.weapon || 'iron_sword'; S.equip.armor = c.armor || 'cloth';
   S.gold += 20;
   S.hp = S.maxHp; S.mp = S.maxMp;  // 满状态入世，开局即巅峰
   if(!S.voice) S.voice = rollVoice();  // 觉醒内心声音
@@ -8303,7 +8362,247 @@ function renderClassSelect(){
     };
     box.appendChild(card);
   });
+
+  (S.customClasses||[]).forEach(c=>{
+    const card=document.createElement('div');
+    card.className='ccard cc-custom';
+    const statDesc = ['力量','敏捷','智力','魅力','体质','感知'].map((k,i)=>{
+      const v=[c.str,c.agi,c.int,c.cha,c.con,c.per][i];
+      return v? `${k} +${v}` : null;
+    }).filter(Boolean).join(' · ');
+    card.innerHTML = `
+      <div class="cl-name">${esc(c.name)} <span style="font-size:11px;color:var(--cyan)">· 自创</span></div>
+      <div class="cl-role">${esc(c.role)}</div>
+      <div class="cl-desc">${esc(c.desc)}</div>
+      <div class="cl-stat">初始：${esc(statDesc)} ｜ 生命上限 +${c.maxHp}</div>
+      <div class="cl-skill">初始技能：${c.skills.map(s=>esc((SKILLS[s]||(S.customSkills||{})[s]||{name:s}).name)).join('、')}</div>`;
+    card.onclick=()=>{
+      box.querySelectorAll('.ccard').forEach(x=>x.style.borderColor='var(--line)');
+      card.style.borderColor='var(--gold)';
+      setTimeout(()=>{
+        applyClass(c.id);
+        updateHUD();
+        renderHub();
+      }, 450);
+    };
+    box.appendChild(card);
+  });
+  const addCard=document.createElement('div');
+  addCard.className='ccard cc-add';
+  addCard.innerHTML = `
+    <div class="cl-name" style="color:var(--gold)">✒ 创建自定义职业</div>
+    <div class="cl-role">自命名 · 自定属性 · 自选技能</div>
+    <div class="cl-desc">从全技能库（含自创技能）里，铸一个只属于你的身份。创建后永久保留，每轮可选。</div>
+    <div class="cl-stat" style="color:var(--cyan)">自由加点 6 点 · 初始技能 1-3 个</div>`;
+  addCard.onclick=()=>renderCustomClass();
+  box.appendChild(addCard);
+
   showView('class');
+}
+
+/* ---------- 第三十五轮：自定义职业 / 技能工坊 ---------- */
+const CUST_STAT_KEYS = ['str','agi','int','cha','con','per'];
+const CUST_STAT_NAMES = ['力量','敏捷','智力','魅力','体质','感知'];
+function renderCustomClass(){
+  S.nodeId='customclass';
+  updateHUD();
+  const v=$('view-customclass');
+  let pts = 6;
+  const alloc = {str:0,agi:0,int:0,cha:0,con:0,per:0};
+  const picked = [];
+  const allSkills = () => Object.keys(SKILLS).concat(Object.keys(S.customSkills||{}));
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">自定义职业 · 工坊</div>
+      <div class="scene-title">✒ 创建你的专属职业</div>
+      <div class="scene-tagline">自命名、自定属性、自选技能——你说了算。创建后永久保留，供后续周目选用。</div>
+      <div class="story">系统提示音响起：\n\n“检测到自定义请求。权限：已授予。\n\n请定义你的职业名、属性倾向与初始技能——这座城，尊重每一个不走寻常路的灵魂。”</div>
+      <div style="margin:14px 0 4px"><label>职业名（2-8 字）</label><input id="cc-name" class="tinput" maxlength="8" placeholder="例：铸星者 / 断罪官 / 摆烂王"></div>
+      <div style="margin:10px 0 4px;font-size:12px;color:var(--cyan);letter-spacing:.1em">属性加点 · 剩余 <b id="cc-pts">6</b> 点（每种上限 4）</div>
+      <div id="cc-stats" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      <div style="margin:12px 0 4px;font-size:12px;color:var(--cyan);letter-spacing:.1em">初始技能 · 选 1-3 个（全技能库 · 含自创）<span style="color:var(--ink-dim)">已选 <b id="cc-sel">0</b>/3</span></div>
+      <div id="cc-skills" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="cact" style="flex:1" id="cc-save">✒ 创建并入世</button>
+        <button class="cact ghost" style="flex:1" onclick="renderClassSelect()">返回</button>
+      </div>
+      <div id="cc-list" style="margin-top:14px"></div>
+    </div>`;
+  function drawStats(){
+    const box=$('cc-stats'); box.innerHTML='';
+    CUST_STAT_NAMES.forEach((nm,idx)=>{
+      const k=CUST_STAT_KEYS[idx];
+      const d=document.createElement('div');
+      d.className='cc-stat';
+      d.innerHTML = `<span>${nm} <b>${alloc[k]}</b></span><button class="cact sm" data-k="${k}" data-d="-1">−</button><button class="cact sm" data-k="${k}" data-d="1">+</button>`;
+      d.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+        const kk=b.dataset.k, dd=parseInt(b.dataset.d);
+        const next=alloc[kk]+dd;
+        if(dd>0 && (pts<=0 || next>4)) return;
+        if(dd<0 && next<0) return;
+        alloc[kk]=next; pts-=dd;
+        $('cc-pts').textContent=pts;
+        drawStats();
+      });
+      box.appendChild(d);
+    });
+  }
+  function drawSkills(){
+    const box=$('cc-skills'); box.innerHTML='';
+    allSkills().forEach(sid=>{
+      const sk = SKILLS[sid] || (S.customSkills||{})[sid];
+      const on = picked.indexOf(sid)>=0;
+      const d=document.createElement('div');
+      d.className='cc-skill'+(on?' on':'');
+      d.innerHTML = `<span class="sk-name">${esc(sk.name)}</span><span class="sk-mp">◆ ${sk.mp}</span><span class="sk-desc">${esc(sk.desc)}</span>`;
+      d.onclick=()=>{
+        const i=picked.indexOf(sid);
+        if(i>=0){ picked.splice(i,1); }
+        else { if(picked.length>=3){ toastBanner('技能已满', '最多携带 3 个初始技能。', '#ffb64d'); return; } picked.push(sid); }
+        $('cc-sel').textContent=picked.length;
+        drawSkills();
+      };
+      box.appendChild(d);
+    });
+  }
+  drawStats(); drawSkills();
+  const lst=$('cc-list');
+  if((S.customClasses||[]).length){
+    lst.innerHTML = '<div style="font-size:12px;color:var(--cyan);margin-bottom:6px">已创建职业</div>' +
+      (S.customClasses||[]).map(c=>`<div class="cc-row">${esc(c.name)} · ${esc(c.role)} · ${c.skills.map(x=>esc((SKILLS[x]||(S.customSkills||{})[x]||{name:x}).name)).join('/')} <button class="cact sm" onclick="ccDelete('${c.id}')">删除</button></div>`).join('');
+  }
+  $('cc-save').onclick=()=>{
+    const nm=$('cc-name').value.trim();
+    if(!nm || nm.length<2){ toastBanner('缺职业名', '先给你的职业起个名字（2-8 字）。', '#ffb64d'); return; }
+    if(picked.length<1){ toastBanner('没选技能', '至少选 1 个初始技能。', '#ffb64d'); return; }
+    const total = CUST_STAT_KEYS.reduce((a,k)=>a+alloc[k],0);
+    if(total!==6){ toastBanner('属性点未用完', '把 6 点属性加完再入世。', '#ffb64d'); return; }
+    const id = 'cc_' + Date.now().toString(36);
+    const role = CUST_STAT_NAMES.map((n,i)=>alloc[CUST_STAT_KEYS[i]]? n+'+'+alloc[CUST_STAT_KEYS[i]] : null).filter(Boolean).join(' ') + ' · 自定义';
+    const c = {id, name:nm, role, desc:`由你亲手铸造的专属职业「${nm}」：属性倾向 ${role}，初始技能 ${picked.map(x=>(SKILLS[x]||(S.customSkills||{})[x]||{name:x}).name).join('、')}。`, str:alloc.str, agi:alloc.agi, int:alloc.int, cha:alloc.cha, con:alloc.con, per:alloc.per, maxHp:6, weapon:null, armor:null, skills:picked.slice(0,3), pool:allSkills()};
+    S.customClasses = S.customClasses||[]; S.customClasses.push(c);
+    try{ localStorage.setItem('echo_custom_classes', JSON.stringify(S.customClasses)); }catch(_){}
+    toastBanner('职业已创建', `「${nm}」已永久加入职业库，下次轮回也能选。`, '#7ef0c0');
+    renderClassSelect();
+  };
+  showView('customclass');
+}
+function ccDelete(id){
+  S.customClasses = (S.customClasses||[]).filter(c=>c.id!==id);
+  try{ localStorage.setItem('echo_custom_classes', JSON.stringify(S.customClasses)); }catch(_){}
+  renderCustomClass();
+}
+function renderSkillForge(){
+  S.nodeId='skillforge';
+  updateHUD();
+  const v=$('view-skillforge');
+  const tmpls = [
+    {t:'atk', n:'攻击', desc:'按属性造成伤害（可选无视防御 / 多段 / 吸血 / 冻结）'},
+    {t:'heal', n:'治疗', desc:'回复最大生命的一定比例'},
+    {t:'def', n:'护盾', desc:'两回合减伤 60%'},
+    {t:'buff', n:'增益', desc:'攻击强化 / 先手 / 必中 / 嘲讽 / 狂暴 之一'}
+  ];
+  v.innerHTML = `
+    <div class="panel">
+      <div class="scene-chap">技能工坊</div>
+      <div class="scene-title">🔧 铸一枚属于你的技能</div>
+      <div class="scene-tagline">效果模板 + 属性倾向 + 威力档位 → 生成可入库、可携带、可战斗的真实技能。与原生技能同规则。</div>
+      <div style="margin:14px 0 4px"><label>技能名（2-8 字）</label><input id="sf-name" class="tinput" maxlength="8" placeholder="例：灭世黄瓜 / 摆烂光环 / 晚安拳"></div>
+      <div style="margin:12px 0 4px;font-size:12px;color:var(--cyan);letter-spacing:.1em">效果模板</div>
+      <div id="sf-tmpl" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      <div style="margin:12px 0 4px;font-size:12px;color:var(--cyan);letter-spacing:.1em">属性倾向</div>
+      <div id="sf-attr" style="display:flex;gap:8px"></div>
+      <div style="margin:12px 0 4px;font-size:12px;color:var(--cyan);letter-spacing:.1em">威力档位</div>
+      <div id="sf-pow" style="display:flex;gap:8px"></div>
+      <div id="sf-preview" style="margin-top:14px"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="cact" style="flex:1" id="sf-save">🔧 铸就技能</button>
+        <button class="cact ghost" style="flex:1" onclick="renderHub()">返回</button>
+      </div>
+      <div id="sf-list" style="margin-top:14px"></div>
+    </div>`;
+  let tmpl='atk', attr='str', pow=1;
+  const ATTRS=[['str','力量'],['agi','敏捷'],['int','智力']];
+  const POWS=[[0,'轻 · 1.0 倍',1],[1,'中 · 1.5 倍',1.5],[2,'重 · 2.0 倍',2]];
+  function drawTmpl(){
+    const box=$('sf-tmpl'); box.innerHTML='';
+    tmpls.forEach(t=>{
+      const d=document.createElement('div');
+      d.className='cc-skill'+(tmpl===t.t?' on':'');
+      d.innerHTML = `<span class="sk-name">${t.n}</span><span class="sk-desc">${t.desc}</span>`;
+      d.onclick=()=>{ tmpl=t.t; drawTmpl(); drawPrev(); };
+      box.appendChild(d);
+    });
+  }
+  function drawAttr(){
+    const box=$('sf-attr'); box.innerHTML='';
+    ATTRS.forEach(a=>{
+      const d=document.createElement('div');
+      d.className='cc-skill'+(attr===a[0]?' on':'');
+      d.innerHTML = `<span class="sk-name">${a[1]}</span>`;
+      d.onclick=()=>{ attr=a[0]; drawAttr(); drawPrev(); };
+      box.appendChild(d);
+    });
+  }
+  function drawPow(){
+    const box=$('sf-pow'); box.innerHTML='';
+    POWS.forEach(p=>{
+      const d=document.createElement('div');
+      d.className='cc-skill'+(pow===p[1]?' on':'');
+      d.innerHTML = `<span class="sk-name">${p[2]}</span>`;
+      d.onclick=()=>{ pow=p[1]; drawPow(); drawPrev(); };
+      box.appendChild(d);
+    });
+  }
+  function drawPrev(){
+    const nm=$('sf-name') ? ($('sf-name').value.trim() || '未命名') : '未命名';
+    let desc;
+    if(tmpl==='atk'){ const pa=ATTRS.find(a=>a[0]===attr)[1]; desc=`${pow} 倍${pa}伤害（自创）`; }
+    else if(tmpl==='heal'){ desc=`回复 ${Math.round([0.35,0.5,0.65][POWS.findIndex(p=>p[1]===pow)]*100)}% 生命上限（自创）`; }
+    else if(tmpl==='def'){ desc='获得护盾，两回合减伤 60%（自创）'; }
+    else { const bn={1:'攻击力 +50%，持续 2 回合',1.5:'本回合先手，闪避 +30',2:'暴击率 +50%，持续 2 回合'}[pow]; desc='增益：'+(bn||'下一次攻击必定命中')+'（自创）'; }
+    const mp = tmpl==='atk' ? Math.round(8+pow*6) : tmpl==='heal' ? Math.round(12+pow*5) : 10;
+    $('sf-preview').innerHTML = `<div class="cc-row">预览：<b>${esc(nm)}</b> · ◆${mp} · ${esc(desc)}</div>`;
+  }
+  drawTmpl(); drawAttr(); drawPow(); drawPrev();
+  $('sf-name').addEventListener('input', drawPrev);
+  const ck=Object.keys(S.customSkills||{});
+  const lst=$('sf-list');
+  if(ck.length){
+    lst.innerHTML = '<div style="font-size:12px;color:var(--cyan);margin-bottom:6px">已铸技能</div>' +
+      ck.map(id=>{ const sk=S.customSkills[id]; return `<div class="cc-row">${esc(sk.name)} · ◆${sk.mp} · ${esc(sk.desc)} <button class="cact sm" onclick="sfDelete('${id}')">删除</button></div>`; }).join('');
+  }
+  $('sf-save').onclick=()=>{
+    const nm=$('sf-name').value.trim();
+    if(!nm || nm.length<2){ toastBanner('缺技能名', '给你的技能起个名字（2-8 字）。', '#ffb64d'); return; }
+    const id='cs_'+Date.now().toString(36);
+    let sk;
+    if(tmpl==='atk'){
+      sk = {name:nm, type:'atk', mp:Math.round(8+pow*6), power:pow, desc:`${pow} 倍${ATTRS.find(a=>a[0]===attr)[1]}伤害的自创技能`};
+      if(attr==='int') sk.int=true;
+      if(pow>=2 && rand(100)<40){ sk.arm=true; }
+    } else if(tmpl==='heal'){
+      const hv=[0.35,0.5,0.65][POWS.findIndex(p=>p[1]===pow)];
+      sk = {name:nm, type:'heal', mp:Math.round(12+pow*5), heal:hv, desc:`回复 ${Math.round(hv*100)}% 生命上限的自创技能`};
+    } else if(tmpl==='def'){
+      sk = {name:nm, type:'def', mp:10, guard:true, desc:'获得护盾，接下来两回合减伤 60%（自创）'};
+    } else {
+      const bk = pow===1?'atkup':(pow===1.5?'haste':'rage');
+      const bd = {atkup:'攻击力 +50%，持续 2 回合', haste:'本回合先手，闪避 +30', rage:'暴击率 +50%，持续 2 回合'}[bk];
+      sk = {name:nm, type:'buff', mp:10, desc:`增益：${bd}（自创）`};
+      sk[bk]=true;
+    }
+    S.customSkills = S.customSkills||{}; S.customSkills[id]=sk;
+    try{ localStorage.setItem('echo_custom_skills', JSON.stringify(S.customSkills)); }catch(_){}
+    toastBanner('技能已铸', `「${nm}」已永久加入技能库，可用于自定义职业。`, '#7ef0c0');
+    renderSkillForge();
+  };
+  showView('skillforge');
+}
+function sfDelete(id){
+  delete S.customSkills[id];
+  try{ localStorage.setItem('echo_custom_skills', JSON.stringify(S.customSkills)); }catch(_){}
+  renderSkillForge();
 }
 
 /* ---------- 经验 / 升级 ---------- */
@@ -11103,6 +11402,7 @@ function renderHub(){
         <div class="hub-card" id="hub-custom"><div class="hc-icon">✍</div><div class="hc-name">自定义剧本</div><div class="hc-desc">用简单 JSON 写一段你自己的多分支剧情，导入即玩。</div><div class="hc-meta">人人都能当编剧</div></div>
         <div class="hub-card" id="hub-ai"><div class="hc-icon">🧠</div><div class="hc-name">AI 剧情模式</div><div class="hc-desc">自由输入行动 / 说 / 剧情 / 看，叙事实时回应——你偷过的东西会被记住，你救下的人会回来报恩。可选接真实 AI，无限剧情。</div><div class="hc-meta">本地引擎开箱即玩 · '${(S.aiCleared||[]).length}/21 场景已探索'</div></div>
         <div class="hub-card" id="hub-ach"><div class="hc-icon">🏆</div><div class="hc-name">万界图鉴 · 成就</div><div class="hc-desc">战斗、探索、骰运、轮回——每一步都算数。达成成就领取回响碎片与命运点。</div><div class="hc-meta">已解锁 ${(S.achievements||[]).length}/${ACHIEVEMENTS.length}</div></div>
+        <div class="hub-card" id="hub-skillforge"><div class="hc-icon">🔧</div><div class="hc-name">技能工坊 · 自定义</div><div class="hc-desc">铸一枚只属于你的技能：效果模板 + 属性倾向 + 威力档位，与原生技能同规则同战斗。</div><div class="hc-meta">已铸 ${Object.keys(S.customSkills||{}).length} 个</div></div>
       </div>
       <div class="notice" style="margin-top:16px">提示：主线（回响之城）与万界冒险互不冲突——想打主线打主线，想闯异界闯异界，自由得很。</div>
     </div>`;
@@ -11114,6 +11414,7 @@ function renderHub(){
   $('hub-mark').onclick=()=>markPermanent();
   $('hub-save').onclick=()=>renderSave();
   $('hub-tagws').onclick=()=>renderTagWorkshop();
+  $('hub-skillforge').onclick=()=>renderSkillForge();
   $('hub-custom').onclick=()=>renderCustomEditor();
   $('hub-ai').onclick=()=>renderAI();
   $('hub-ach').onclick=()=>renderAchievements();
