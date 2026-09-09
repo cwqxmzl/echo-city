@@ -6936,7 +6936,7 @@ function renderTagWorkshop(){
     </div>
     <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em;margin-top:16px">词条背包 ${bag.length}/${TAG_BAG_MAX}（死亡不掉落）</div>
     <div class="tag-bag">
-      ${bag.length? bag.map(t=>`<div class="tag-card" data-equip="${t.id}" style="border-color:${tagGradeColor(t.g)}"><div class="tag-n">${esc(t.n)}</div><div class="tag-g">${TAG_GRADES[t.g]}级</div><div class="tag-set">${TAG_SETS[t.set]? '流派·'+TAG_SETS[t.set].n+'（'+TAG_SETS[t.set].desc+'）': '流派·'+TAG_SETS[t.set===undefined?'omni':t.set].n}</div><div class="tag-d">${esc(t.desc)}</div><div class="tag-lore">“${esc(t.lore||'一段被撕碎的记忆')}”</div><div class="tag-act">点击装备</div></div>`).join('') : '<div class="tag-empty">背包空空如也——去万界冒险或世界模拟器里搜刮词条吧。</div>'}
+      ${bag.length? bag.map(t=>`<div class="tag-card" data-equip="${t.id}" style="border-color:${tagGradeColor(t.g)}"><div class="tag-n">${esc(t.n)}</div><div class="tag-g">${TAG_GRADES[t.g]}级</div><div class="tag-set">${TAG_SETS[t.set]? '流派·'+TAG_SETS[t.set].n+'（'+TAG_SETS[t.set].desc+'）': '流派·'+((t.set && TAG_SETS[t.set]) ? TAG_SETS[t.set].n : '万般')}</div><div class="tag-d">${esc(t.desc)}</div><div class="tag-lore">“${esc(t.lore||'一段被撕碎的记忆')}”</div><div class="tag-act">点击装备</div></div>`).join('') : '<div class="tag-empty">背包空空如也——去万界冒险或世界模拟器里搜刮词条吧。</div>'}
     </div>
     <div class="choices">
       <div class="choice ${synthReady?'tag-synth-ready':''}" id="tw-synth"><span class="c-tag">【合成】</span>3 个同品级词条 + 30 经验 → 合成更高品级${synthReady?' 🔥 可合成！':''}</div>
