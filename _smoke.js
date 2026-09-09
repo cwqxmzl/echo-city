@@ -1279,6 +1279,40 @@ step('高周目事件随机浮现', () => {
 ok('无运行时错误(第三十四轮)', errors.length === 0);
 
 
+console.log('== 35. 更多职业与技能 · 自定义职业/技能工坊 ==');
+step('新职业与技能', () => {
+  ok('职业增至10个', G('CLASSES.length===10'));
+  ok('新职业skills有效', G('(function(){ return ["tide","paladin","hunter","warlock","tamer","rider"].every(c=>{ const cc=classById(c); return cc && cc.skills.every(s=>SKILLS[s]); }); })()'));
+  ok('新增6技能schema', G('(function(){ const ks=["sonar","roar","holyfire","steam","trap","bladedance"]; return ks.every(k=>{ const sk=SKILLS[k]; return sk && sk.name && sk.type && sk.mp>0; }); })()'));
+  ok('新职业入世生效', G('(function(){ newRun(); const b=S.stats.str; applyClass("tide"); return S.skills.length===3 && S.equip.weapon==="steel_dagger" && S.stats.str===b+2; })()'));
+});
+step('自定义职业', () => {
+  G('boot(); newRun();');
+  G('S.customClasses=[{id:"cc_demo",name:"摆烂王",role:"力量 +3 敏捷 +3 · 自定义",desc:"d",str:3,agi:3,int:0,cha:0,con:0,per:0,maxHp:6,weapon:null,armor:null,skills:["slash","heal","haste"],pool:["slash","heal","haste","fireball"]}];');
+  ok('classById 命中自定义', G('classById("cc_demo").name==="摆烂王"'));
+  ok('自定义职业入世', G('(function(){ newRun(); const b=S.stats.str; applyClass("cc_demo"); return S.stats.str===b+3 && S.stats.agi===S.stats.agi && S.skills.length===3 && S.skills[0]==="slash" && S.equip.weapon==="iron_sword" && S.equip.armor==="cloth"; })()'));
+  G('boot(); newRun(); renderClassSelect();');
+  ok('职业选择渲染10原生+1创建(无资产时)', d.querySelectorAll('#class-cards .ccard').length===11);
+  ok('创建自定义职业按钮', d.querySelectorAll('#class-cards .ccard.cc-add').length===1);
+  G('S.customClasses=[{id:"cc_demo",name:"摆烂王",role:"r",desc:"d",str:3,agi:3,int:0,cha:0,con:0,per:0,maxHp:6,weapon:null,armor:null,skills:["slash"],pool:["slash"]}]; renderClassSelect();');
+  ok('自定义职业卡显示', d.querySelectorAll('#class-cards .ccard.cc-custom').length===1);
+  G('localStorage.setItem("echo_custom_classes", JSON.stringify([{id:"cc_persist",name:"不败者",role:"体质 +6 · 自定义",desc:"p",str:0,agi:0,int:0,cha:0,con:6,per:0,maxHp:6,weapon:null,armor:null,skills:["shield"],pool:["shield"]}])); boot(); newRun(); renderClassSelect();');
+  ok('自定义职业资产跨刷新恢复', G('classById("cc_persist").name==="不败者"') && d.querySelectorAll('#class-cards .ccard.cc-custom').length===1);
+  ok('崩溃自愈:资产缺失时cls置空', G('(function(){ localStorage.removeItem("echo_custom_classes"); S.cls="cc_gone"; boot(); return S.cls===null; })()'));
+});
+step('自定义技能', () => {
+  G('boot(); newRun(); applyClass("sword"); S.customSkills=S.customSkills||{};');
+    G('S.customSkills["cs_x"]={name:"测试拳",type:"atk",mp:5,power:1.0};');
+  ok('skillById 命中自定义', G('skillById("cs_x").name==="测试拳"'));
+  ok('自定义技能战斗施放', G('(function(){ S.stats.str=50; S.skills=["cs_x"]; startCombat("ghost","c1_ghost_kill","death"); CB.hp=10000; CB.dc=0; CB.max=99999; CB.spd=0; combatUseSkill("cs_x"); return CB.hp<10000 && S.mp<S.maxMp; })()'));
+  G('S.customSkills["cs_heal"]={name:"回血",type:"heal",mp:5,heal:0.5};');
+  ok('自定义治疗技能生效', G('(function(){ S.skills=["cs_heal"]; startCombat("ghost","c1_ghost_kill","death"); CB.dc=0; CB.spd=0; CB.max=99999; S.hp=10; S.maxHp=100; S.mp=99; combatUseSkill("cs_heal"); return S.hp>=50; })()'));
+  ok('自定义buff技能生效', G('(function(){ S.customSkills["cs_b"]={name:"强化",type:"buff",mp:5,atkup:true}; S.skills=["cs_b"]; startCombat("ghost","c1_ghost_kill","death"); CB.dc=0; CB.spd=0; CB.max=99999; combatUseSkill("cs_b"); return CB.buff.atkup>=1; })()'));
+});
+ok('视图容器存在', G('!!document.getElementById("view-customclass") && !!document.getElementById("view-skillforge")'));
+ok('无运行时错误(第三十五轮)', errors.length === 0);
+
+
 console.log('\n== 汇总 ==');
 console.log('通过:', pass, ' 失败:', fail);
 console.log('errors count:', errors.length);
