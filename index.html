@@ -7094,10 +7094,10 @@ const LOCATIONS = [
    unlock:0, lockTxt:'轮回之始 · 自动开放',
    spots:[
     {ic:'🌅', name:'街区入口 · 醒来', node:'c1_intro', desc:'这一周目的起点，先摸清形势'},
-    {ic:'👻', name:'街角的回响', node:'c1_e1a', desc:'半透明的身影，想递给你一枚钥匙', transit:'你离开路口，沿着锈红色的街道往前走。霓虹灯管在头顶嗡嗡作响，街角的路灯下，似乎有什么东西在动。'},
-    {ic:'🕹', name:'废弃游戏厅', node:'c1_e1b', desc:'老虎机的赌局，与一台知道轮回次数的机器', transit:'你循着霓虹最亮的方向走去，玻璃门缝里透出微光，老旧的街机声在夜色里断断续续。'},
-    {ic:'🧙', name:'灰袍商人的摊子', node:'c1_e1c', desc:'收记忆，卖真相（线索 → 真相碎片）', transit:'你穿过三条死巷，拐角处，一盏昏黄的灯下支着一个小小的摊子，摊主的身影在灯光里拉得很长。'},
-    {ic:'🌫', name:'雾中小巷', node:'c1_probe2', desc:'呼救声与暗处的杀机', transit:'你拐进一条雾气弥漫的小巷，脚下的积水映着忽明忽暗的霓虹，远处传来隐约的呼救声。'},
+    {ic:'👻', name:'街角的回响', node:'c1_e1a', frag:'c1_open_1', desc:'半透明的身影，想递给你一枚钥匙', transit:'你离开路口，沿着锈红色的街道往前走。霓虹灯管在头顶嗡嗡作响，街角的路灯下，似乎有什么东西在动。'},
+    {ic:'🕹', name:'废弃游戏厅', node:'c1_e1b', frag:'c1_open_3', desc:'老虎机的赌局，与一台知道轮回次数的机器', transit:'你循着霓虹最亮的方向走去，玻璃门缝里透出微光，老旧的街机声在夜色里断断续续。'},
+    {ic:'🧙', name:'灰袍商人的摊子', node:'c1_e1c', frag:'c1_open_2', desc:'收记忆，卖真相（线索 → 真相碎片）', transit:'你穿过三条死巷，拐角处，一盏昏黄的灯下支着一个小小的摊子，摊主的身影在灯光里拉得很长。'},
+    {ic:'🌫', name:'雾中小巷', node:'c1_probe2', frag:'c1_open_4', desc:'呼救声与暗处的杀机', transit:'你拐进一条雾气弥漫的小巷，脚下的积水映着忽明忽暗的霓虹，远处传来隐约的呼救声。'},
     {ic:'⚔️', name:'街区巡逻 · 腐化者', repeat:'fiend', desc:'游荡的数据腐化者，可反复挑战刷金币经验'},
     {ic:'🎁', name:'街区补给箱', repeat:'loot', key:'loot_street', desc:'运气好能开出药剂或金币', once:true},
     {ic:'🔀', name:'随机际遇', repeat:'event', desc:'街头偶发的小插曲——每次都不一样'},
@@ -7956,7 +7956,6 @@ function loadSave(){
   const _ccs=localStorage.getItem('echo_custom_classes'); if(_ccs){ try{ S.customClasses=JSON.parse(_ccs)||[]; }catch(_){} }
   const _csk=localStorage.getItem('echo_custom_skills'); if(_csk){ try{ S.customSkills=JSON.parse(_csk)||{}; }catch(_){} }
   if(S.cls && !classById(S.cls)){ S.cls=null; }  // 自定义职业资产缺失时自愈，避免渲染崩溃
-  if(S.nodeId && String(S.nodeId).indexOf('c1_open_')===0){ try{ setupOpeningEvents(); }catch(e){} }  // 读档落在前置事件节点时重抽
 }
 function saveSave(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{},_deaths:S._deaths||0,_rerolls:S._rerolls||0,_clsClears:S._clsClears||{},title:S.title||'',_seenNodes:S._seenNodes||[],customClasses:S.customClasses||[],customSkills:S.customSkills||{}})); }catch(e){}
@@ -8314,7 +8313,6 @@ function newRun(){
   S.reEcho=0; S.bp=0;
   S._runGold0=S.gold; S._runEcho0=S.echoes;
   S._runDeath=false; S._rerollsThisRun=0;
-  setupOpeningEvents();
 }
 /* ===== 第三十六轮：开局随机前置见闻（让每局开头的剧情不再复读） ===== */
 const OPENING_EVENTS = [
@@ -8337,43 +8335,6 @@ const OPENING_EVENTS = [
              failText:'猫轻巧地钻进巷子深处，眨眼不见了。你耸耸肩，继续赶路。'},
            {text:'不去追，赶路要紧',tag:'前行',kind:'next',goto:t} ]},
 ];
-function _openTailEvt(ev, tag, tail){
-  const id = ev.id + '_' + tag;
-  let text = ev.text;
-  if(text.indexOf('{world}')>=0){
-    try{ const w = WORLDS && WORLDS.length ? WORLDS[rand(WORLDS.length)] : null; text = text.replace('{world}', (w&&w.name)||'万界'); }catch(e){}
-  }
-  NODES[id] = {id:id, chap:'第一章 · 旧日街区', title:ev.title, tagline:ev.tagline, text:text, choices:ev.mk(tail)};
-  return id;
-}
-function setupOpeningEvents(){
-  const n = NODES['c1_intro'];
-  if(!n || !n.choices || !n.choices[0]) return;
-  if(!n._openRet){
-    n._openRet = [n.choices[0].succ, n.choices[0].fail, n.choices[0].succCrit, n.choices[0].failFumb,
-                  (n.choices[1] && n.choices[1].goto) || 'c1_plaza'];
-  }
-  const ret = n._openRet;
-  const pool = OPENING_EVENTS.slice();
-  const want = (S.run||1)>=3 && pool.length>=3 ? 2 : 1;
-  const pick = [];
-  while(pick.length<want && pool.length){ pick.push(pool.splice(rand(pool.length),1)[0]); }
-  if(!pick.length) return;
-  const tags = ['s','f','c','x','z'];
-  for(let i=0;i<tags.length;i++){
-    const tail = ret[i] || ret[0];
-    let prev = null;
-    for(let k=pick.length-1;k>=0;k--){
-      prev = _openTailEvt(pick[k], tags[i]+'_'+k, prev || tail);
-    }
-    if(i===0) n.choices[0].succ = prev;
-    else if(i===1) n.choices[0].fail = prev;
-    else if(i===2) n.choices[0].succCrit = prev;
-    else if(i===3) n.choices[0].failFumb = prev;
-    else if(n.choices[1]) n.choices[1].goto = prev;
-  }
-}
-
 function resetRun(){ newRun(); S.run++; checkAchievements(); }
 
 /* ---------- 职业 ---------- */
@@ -11601,11 +11562,12 @@ function renderLocation(l){
     const locked = spotLocked(l,s);
     const _dgr = done||locked? '' : spotDanger(s);
     const _tag = locked? `🔒 ${esc(s.needTxt||'')}` : done? '✓' : (_dgr==='danger'? '⚠️ 高危' : _dgr==='warn'? '🟡 警戒' : '🟢 安全');
+    const _frag = s.frag && !(S.openFrag||{})[s.frag];
     html += `<div class="spot-item ${done?'done':''} ${_dgr?('spot-'+_dgr):''}" data-spot="${s.key||s.node||s.repeat}">
       <div class="sp-ic">${s.ic}</div>
       <div class="sp-main">
-        <div class="sp-name">${esc(s.name)}</div>
-        <div class="sp-desc">${done? '· 已探索 ·' : esc(s.desc)}</div>
+        <div class="sp-name">${esc(s.name)}${_frag?' <span style="color:var(--gold)">✦</span>':''}</div>
+        <div class="sp-desc">${done? '· 已探索 ·' : esc(s.desc)}${_frag?'<div style="color:var(--gold);font-size:10px;margin-top:2px">✦ 见闻碎片 · 拾取记忆</div>':''}</div>
       </div>
       <span class="sp-tag">${_tag}</span>
     </div>`;
@@ -11648,8 +11610,20 @@ function renderLocation(l){
   $('loc-back').onclick=()=>{ renderMap(); };
   $('view').scrollTop=0; window.scrollTo({top:0});
 }
+/* 第四十三轮：见闻碎片化——周目见闻散布在旧日街区地点，探索时独立拾取、互不串联、不打断主线 */
+function openFrag(id){
+  const ev = OPENING_EVENTS.find(e=>e.id===id); if(!ev) return;
+  (S.openFrag = S.openFrag||{})[id] = true;
+  let text = ev.text;
+  if(text.indexOf('{world}')>=0){
+    try{ const w = WORLDS && WORLDS.length ? WORLDS[rand(WORLDS.length)] : null; text = text.replace('{world}', (w&&w.name)||'万界'); }catch(e){}
+  }
+  NODES[id] = {id:id, chap:'第一章 · 旧日街区', title:ev.title, tagline:'✦ 见闻碎片', text:text, choices:ev.mk('__loc__')};
+  gotoNode(id);
+}
 function activateSpot(l, s){
   advanceClock();
+  if(s.frag && !(S.openFrag||{})[s.frag]){ openFrag(s.frag); return; }
   if(s.node){ if(s.transit) S._pendingTransit = s.transit; gotoNode(s.node); return; }
   if(s.repeat==='loot'){ openLoot(l, s); return; }
   if(s.repeat==='event'){ renderRandomEvent(l); return; }
