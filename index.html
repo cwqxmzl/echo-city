@@ -8580,6 +8580,8 @@ function renderSkillForge(){
       <div id="sf-attr" style="display:flex;gap:8px"></div>
       <div style="margin:12px 0 4px;font-size:12px;color:var(--cyan);letter-spacing:.1em">威力档位</div>
       <div id="sf-pow" style="display:flex;gap:8px"></div>
+      <div style="margin:12px 0 4px;font-size:12px;color:var(--cyan);letter-spacing:.1em">特殊效果</div>
+      <div id="sf-extra" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       <div id="sf-preview" style="margin-top:14px"></div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
         <button class="cact" style="flex:1" id="sf-save">🔧 铸就技能</button>
@@ -8588,6 +8590,9 @@ function renderSkillForge(){
       <div id="sf-list" style="margin-top:14px"></div>
     </div>`;
   let tmpl='atk', attr='str', pow=1;
+  const EXTRA_ATK=[{k:'arm',n:'无视防御',d:'穿透防御'},{k:'multi',n:'多段',d:'伤害分 2 段'},{k:'vamp',n:'吸血',d:'造成伤害 20% 回血'},{k:'freeze',n:'冻结',d:'30% 概率冻结一回合'}];
+  const EXTRA_BUFF=[{k:'atkup',n:'攻击强化',d:'攻击力 +50%，2 回合'},{k:'haste',n:'先手',d:'本回合先手，闪避 +30'},{k:'aim',n:'必中',d:'下一次攻击必定命中'},{k:'taunt',n:'嘲讽',d:'下回合受击伤害 -40%'},{k:'rage',n:'狂暴',d:'暴击率 +50%，2 回合'}];
+  let extraAtk={}, buffK='atkup';
   const ATTRS=[['str','力量'],['agi','敏捷'],['int','智力']];
   const POWS=[[0,'轻 · 1.0 倍',1],[1,'中 · 1.5 倍',1.5],[2,'重 · 2.0 倍',2]];
   function drawTmpl(){
@@ -8596,7 +8601,7 @@ function renderSkillForge(){
       const d=document.createElement('div');
       d.className='cc-skill'+(tmpl===t.t?' on':'');
       d.innerHTML = `<span class="sk-name">${t.n}</span><span class="sk-desc">${t.desc}</span>`;
-      d.onclick=()=>{ tmpl=t.t; drawTmpl(); drawPrev(); };
+      d.onclick=()=>{ tmpl=t.t; drawTmpl(); drawExtra(); drawPrev(); };
       box.appendChild(d);
     });
   }
@@ -8620,17 +8625,38 @@ function renderSkillForge(){
       box.appendChild(d);
     });
   }
+  function drawExtra(){
+    const box=$('sf-extra'); if(!box) return;
+    box.innerHTML='';
+    if(tmpl==='atk'){
+      EXTRA_ATK.forEach(e=>{
+        const d=document.createElement('div');
+        d.className='cc-skill'+(extraAtk[e.k]?' on':'');
+        d.innerHTML = `<span class="sk-name">${e.n}</span><span class="sk-desc">${e.d}</span>`;
+        d.onclick=()=>{ extraAtk[e.k]=!extraAtk[e.k]; drawExtra(); drawPrev(); };
+        box.appendChild(d);
+      });
+    } else if(tmpl==='buff'){
+      EXTRA_BUFF.forEach(e=>{
+        const d=document.createElement('div');
+        d.className='cc-skill'+(buffK===e.k?' on':'');
+        d.innerHTML = `<span class="sk-name">${e.n}</span><span class="sk-desc">${e.d}</span>`;
+        d.onclick=()=>{ buffK=e.k; drawExtra(); drawPrev(); };
+        box.appendChild(d);
+      });
+    }
+  }
   function drawPrev(){
     const nm=$('sf-name') ? ($('sf-name').value.trim() || '未命名') : '未命名';
     let desc;
     if(tmpl==='atk'){ const pa=ATTRS.find(a=>a[0]===attr)[1]; desc=`${pow} 倍${pa}伤害（自创）`; }
     else if(tmpl==='heal'){ desc=`回复 ${Math.round([0.35,0.5,0.65][POWS.findIndex(p=>p[2]===pow)]*100)}% 生命上限（自创）`; }
     else if(tmpl==='def'){ desc='获得护盾，两回合减伤 60%（自创）'; }
-    else { const bn={1:'攻击力 +50%，持续 2 回合',1.5:'本回合先手，闪避 +30',2:'暴击率 +50%，持续 2 回合'}[pow]; desc='增益：'+(bn||'下一次攻击必定命中')+'（自创）'; }
+    else { const bd={atkup:'攻击力 +50%，持续 2 回合',haste:'本回合先手，闪避 +30',aim:'下一次攻击必定命中',taunt:'下回合受击伤害 -40%',rage:'暴击率 +50%，持续 2 回合'}[buffK]; desc='增益：'+(bd||'攻击强化')+'（自创）'; }
     const mp = tmpl==='atk' ? Math.round(8+pow*6) : tmpl==='heal' ? Math.round(12+pow*5) : 10;
     $('sf-preview').innerHTML = `<div class="cc-row">预览：<b>${esc(nm)}</b> · ◆${mp} · ${esc(desc)}</div>`;
   }
-  drawTmpl(); drawAttr(); drawPow(); drawPrev();
+  drawTmpl(); drawAttr(); drawPow(); drawExtra(); drawPrev();
   $('sf-name').addEventListener('input', drawPrev);
   const ck=Object.keys(S.customSkills||{});
   const lst=$('sf-list');
@@ -8644,21 +8670,30 @@ function renderSkillForge(){
     const id='cs_'+Date.now().toString(36);
     let sk;
     if(tmpl==='atk'){
-      sk = {name:nm, type:'atk', mp:Math.round(8+pow*6), power:pow, desc:`${pow} 倍${ATTRS.find(a=>a[0]===attr)[1]}伤害的自创技能`};
+      const ex=[];
+      if(extraAtk.arm) ex.push('无视防御');
+      if(extraAtk.multi) ex.push('多段');
+      if(extraAtk.vamp) ex.push('吸血');
+      if(extraAtk.freeze) ex.push('冻结');
+      sk = {name:nm, type:'atk', mp:Math.round(8+pow*6), power:pow, desc:`${pow} 倍${ATTRS.find(a=>a[0]===attr)[1]}伤害${ex.length?'（'+ex.join('、')+'）':''}的自创技能`};
       if(attr==='int') sk.int=true;
-      if(pow>=2 && rand(100)<40){ sk.arm=true; }
+      if(extraAtk.arm) sk.arm=true;
+      if(extraAtk.multi) sk.hits=2;
+      if(extraAtk.vamp) sk.lifesteal=true;
+      if(extraAtk.freeze) sk.freeze=true;
     } else if(tmpl==='heal'){
       const hv=[0.35,0.5,0.65][POWS.findIndex(p=>p[2]===pow)];
       sk = {name:nm, type:'heal', mp:Math.round(12+pow*5), heal:hv, desc:`回复 ${Math.round(hv*100)}% 生命上限的自创技能`};
     } else if(tmpl==='def'){
       sk = {name:nm, type:'def', mp:10, guard:true, desc:'获得护盾，接下来两回合减伤 60%（自创）'};
     } else {
-      const bk = pow===1?'atkup':(pow===1.5?'haste':'rage');
-      const bd = {atkup:'攻击力 +50%，持续 2 回合', haste:'本回合先手，闪避 +30', rage:'暴击率 +50%，持续 2 回合'}[bk];
-      sk = {name:nm, type:'buff', mp:10, desc:`增益：${bd}（自创）`};
+      const bk = buffK;
+      const bd = {atkup:'攻击力 +50%，持续 2 回合', haste:'本回合先手，闪避 +30', aim:'下一次攻击必定命中', taunt:'下回合受击伤害 -40%', rage:'暴击率 +50%，持续 2 回合'}[bk];
+      sk = {name:nm, type:'buff', mp:10, desc:`增益：${bd||'攻击强化'}（自创）`};
       sk[bk]=true;
     }
     S.customSkills = S.customSkills||{}; S.customSkills[id]=sk;
+    if(!S.skillPool.includes(id)) S.skillPool.push(id);
     try{ localStorage.setItem('echo_custom_skills', JSON.stringify(S.customSkills)); }catch(_){}
     toastBanner('技能已铸', `「${nm}」已永久加入技能库，可用于自定义职业。`, '#7ef0c0');
     renderSkillForge();
@@ -9689,6 +9724,7 @@ function combatUseSkill(sid){
       combatLog(`「${sk.name}」贯穿了${ENEMIES[CB.id].name}的防线——<b>${dmg}</b> 点伤害！`, 'pl');
     }
     if(hasTagFx('vamp')){ const hv=Math.max(1,Math.round(dmg*0.2)); S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD(); combatLog(`【词条·噬魂】你汲取了 ${hv} 点生命。`,'ok'); }
+    if(sk.lifesteal){ const hv=Math.max(1,Math.round(dmg*0.2)); S.hp=Math.min(S.maxHp,S.hp+hv); updateHUD(); combatLog(`「${sk.name}」汲取了 ${hv} 点生命。`,'ok'); }
     if(sk.freeze && rand(100)<30){
       CB.frozen=true;
       combatLog(`${ENEMIES[CB.id].name}被【寒冰】冻结，下一回合无法行动！`, 'ok');
