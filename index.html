@@ -7956,6 +7956,7 @@ function loadSave(){
   const _ccs=localStorage.getItem('echo_custom_classes'); if(_ccs){ try{ S.customClasses=JSON.parse(_ccs)||[]; }catch(_){} }
   const _csk=localStorage.getItem('echo_custom_skills'); if(_csk){ try{ S.customSkills=JSON.parse(_csk)||{}; }catch(_){} }
   if(S.cls && !classById(S.cls)){ S.cls=null; }  // 自定义职业资产缺失时自愈，避免渲染崩溃
+  if(S.nodeId && String(S.nodeId).indexOf('c1_open_')===0){ try{ setupOpeningEvents(); }catch(e){} }  // 读档落在前置事件节点时重抽
 }
 function saveSave(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{},_deaths:S._deaths||0,_rerolls:S._rerolls||0,_clsClears:S._clsClears||{},title:S.title||'',_seenNodes:S._seenNodes||[],customClasses:S.customClasses||[],customSkills:S.customSkills||{}})); }catch(e){}
@@ -8307,7 +8308,66 @@ function newRun(){
   S.reEcho=0; S.bp=0;
   S._runGold0=S.gold; S._runEcho0=S.echoes;
   S._runDeath=false; S._rerollsThisRun=0;
+  setupOpeningEvents();
 }
+/* ===== 第三十六轮：开局随机前置见闻（让每局开头的剧情不再复读） ===== */
+const OPENING_EVENTS = [
+  {id:'c1_open_1', title:'街角收音机', tagline:'周目见闻 · 前置',
+   text:'锈红色的晨光里，街角一台摔裂的收音机突然通了电，沙沙的电流声里，传出一段和你嗓音一模一样的独白——是上周目的你，在给这周目的你留话。\n\n“……如果又走到老地方，别急着打。绕一下。墙后面那东西，这次会不一样。”\n\n话音落下，收音机吐出一枚发亮的碎片。',
+   mk:t=>[ {text:'拧大音量，听完它',tag:'聆听',kind:'effect',apply:s=>{s.echoes=(s.echoes||0)+1;},goto:t},
+           {text:'关掉它，继续赶路',tag:'前行',kind:'next',goto:t} ]},
+  {id:'c1_open_2', title:'灰袍人的纸条', tagline:'周目见闻 · 前置',
+   text:'灰袍人不知何时站在你三步之外，没等你开口，往你手里塞了一张纸条，便消失在锈红的雾里。\n\n纸条上只有一行字：「这周目的活路，在 {world}。」',
+   mk:t=>[ {text:'折好收进怀里',tag:'收下',kind:'effect',apply:s=>{s.fate=Math.min(12,(s.fate||0)+1);},goto:t},
+           {text:'揉成团丢掉',tag:'前行',kind:'next',goto:t} ]},
+  {id:'c1_open_3', title:'红漆涂鸦', tagline:'周目见闻 · 前置',
+   text:'废弃游戏厅的卷帘门上，有人用红漆刷了一行大字——上面写着你上周目的死法和日期，一笔一划都透着熟悉。\n\n就像有人一直在替你记着。',
+   mk:t=>[ {text:'盯着看了一会儿',tag:'凝望',kind:'effect',apply:s=>{s.xp=(s.xp||0)+12;},goto:t},
+           {text:'用袖子擦掉它',tag:'释然',kind:'effect',apply:s=>{s._acts=s._acts||{comfort:0,smite:0,loot:0};s._acts.comfort=(s._acts.comfort||0)+1;},goto:t} ]},
+  {id:'c1_open_4', title:'叼钥匙的猫', tagline:'周目见闻 · 前置',
+   text:'路灯下蹲着一只灰毛猫，嘴里叼着一把旧钥匙，眼睛直勾勾地盯着你，尾巴慢悠悠地摇。\n\n它像是专程在等你。',
+   mk:t=>[ {text:'跟着它走',tag:'跟随',desc:'说不定有好事（难度 · 有点棘手）',kind:'check',stat:'agi',dc:38,succ:t,fail:t,
+             succText:'（1d100+敏捷 判定成功）猫领着你绕进一条死巷，从排水口扒出一件还能用的装备。',
+             failText:'猫轻巧地钻进巷子深处，眨眼不见了。你耸耸肩，继续赶路。'},
+           {text:'不去追，赶路要紧',tag:'前行',kind:'next',goto:t} ]},
+];
+function _openTailEvt(ev, tag, tail){
+  const id = ev.id + '_' + tag;
+  let text = ev.text;
+  if(text.indexOf('{world}')>=0){
+    try{ const w = WORLDS && WORLDS.length ? WORLDS[rand(WORLDS.length)] : null; text = text.replace('{world}', (w&&w.name)||'万界'); }catch(e){}
+  }
+  NODES[id] = {id:id, chap:'第一章 · 旧日街区', title:ev.title, tagline:ev.tagline, text:text, choices:ev.mk(tail)};
+  return id;
+}
+function setupOpeningEvents(){
+  const n = NODES['c1_intro'];
+  if(!n || !n.choices || !n.choices[0]) return;
+  if(!n._openRet){
+    n._openRet = [n.choices[0].succ, n.choices[0].fail, n.choices[0].succCrit, n.choices[0].failFumb,
+                  (n.choices[1] && n.choices[1].goto) || 'c1_plaza'];
+  }
+  const ret = n._openRet;
+  const pool = OPENING_EVENTS.slice();
+  const want = (S.run||1)>=3 && pool.length>=3 ? 2 : 1;
+  const pick = [];
+  while(pick.length<want && pool.length){ pick.push(pool.splice(rand(pool.length),1)[0]); }
+  if(!pick.length) return;
+  const tags = ['s','f','c','x','z'];
+  for(let i=0;i<tags.length;i++){
+    const tail = ret[i] || ret[0];
+    let prev = null;
+    for(let k=pick.length-1;k>=0;k--){
+      prev = _openTailEvt(pick[k], tags[i]+'_'+k, prev || tail);
+    }
+    if(i===0) n.choices[0].succ = prev;
+    else if(i===1) n.choices[0].fail = prev;
+    else if(i===2) n.choices[0].succCrit = prev;
+    else if(i===3) n.choices[0].failFumb = prev;
+    else if(n.choices[1]) n.choices[1].goto = prev;
+  }
+}
+
 function resetRun(){ newRun(); S.run++; checkAchievements(); }
 
 /* ---------- 职业 ---------- */
