@@ -7965,6 +7965,9 @@ function saveSave(){
 const SAVE_PREFIX='echo_city_save_';
 function saveSlot(slot){
   try{
+    if(!S.cls){ try{ toastBanner('⚠ 尚未入世', '请先选择职业入世后再存档。', '#ffb64d'); }catch(_){}
+      return false;
+    }
     const snap = JSON.parse(JSON.stringify(S));
     if(snap.nodeId==='save') snap.nodeId = S._returnNode || 'map';
     const info = {
@@ -8059,6 +8062,9 @@ function loadSlot(slot){
   const info = slotInfo(slot); if(!info || !info.data) return false;
   try{
     const d = info.data;
+    if(!d.cls){ try{ toastBanner('⚠ 无效存档', '该存档未选择职业，已忽略。', '#ffb64d'); }catch(_){}
+      return false;
+    }
     for(const k in S) delete S[k];
     Object.assign(S, d);
     return true;
