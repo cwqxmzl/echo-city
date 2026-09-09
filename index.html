@@ -8614,9 +8614,9 @@ function renderSkillForge(){
     const box=$('sf-pow'); box.innerHTML='';
     POWS.forEach(p=>{
       const d=document.createElement('div');
-      d.className='cc-skill'+(pow===p[1]?' on':'');
+      d.className='cc-skill'+(pow===p[2]?' on':'');
       d.innerHTML = `<span class="sk-name">${p[2]}</span>`;
-      d.onclick=()=>{ pow=p[1]; drawPow(); drawPrev(); };
+      d.onclick=()=>{ pow=p[2]; drawPow(); drawPrev(); };
       box.appendChild(d);
     });
   }
@@ -8624,7 +8624,7 @@ function renderSkillForge(){
     const nm=$('sf-name') ? ($('sf-name').value.trim() || '未命名') : '未命名';
     let desc;
     if(tmpl==='atk'){ const pa=ATTRS.find(a=>a[0]===attr)[1]; desc=`${pow} 倍${pa}伤害（自创）`; }
-    else if(tmpl==='heal'){ desc=`回复 ${Math.round([0.35,0.5,0.65][POWS.findIndex(p=>p[1]===pow)]*100)}% 生命上限（自创）`; }
+    else if(tmpl==='heal'){ desc=`回复 ${Math.round([0.35,0.5,0.65][POWS.findIndex(p=>p[2]===pow)]*100)}% 生命上限（自创）`; }
     else if(tmpl==='def'){ desc='获得护盾，两回合减伤 60%（自创）'; }
     else { const bn={1:'攻击力 +50%，持续 2 回合',1.5:'本回合先手，闪避 +30',2:'暴击率 +50%，持续 2 回合'}[pow]; desc='增益：'+(bn||'下一次攻击必定命中')+'（自创）'; }
     const mp = tmpl==='atk' ? Math.round(8+pow*6) : tmpl==='heal' ? Math.round(12+pow*5) : 10;
@@ -8648,7 +8648,7 @@ function renderSkillForge(){
       if(attr==='int') sk.int=true;
       if(pow>=2 && rand(100)<40){ sk.arm=true; }
     } else if(tmpl==='heal'){
-      const hv=[0.35,0.5,0.65][POWS.findIndex(p=>p[1]===pow)];
+      const hv=[0.35,0.5,0.65][POWS.findIndex(p=>p[2]===pow)];
       sk = {name:nm, type:'heal', mp:Math.round(12+pow*5), heal:hv, desc:`回复 ${Math.round(hv*100)}% 生命上限的自创技能`};
     } else if(tmpl==='def'){
       sk = {name:nm, type:'def', mp:10, guard:true, desc:'获得护盾，接下来两回合减伤 60%（自创）'};
@@ -12137,7 +12137,7 @@ function renderChar(){
   $('char-close').onclick=()=>{ closeChar(); };
 }
 function closeChar(){
-  const back = S._returnNode||'c1_intro';
+  const back = S._returnNode||'map';
   if(back==='combat' && CB) renderCombat();
   else if(back==='operation' && OP) renderOperation();
   else if(back==='worlds') renderWorlds();
@@ -12145,7 +12145,7 @@ function closeChar(){
   else if(back==='map'||back==='hub') renderHub();
   else if(back==='loc') { const l=locById(S._location); if(l) renderLocation(l); else renderMap(); }
   else if(NODES[back]) gotoNode(back);
-  else gotoNode('c1_intro');
+  else renderHub();
 }
 
 /* ---------- 死亡与轮回 ---------- */
