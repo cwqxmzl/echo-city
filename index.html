@@ -6865,13 +6865,13 @@ function claimQuest(id){
 function renderQuest(){
   let el=document.getElementById('quest-panel');
   if(!el){ el=document.createElement('div'); el.id='quest-panel'; document.body.appendChild(el); }
-  el.innerHTML = '<div class="quest-wrap"><div class="quest-head"><span class="quest-tt">🎯 轮回目标</span><span class="quest-x" onclick="closeQuest()">✕</span></div>'+
+  el.innerHTML = '<div class="quest-wrap"><div class="quest-head"><span class="quest-tt">🎯 轮回目标</span><span class="quest-x" data-action="closeQuest">✕</span></div>'+
     QUESTS.map(q=>{
       const st=questState(q);
       const cls=st==='done'?'q-done':(st==='claim'?'q-claim':'q-todo');
       const mark=st==='done'?'✅':(st==='claim'?'⚡':q.ic);
       return '<div class="quest-item '+cls+'"><div class="q-ic">'+mark+'</div><div class="q-body"><div class="q-t">'+q.t+'</div><div class="q-d">'+q.d+'</div><div class="q-r">奖励：'+q.reward+'</div></div>'+
-        (st==='claim'?'<button class="cact q-btn" onclick="claimQuest(\''+q.id+'\')">领取</button>':'')+'</div>';
+        (st==='claim'?'<button class="cact q-btn" data-action="claimQuest" data-args=\''+JSON.stringify([q.id])+'\'>领取</button>':'')+'</div>';
     }).join('')+
     '<div class="quest-foot">目标跨周目保留 · 完成即领永久奖励，越轮回越强</div></div>';
   el.classList.add('show');
@@ -7872,11 +7872,15 @@ function renderCustomEnd(text){
 
 /* ---------- 工具 ---------- */
 const $ = id => document.getElementById(id);
-function rand(n){ return Math.floor(Math.random()*n); }
+/* 第四十四轮：随机数可注入种子（setRandSeed 固定 → 测试可复现；默认 Math.random 兜底） */
+let _rngSeed = null, _rngState = 0;
+function setRandSeed(seed){ _rngSeed = (seed>>>0) || null; _rngState = _rngSeed===null?0:(_rngSeed>>>0); }
+function _rngNext(){ if(_rngSeed===null) return Math.random(); _rngState = (_rngState*1664525 + 1013904223) >>> 0; return _rngState / 4294967296; }
+function rand(n){ return Math.floor(_rngNext()*n); }
 function rint(a,b){ return a + rand(b-a+1); }
 function weightedPick(weightArr){
   const total = weightArr.reduce((s,[v,w])=>s+w,0);
-  let r = Math.random()*total;
+  let r = _rngNext()*total;
   for(const [v,w] of weightArr){ if((r-=w)<0) return v; }
   return weightArr[weightArr.length-1][0];
 }
@@ -7895,7 +7899,7 @@ function showGuide(id){
   S._guides.push(id); saveSave();
   let el = document.getElementById('guide-pop');
   if(!el){ el=document.createElement('div'); el.id='guide-pop'; document.body.appendChild(el); }
-  el.innerHTML = '<div class="guide-card"><div class="guide-t">📌 '+g.t+'</div><div class="guide-h">'+g.h+'</div><button class="guide-btn" onclick="closeGuide()">知道了</button></div>';
+  el.innerHTML = '<div class="guide-card"><div class="guide-t">📌 '+g.t+'</div><div class="guide-h">'+g.h+'</div><button class="guide-btn" data-action="closeGuide">知道了</button></div>';
   el.style.display = 'block';
 }
 function closeGuide(){ const el=document.getElementById('guide-pop'); if(el) el.style.display='none'; }
@@ -7937,7 +7941,7 @@ const ECHO_VOICES = [
    desc:'它是轮回留下的记忆碎片：「这些场景，我好像见过。」', line:'「这一幕……上辈子见过。」'}
 ];
 function voiceById(id){ if(!id) return null; for(const v of ECHO_VOICES) if(v.id===id) return v; return null; }
-function rollVoice(){ return ECHO_VOICES[Math.floor(Math.random()*ECHO_VOICES.length)].id; }
+function rollVoice(){ return ECHO_VOICES[Math.floor(_rngNext()*ECHO_VOICES.length)].id; }
 
 /* ---------- 全局状态 ---------- */
 const STORE_KEY = 'echo-city-save-v1';
@@ -7957,8 +7961,24 @@ function loadSave(){
   const _csk=localStorage.getItem('echo_custom_skills'); if(_csk){ try{ S.customSkills=JSON.parse(_csk)||{}; }catch(_){} }
   if(S.cls && !classById(S.cls)){ S.cls=null; }  // 自定义职业资产缺失时自愈，避免渲染崩溃
 }
+/* ---------- 第四十四轮：存档键显式登记（STATE_KEYS） ----------
+   新增需入档的状态字段：必须在 STATE_KEYS 按分组登记，saveSave/loadSave 由清单驱动；
+   冒烟断言 assertStateKeys() 校验清单键均在 S 上存在，缺失即报。 */
+const STATE_KEYS = {
+  cross: ['run','echoes','totalRuns','bestProgress','finishedEndings','permaStat','_milestones','_guides','achievements','voice','favor','trust','_wins','_fumbTotal','_permSum','_runCrits','_codex','_codexLineDone','_deaths','_rerolls','_clsClears','title','_seenNodes','customClasses','customSkills'],
+  arena: ['tagBag','equippedTags','worldStory','storyDone','wsVars','aiCleared','survBest','survCleared','quality']
+};
+const _SAVE_DEFAULTS = { run:1, echoes:0, totalRuns:0, bestProgress:0, finishedEndings:[], permaStat:{}, _milestones:[], _guides:[], achievements:[], voice:null, favor:{}, trust:{}, _wins:0, _fumbTotal:0, _permSum:0, _runCrits:0, _codex:{}, _codexLineDone:{}, _deaths:0, _rerolls:0, _clsClears:{}, title:'', _seenNodes:[], customClasses:[], customSkills:{}, tagBag:[], equippedTags:[], worldStory:{}, storyDone:[], wsVars:{}, aiCleared:[], survBest:{}, survCleared:[], quality:'full' };
+function assertStateKeys(){
+  const _all = STATE_KEYS.cross.concat(STATE_KEYS.arena);
+  return { total: _all.length, missing: _all.filter(k => !(k in S)) };
+}
 function saveSave(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify({run:S.run,echoes:S.echoes,totalRuns:S.totalRuns,bestProgress:S.bestProgress,finishedEndings:S.finishedEndings,tagBag:S.tagBag||[],equippedTags:S.equippedTags||[],worldStory:S.worldStory||{},storyDone:S.storyDone||[],wsVars:S.wsVars||{},aiCleared:S.aiCleared||[],survBest:S.survBest||{},survCleared:S.survCleared||[],voice:S.voice||null,permaStat:S.permaStat||{},_milestones:S._milestones||[],_guides:S._guides||[],achievements:S.achievements||[],quality:S.quality||'full',favor:S.favor||{},trust:S.trust||{},_wins:S._wins||0,_fumbTotal:S._fumbTotal||0,_permSum:S._permSum||0,_runCrits:S._runCrits||0,_codex:S._codex||{},_codexLineDone:S._codexLineDone||{},_deaths:S._deaths||0,_rerolls:S._rerolls||0,_clsClears:S._clsClears||{},title:S.title||'',_seenNodes:S._seenNodes||[],customClasses:S.customClasses||[],customSkills:S.customSkills||{}})); }catch(e){}
+  try{
+    const _out = {}, _all = STATE_KEYS.cross.concat(STATE_KEYS.arena);
+    for(const _k of _all){ _out[_k] = (S[_k] === undefined) ? _SAVE_DEFAULTS[_k] : S[_k]; }
+    localStorage.setItem(STORE_KEY, JSON.stringify(_out));
+  }catch(e){}
 }
 /* ---------- 存档 / 读档（完整状态） ---------- */
 const SAVE_PREFIX='echo_city_save_';
@@ -8008,7 +8028,7 @@ function toggleBattleHist(){
   const el=$('battle-log'); if(!el) return;
   const log=CB._log||[];
   const hist=log.length-15;
-  const btn=hist>0?'<div class="blog-hist" onclick="toggleBattleHist()">'+(CB._showHist?'▼ 收起历史':'▲ 查看更早 '+hist+' 条')+'</div>':'';
+  const btn=hist>0?'<div class="blog-hist" data-action="toggleBattleHist">'+(CB._showHist?'▼ 收起历史':'▲ 查看更早 '+hist+' 条')+'</div>':'';
   el.innerHTML=btn+(CB._showHist? log.join('<br>') : log.slice(-15).join('<br>'));
   el.scrollTop=el.scrollHeight;
 }
@@ -8451,7 +8471,7 @@ function renderCustomClass(){
       <div id="cc-skills" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
         <button class="cact" style="flex:1" id="cc-save">✒ 创建并入世</button>
-        <button class="cact ghost" style="flex:1" onclick="renderClassSelect()">返回</button>
+        <button class="cact ghost" style="flex:1" data-action="renderClassSelect">返回</button>
       </div>
       <div id="cc-list" style="margin-top:14px"></div>
     </div>`;
@@ -8496,7 +8516,7 @@ function renderCustomClass(){
   const lst=$('cc-list');
   if((S.customClasses||[]).length){
     lst.innerHTML = '<div style="font-size:12px;color:var(--cyan);margin-bottom:6px">已创建职业</div>' +
-      (S.customClasses||[]).map(c=>`<div class="cc-row">${esc(c.name)} · ${esc(c.role)} · ${c.skills.map(x=>esc((SKILLS[x]||(S.customSkills||{})[x]||{name:x}).name)).join('/')} <button class="cact sm" onclick="ccDelete('${c.id}')">删除</button></div>`).join('');
+      (S.customClasses||[]).map(c=>`<div class="cc-row">${esc(c.name)} · ${esc(c.role)} · ${c.skills.map(x=>esc((SKILLS[x]||(S.customSkills||{})[x]||{name:x}).name)).join('/')} <button class="cact sm" data-action="ccDelete" data-args='${JSON.stringify([c.id])}'>删除</button></div>`).join('');
   }
   $('cc-save').onclick=()=>{
     const nm=$('cc-name').value.trim();
@@ -8546,7 +8566,7 @@ function renderSkillForge(){
       <div id="sf-preview" style="margin-top:14px"></div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
         <button class="cact" style="flex:1" id="sf-save">🔧 铸就技能</button>
-        <button class="cact ghost" style="flex:1" onclick="renderHub()">返回</button>
+        <button class="cact ghost" style="flex:1" data-action="renderHub">返回</button>
       </div>
       <div id="sf-list" style="margin-top:14px"></div>
     </div>`;
@@ -8623,7 +8643,7 @@ function renderSkillForge(){
   const lst=$('sf-list');
   if(ck.length){
     lst.innerHTML = '<div style="font-size:12px;color:var(--cyan);margin-bottom:6px">已铸技能</div>' +
-      ck.map(id=>{ const sk=S.customSkills[id]; return `<div class="cc-row">${esc(sk.name)} · ◆${sk.mp} · ${esc(sk.desc)} <button class="cact sm" onclick="sfDelete('${id}')">删除</button></div>`; }).join('');
+      ck.map(id=>{ const sk=S.customSkills[id]; return `<div class="cc-row">${esc(sk.name)} · ◆${sk.mp} · ${esc(sk.desc)} <button class="cact sm" data-action="sfDelete" data-args='${JSON.stringify([id])}'>删除</button></div>`; }).join('');
   }
   $('sf-save').onclick=()=>{
     const nm=$('sf-name').value.trim();
@@ -9174,7 +9194,7 @@ function renderScene(n){
   if(!_wasSeen) S._seenNodes.push(n.id);
   const _fold = _wasSeen && (n.choices||[]).length>0;
   const _storyHtml = _fold
-    ? `<div class="story-fold">📖 这段剧情你看过了，已折叠<span class="c-desc">多周目自动折叠已读剧情，只看选择</span><button class="cact" onclick="unfoldScene()">展开剧情</button></div>`
+    ? `<div class="story-fold">📖 这段剧情你看过了，已折叠<span class="c-desc">多周目自动折叠已读剧情，只看选择</span><button class="cact" data-action="unfoldScene">展开剧情</button></div>`
     : `<div class="story">${fillText(n.text)}</div>`;
   v.innerHTML = `
     <div class="panel">
@@ -9310,7 +9330,7 @@ function doFateReroll(ck, mode, onDone){
   S._rerollCount = (S._rerollCount||0)+1;
   S._rerolls=(S._rerolls||0)+1; S._rerollsThisRun=(S._rerollsThisRun||0)+1;   // 第三十一轮：累计重掷计数（命运拨弄者/顺天而行）
   let res2;
-  if(mode==='gamble' && Math.random()<0.3){
+  if(mode==='gamble' && _rngNext()<0.3){
     // 逆命·天胡：30% 强制大成功
     const _c = Math.max(1, critRange());
     res2 = {stat:ck.stat, dc:ck.dc, label:ck.label, roll:_c, mod:0, total:999, crit:true, fumb:false, success:true, rerolled:false, gamble:true};
@@ -9556,9 +9576,9 @@ function renderCombat(){
         '<div class="ally-row"><span class="ally-enlbl">能量 '+en+'/100</span></div>'+
         '<div class="ally-enbar"><div class="ally-fill en" style="width:'+en+'%"></div></div>'+
         (t.down?'<div class="ally-down">倒地 · 被动失效</div>'
-          :'<div class="ally-btns"><button class="cact ally-btn" '+(en>=30?'':'disabled')+' onclick="combatAllySkill(\''+t.id+'\',\'skill\')">战技 · '+esc(conf.skill.name)+'</button><button class="cact ally-btn ult" '+(en>=100?'':'disabled')+' onclick="combatAllySkill(\''+t.id+'\',\'ult\')">终结技 · '+esc(conf.ult.name)+'</button></div>')+
+          :'<div class="ally-btns"><button class="cact ally-btn" '+(en>=30?'':'disabled')+' data-action="combatAllySkill" data-args=\''+JSON.stringify([t.id,'skill'])+'\'>战技 · '+esc(conf.skill.name)+'</button><button class="cact ally-btn ult" '+(en>=100?'':'disabled')+' data-action="combatAllySkill" data-args=\''+JSON.stringify([t.id,'ult'])+'\'>终结技 · '+esc(conf.ult.name)+'</button></div>')+
       '</div>'; }).join('')+'</div>'; })()}
-      <div class="speedbar" style="display:flex;align-items:center;gap:8px;margin:8px 0 2px"><span style="font-size:11px;color:var(--cyan);letter-spacing:.1em">连打速度</span><button class="cact" style="padding:4px 12px" onclick="combatSpeedToggle()">'+(CB&&CB._speed?CB._speed:1)+'x</button><span style="font-size:11px;color:var(--ink-dim)">自动连打时生效 · 想亲手打随时接管</span></div>
+      <div class="speedbar" style="display:flex;align-items:center;gap:8px;margin:8px 0 2px"><span style="font-size:11px;color:var(--cyan);letter-spacing:.1em">连打速度</span><button class="cact" style="padding:4px 12px" data-action="combatSpeedToggle">'+(CB&&CB._speed?CB._speed:1)+'x</button><span style="font-size:11px;color:var(--ink-dim)">自动连打时生效 · 想亲手打随时接管</span></div>
       <div class="battle-log" id="battle-log"></div>
       <div class="skill-slot">
         <div style="font-size:12px;color:var(--cyan);letter-spacing:.15em">技能 · 携带 ${S.skills.length}/3</div>
@@ -10321,7 +10341,7 @@ function wsChoose(wid, i){
   }
   if(opt.check){
     let s = S.stats[opt.check.stat]||0; let dc = opt.check.dc;
-    const roll = Math.floor(Math.random()*100)+1;
+    const roll = Math.floor(_rngNext()*100)+1;
     if(_voice && _voice.attr===opt.check.stat){ s += _voice.vbonus||0; msg += '\n【'+_voice.q+'】'+_voice.line+'（检定加成 +'+(_voice.vbonus||0)+'）'; }
     if(_voice && _voice.critN) dc = Math.max(1, dc - _voice.critN);
     const pass = (s*2 + roll) >= dc;
@@ -10438,9 +10458,9 @@ function renderAI(){
       <div class="scene-title">自由叙事 · 你的故事由你书写</div>
       <div class="scene-tagline">没有固定选项。输入你想做的任何事——「行动：……」「说：……」「剧情：……」「看：……」，叙事实时回应。你偷过的东西会被记住，你救下的人会回来报恩。</div>
       <div class="ai-topbar">
-        <button onclick="aiWorldPick()">🌏 更换场景</button>
-        <button onclick="aiToggleSet()">${onLLM?'⚡ 已接远程 AI':'🤖 本地引擎'}</button>
-        <button onclick="aiReset()">◀ 返回枢纽</button>
+        <button data-action="aiWorldPick">🌏 更换场景</button>
+        <button data-action="aiToggleSet">${onLLM?'⚡ 已接远程 AI':'🤖 本地引擎'}</button>
+        <button data-action="aiReset">◀ 返回枢纽</button>
       </div>
       <div id="ai-set" class="ai-set" style="display:none"></div>
       <div id="ai-scenepick" class="ai-set" style="display:none"></div>
@@ -10448,15 +10468,15 @@ function renderAI(){
       <div class="ai-log">${rows||'<div class="ai-line ai"><span class="ai-who">AI · 叙事</span>选择一个场景，开始你的自由冒险。</div>'}</div>
       <div class="ai-inputrow">
         <input id="ai-in" class="ai-in" placeholder="输入行动 / 说 / 剧情 / 看…… 例：调查那座雕像 / 对守卫说：放我进去" onkeydown="if(event.key==='Enter')aiSubmit()">
-        <button onclick="aiSubmit()">行动</button>
+        <button data-action="aiSubmit">行动</button>
       </div>
       <div class="ai-quick">
-        <button onclick="aiQuick('调查周围')">🔍 调查</button>
-        <button onclick="aiQuick('向前探索')">➡ 前进</button>
-        <button onclick="aiQuick('攻击眼前的敌人')">⚔ 战斗</button>
-        <button onclick="aiQuick('和遇到的NPC交谈')">💬 交谈</button>
-        <button onclick="aiQuick('搜刮战利品')">💰 搜刮</button>
-        <button onclick="aiQuick('观察远处')">👁 看</button>
+        <button data-action="aiQuick" data-args='["调查周围"]'>🔍 调查</button>
+        <button data-action="aiQuick" data-args='["向前探索"]'>➡ 前进</button>
+        <button data-action="aiQuick" data-args='["攻击眼前的敌人"]'>⚔ 战斗</button>
+        <button data-action="aiQuick" data-args='["和遇到的NPC交谈"]'>💬 交谈</button>
+        <button data-action="aiQuick" data-args='["搜刮战利品"]'>💰 搜刮</button>
+        <button data-action="aiQuick" data-args='["观察远处"]'>👁 看</button>
       </div>
       <div class="hint">提示：输入越具体，叙事越精彩。每次行动都会结算收益与风险，探索到底可通关本场景（首通 +2 命运点）。没接远程 AI 时由本地引擎驱动，完全离线可用。</div>
     </div>`;
@@ -10474,8 +10494,8 @@ function aiToggleSet(){
     <input id="ai-key" type="password" value="${esc(api.key||'')}" placeholder="sk-...">
     <label>模型</label>
     <input id="ai-model" value="${esc(api.model||'gpt-4o-mini')}" placeholder="gpt-4o-mini">
-    <button onclick="aiSaveSet()">保存设置</button>
-    <button onclick="aiToggleSet()">收起</button>
+    <button data-action="aiSaveSet">保存设置</button>
+    <button data-action="aiToggleSet">收起</button>
     <p class="hint">Key 只保存在你本机浏览器 localStorage，请求直接发往你填写的接口，不上传任何服务器。请求失败会自动切回本地引擎。</p>`;
 }
 function aiSaveSet(){
@@ -10490,7 +10510,7 @@ function aiWorldPick(){
     const m=AI_META[k];
     return '<div class="ai-witem" onclick=\'aiStart('+JSON.stringify(k)+')\'><b>'+esc(m.name)+'</b><span>'+esc(m.style)+' · '+(S.aiCleared&&S.aiCleared.indexOf(k)>=0?'已通关':'未通关')+'</span></div>';
   }).join('');
-  box.innerHTML='<h3>选择叙事场景（21 个）</h3><div class="ai-wlist">'+list+'</div><button onclick="aiWorldPickHide()">收起</button>';
+  box.innerHTML='<h3>选择叙事场景（21 个）</h3><div class="ai-wlist">'+list+'</div><button data-action="aiWorldPickHide">收起</button>';
   box.style.display = box.style.display==='none'?'block':'none';
 }
 function aiWorldPickHide(){ $('ai-scenepick').style.display='none'; }
@@ -10587,7 +10607,7 @@ function aiIntent(raw){
 }
 function aiRoll(stat,dc){
   const st=S.stats[stat]||0;
-  const d=Math.floor(Math.random()*100)+1;
+  const d=Math.floor(_rngNext()*100)+1;
   const total=st*2+d;
   const grade=total>=dc+30?'great':(total>=dc?'pass':(total>=dc-20?'fail':'fumble'));
   return {total:d, grade};
@@ -10601,12 +10621,12 @@ function aiLocal(raw){
   const loot=w?w.loot:'未知宝物';
   const special=w?w.special:'无限可能';
   const mem=S.ai.mem||{};
-  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  const rnd=a=>a[Math.floor(_rngNext()*a.length)];
   const it=aiIntent(raw);
-  if(mem.stolen && Math.random()<0.15 && (it.type==='move'||it.type==='look'||it.type==='do'||it.type==='take')){
+  if(mem.stolen && _rngNext()<0.15 && (it.type==='move'||it.type==='look'||it.type==='do'||it.type==='take')){
     return {text:'你刚动手，一声唿哨炸开'+rnd(['寂静','喧闹','暮色'])+'——「站住！就是那个偷了货的小子！」守卫竟一眼认出了你。偷过的东西，迟早是要还的。',dmg:6,xp:4};
   }
-  if(mem.saved && Math.random()<0.12 && (it.type==='move'||it.type==='do'||it.type==='look')){
+  if(mem.saved && _rngNext()<0.12 && (it.type==='move'||it.type==='do'||it.type==='look')){
     return {text:'一个身影从暗处闪出，把一包东西塞进你手里：「那天你救了我一命，这个你拿着。」——善缘结善果。',gold:8,xp:3,hp:10,saved:false};
   }
   switch(it.type){
@@ -10629,7 +10649,7 @@ function aiL_move(meta,w,stage,stageName,enemy,special,rnd,t){
     return aiFinish(meta,w);
   }
   if(r.grade==='great'||r.grade==='pass'){
-    if(Math.random()<0.6){
+    if(_rngNext()<0.6){
       const next=Math.min(2,stage+1);
       const txt=r.grade==='great'
         ? rnd(['你循着'+meta.mood[stage]+'一路向前，拨开迷雾，前方豁然开朗——已踏入「'+meta.stages[next]+'」。','脚下'+meta.mood[stage]+'，你走得极稳，一条前人留下的路标把你引向「'+meta.stages[next]+'」。'])
@@ -10779,8 +10799,8 @@ function renderSurvival(wid){
       ${evHtml}
       ${(sv.event||isEnd)?'':('<div class="surv-acts-wrap">'+actBtns+'</div>')}
       <div class="surv-foot">
-        <button onclick="survRetire()">🏠 归隐 · 结算本次生存</button>
-        <button onclick="survBack()">◀ 返回世界入口</button>
+        <button data-action="survRetire">🏠 归隐 · 结算本次生存</button>
+        <button data-action="survBack">◀ 返回世界入口</button>
       </div>
       <div class="hint">每天做一件事：探索更深、搜集食物、狩猎变强、与人结缘——每件事都可能撞见随机事件。深度满 3 后继续探索，将触及这个世界的命运结局。体力不足就去休息，饱食归零会掉血。</div>
     </div>`;
@@ -10809,16 +10829,16 @@ function survAct(type){
   const cost=costs[type]||1;
   sv.stamina=Math.max(0,sv.stamina-Math.max(1,Math.floor(cost/2)));  // 体力消耗减半，探索更尽兴
   // 触发随机事件：行动类型加权 + 世界专属优先
-  const pool = Math.random()<0.62 ? (WORLD_SURV[sv.world]||WORLD_SURV.free) : SURV_COMMON;
+  const pool = _rngNext()<0.62 ? (WORLD_SURV[sv.world]||WORLD_SURV.free) : SURV_COMMON;
   let evt;
   if(type==='rest'){ evt=survRestEvent(); }
   else if(type==='fight'){ evt=survFightEvent(w); }
-  else if(type==='explore' && sv.depth>=3 && Math.random()<0.8){ survDestiny(); return; }
+  else if(type==='explore' && sv.depth>=3 && _rngNext()<0.8){ survDestiny(); return; }
   else if(type==='explore'){ evt=survExploreEvent(w); }
   else if(type==='gather'){ evt=survGatherEvent(w); }
   else if(type==='social'){ evt=survSocialEvent(w); }
   else if(type==='craft'){ evt=survCraftEvent(); }
-  if(!evt) evt = pool[Math.floor(Math.random()*pool.length)];
+  if(!evt) evt = pool[Math.floor(_rngNext()*pool.length)];
   sv.event = evt;
   renderSurvival(sv.world);
 }
@@ -10896,7 +10916,7 @@ function survChoose(idx){
 }
 function survRoll(stat, dc){
   const st=S.stats[stat]||0;
-  const d=Math.floor(Math.random()*100)+1;
+  const d=Math.floor(_rngNext()*100)+1;
   const total=st*2+d;
   return total>=dc+30?'great':(total>=dc?'pass':(total>=dc-20?'fail':'fumble'));
 }
@@ -12347,6 +12367,18 @@ function boot(){
   applyQuality();
   renderTitle();
 }
+/* 第四十四轮：统一事件委托——模板字符串中的内联 onclick 全部迁移为 data-action 声明式事件 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  const el = t && t.closest ? t.closest('[data-action]') : null;
+  if(!el) return;
+  const fn = window[el.getAttribute('data-action')];
+  if(typeof fn !== 'function') return;
+  let args = [];
+  const raw = el.getAttribute('data-args');
+  if(raw){ try{ args = JSON.parse(raw); }catch(_e){ args = []; } }
+  fn.apply(null, args);
+});
 document.addEventListener('DOMContentLoaded', boot);
 </script>
 </body>
